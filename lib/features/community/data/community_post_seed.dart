@@ -1,0 +1,131 @@
+// 파일경로: lib/features/community/data/community_post_seed.dart
+import '../domain/community_post.dart';
+
+class CommunityPostSeed {
+  static final List<CommunityPost> posts = [
+    CommunityPost(
+      id: 'post-001',
+      boardType: CommunityBoardType.free,
+      title: '오늘 방송 보고 느낀 점 / 결국 중요한 건 행동인 것 같습니다',
+      content:
+      '오늘 방송을 보면서 다시 느꼈습니다. 결국 생각만 하는 것이 아니라 실제로 움직이는 사람이 많아져야 판이 바뀐다고 봅니다.\n\n각자 주변 사람들에게도 공유를 많이 했으면 좋겠습니다. 특히 눈으로만 보고 지나가는 사람보다, 직접 한 번이라도 행동에 옮기는 사람이 많아질수록 분위기가 달라질 것 같습니다.',
+      author: '자유수호',
+      region: '전국',
+      createdAt: DateTime.now().subtract(const Duration(minutes: 18)),
+      commentCount: 3,
+      likeCount: 31,
+      isPinned: true,
+      isPopular: true,
+      viewCount: 1060,
+      saveCount: 1,
+      tags: ['한미동맹단', '자유', '행동', '공유'],
+      thumbnailUrl:
+      'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80',
+      authorBadge: '인증 20회',
+      authorDescription: '자유를 지키기 위한 생각과 행동을 함께 나누고 싶습니다.',
+      comments: [
+        CommunityComment(
+          id: 'c-001',
+          author: '나라사랑',
+          content: '맞습니다. 결국 행동으로 이어져야 의미가 있습니다.',
+          createdAt: DateTime.now().subtract(const Duration(minutes: 12)),
+          likeCount: 2,
+          isFirstComment: true,
+        ),
+        CommunityComment(
+          id: 'c-002',
+          author: 'WEGO',
+          content: '주변에 한 명씩만 더 알려도 확실히 달라질 것 같아요.',
+          createdAt: DateTime.now().subtract(const Duration(minutes: 7)),
+          likeCount: 1,
+        ),
+      ],
+    ),
+    CommunityPost(
+      id: 'post-002',
+      boardType: CommunityBoardType.meetup,
+      title: '평택 현장 가실 분들 / 준비물 다시 한번 체크해요',
+      content:
+      '평택 쪽으로 가시는 분들은 반투명 우산, 물, 보조배터리 정도는 꼭 챙기면 좋겠습니다.\n\n처음 가시는 분들은 집결 시간 기준으로 너무 빠르지 않게 여유 있게 오시면 좋겠습니다. 차량 공유나 합류 원하시는 분들은 댓글 주세요.',
+      author: 'WEGO',
+      region: '경기/평택',
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      commentCount: 2,
+      likeCount: 22,
+      viewCount: 240,
+      tags: ['평택', '집결', '준비물'],
+      thumbnailUrl:
+      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80',
+      authorBadge: '모임장',
+      authorDescription: '현장 동선과 집결 안내를 정리하고 있습니다.',
+      comments: [
+        CommunityComment(
+          id: 'c-003',
+          author: '참여예정',
+          content: '혹시 주차 가능한 곳도 있나요?',
+          createdAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 10)),
+          likeCount: 1,
+        ),
+      ],
+    ),
+    CommunityPost(
+      id: 'post-003',
+      boardType: CommunityBoardType.resource,
+      title: '공유용 문구 초안 올립니다 / 필요한 분들 자유롭게 수정해서 쓰세요',
+      content:
+      '공유용으로 짧게 쓸 수 있는 문구 초안을 정리해봤습니다.\n\n카톡, 문자, 커뮤니티 댓글에 맞게 짧은 버전과 긴 버전 둘 다 만들어두면 좋겠습니다. 자유롭게 가져다 쓰셔도 좋고 수정해서 사용하셔도 됩니다.',
+      author: 'MAGAwithROK',
+      region: '온라인',
+      createdAt: DateTime.now().subtract(const Duration(hours: 5)),
+      commentCount: 1,
+      likeCount: 17,
+      resourceType: CommunityResourceType.file,
+      resourceLabel: '문구초안_v1.hwp',
+      resourceUrl: 'https://example.com/sample-resource-file',
+      thumbnailUrl:
+      'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80',
+      viewCount: 180,
+      tags: ['문구', '공유', '자료'],
+      authorBadge: '자료공유',
+      authorDescription: '공유용 이미지와 문구를 정리하는 중입니다.',
+    ),
+    CommunityPost(
+      id: 'post-007',
+      boardType: CommunityBoardType.resource,
+      title: '유튜브 공유용 링크 정리',
+      content:
+      '지인들에게 바로 전달하기 좋은 유튜브 링크를 정리했습니다.\n\n설명 문구와 같이 퍼가시면 더 좋습니다. 영상 설명란에도 관련 내용이 잘 정리되어 있습니다.',
+      author: '자유대한',
+      region: '온라인',
+      createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 4)),
+      commentCount: 3,
+      likeCount: 9,
+      resourceType: CommunityResourceType.youtube,
+      resourceLabel: '추천 영상',
+      resourceUrl: 'https://youtube.com/watch?v=dQw4w9WgXcQ',
+      viewCount: 510,
+      tags: ['유튜브', '공유', '영상'],
+      authorBadge: '자료공유',
+      authorDescription: '영상 자료를 모아서 공유합니다.',
+    ),
+    CommunityPost(
+      id: 'post-008',
+      boardType: CommunityBoardType.resource,
+      title: '현장 사진 공유합니다',
+      content: '현장 분위기 참고하실 수 있게 사진 공유합니다.\n\n추가로 올릴 사진이 있으면 댓글로도 함께 남겨주세요.',
+      author: '현장기록',
+      region: '온라인',
+      createdAt: DateTime.now().subtract(const Duration(hours: 7)),
+      commentCount: 4,
+      likeCount: 15,
+      resourceType: CommunityResourceType.image,
+      resourceLabel: '현장 이미지',
+      resourceUrl:
+      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
+      viewCount: 330,
+      tags: ['현장', '사진', '분위기'],
+      authorBadge: '현장기록',
+      authorDescription: '현장 기록용 사진과 분위기를 공유합니다.',
+    ),
+  ];
+}

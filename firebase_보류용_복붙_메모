@@ -1,0 +1,24 @@
+[Firebase 연동 재개 메모]
+
+현재 앱은 로컬/더미 관리자 구조까지 완료됨.
+다음 Firebase 재개 시 목표:
+
+1. Firebase Core / Firestore / Firebase Auth 연결
+2. flutterfire configure 실행
+3. lib/firebase_options.dart 생성
+4. ActionEventStore를 Firestore 기반으로 전환
+5. Firebase Auth 이메일/비밀번호 로그인 연결
+6. admins/{uid} 문서 존재 여부로 관리자 판별
+7. Firestore Rules에서 action_events는 read 공개 / write는 admin만 허용
+8. 관리자 로그인 후 공지 등록/수정/삭제 가능하게 유지
+9. 일반 사용자는 읽기만 가능하게 제한
+
+관련 주요 대상 파일:
+- pubspec.yaml
+- lib/main.dart
+- lib/features/action_board/data/action_event_store.dart
+- lib/features/auth/data/admin_auth_store.dart
+- lib/features/auth/presentation/admin_login_page.dart
+- lib/features/action_board/presentation/action_board_page.dart
+- lib/features/action_board/presentation/action_notice_detail_page.dart
+- Firestore Rules

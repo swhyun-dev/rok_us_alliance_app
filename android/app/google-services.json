@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "190755458781",
+    "project_id": "rok-us-alliance-app",
+    "storage_bucket": "rok-us-alliance-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:190755458781:android:b4da145c2a7a521c9cd534",
+        "android_client_info": {
+          "package_name": "com.example.rok_us_alliance_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGyxH_275rJJKIxSG_og1mmEy_aE9FGnE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
