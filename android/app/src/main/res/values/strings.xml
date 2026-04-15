@@ -1,0 +1,7 @@
+<!-- android/app/src/main/res/values/strings.xml -->
+<resources>
+    <string name="app_name">rok_us_alliance_app</string>
+    <string name="client_id">uUE92j2VQ2ne_f4NgCj5</string>
+    <string name="client_secret">yL7DjSX9U3</string>
+    <string name="client_name">한미동맹단</string>
+</resources>

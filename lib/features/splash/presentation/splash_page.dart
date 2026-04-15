@@ -1,7 +1,9 @@
 // lib/features/splash/presentation/splash_page.dart
-import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../../../../app/theme/app_colors.dart';
+import '../../auth/data/auth_store.dart';
+import '../../auth/presentation/login_page.dart';
 import '../../home/presentation/home_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -12,28 +14,28 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  Timer? _timer;
-
   @override
   void initState() {
     super.initState();
-
-    _timer = Timer(const Duration(seconds: 2), () {
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const HomePage(showIntroPopup: true),
-        ),
-      );
-    });
+    _bootstrap();
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  Future<void> _bootstrap() async {
+    await Future.wait([
+      AuthStore.initialize(),
+      Future<void>.delayed(const Duration(seconds: 2)),
+    ]);
+
+    if (!mounted) return;
+
+    final nextPage = AuthStore.isSignedIn
+        ? const HomePage(showIntroPopup: true)
+        : const LoginPage();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextPage),
+    );
   }
 
   @override
