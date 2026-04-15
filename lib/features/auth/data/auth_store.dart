@@ -183,7 +183,7 @@ class AuthStore {
       );
 
       return true;
-    } catch (e) {
+    } catch (_) {
       notifier.value = notifier.value.copyWith(
         isLoading: false,
         errorMessage: '네이버 로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
@@ -227,6 +227,49 @@ class AuthStore {
       clearPendingProfile: true,
       clearError: true,
     );
+  }
+
+  static Future<void> updateProfile({
+    String? name,
+    String? phoneNumber,
+    String? cafeNickname,
+    bool? phoneVerified,
+    bool? cafeMatched,
+  }) async {
+    final user = currentUser;
+    if (user == null) {
+      throw Exception('로그인된 사용자가 없습니다.');
+    }
+
+    notifier.value = notifier.value.copyWith(
+      isLoading: true,
+      clearError: true,
+    );
+
+    try {
+      final updatedUser = user.copyWith(
+        name: name?.trim(),
+        phoneNumber: phoneNumber?.trim(),
+        cafeNickname: cafeNickname?.trim(),
+        phoneVerified: phoneVerified,
+        cafeMatched: cafeMatched,
+        updatedAt: DateTime.now(),
+      );
+
+      await _persistUser(updatedUser);
+
+      notifier.value = notifier.value.copyWith(
+        isLoading: false,
+        user: updatedUser,
+        clearError: true,
+      );
+    } catch (_) {
+      notifier.value = notifier.value.copyWith(
+        isLoading: false,
+        errorMessage: '회원 정보를 저장하지 못했습니다. 다시 시도해주세요.',
+      );
+      rethrow;
+    }
   }
 
   static Future<void> signOut() async {

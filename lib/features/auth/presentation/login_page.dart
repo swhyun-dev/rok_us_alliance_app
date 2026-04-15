@@ -9,11 +9,50 @@ import 'signup_complete_page.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
+  static const heroLogoTag = 'app_main_logo';
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _contentController;
+  late final Animation<double> _contentOpacity;
+  late final Animation<double> _contentOffset;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _contentController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _contentOpacity = CurvedAnimation(
+      parent: _contentController,
+      curve: const Interval(0.15, 1.0, curve: Curves.easeOut),
+    );
+
+    _contentOffset = Tween<double>(begin: 28, end: 0).animate(
+      CurvedAnimation(
+        parent: _contentController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    Future<void>.delayed(const Duration(milliseconds: 120), () {
+      if (mounted) _contentController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    super.dispose();
+  }
+
   Future<void> _handleNaverLogin() async {
     final needsSignup = await AuthStore.signInWithNaver();
     if (!mounted) return;
@@ -58,121 +97,192 @@ class _LoginPageState extends State<LoginPage> {
               gradient: AppColors.heroGradient,
             ),
             child: SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 520),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 12),
-                        const _LoginHeader(),
-                        const SizedBox(height: 24),
-                        const _FeatureCard(),
-                        const SizedBox(height: 18),
-                        Container(
-                          padding: const EdgeInsets.all(18),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final topSpace = constraints.maxHeight * 0.10;
+
+                  return Stack(
+                    children: [
+                      Positioned(
+                        top: -40,
+                        left: -40,
+                        child: Container(
+                          width: 180,
+                          height: 180,
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+                            color: Colors.white.withValues(alpha: 0.06),
+                            shape: BoxShape.circle,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const Text(
-                                '네이버 간편 로그인',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                '가입 시 네이버 카페 닉네임 / 이름 / 전화번호를 확인합니다.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  height: 1.55,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _GuideChip(
-                                icon: Icons.badge_outlined,
-                                text: '카페 연동 대비 / 카페 닉네임 별도 저장',
-                              ),
-                              const SizedBox(height: 10),
-                              _GuideChip(
-                                icon: Icons.phone_iphone_outlined,
-                                text: '전화번호는 추후 문자 인증 단계로 확장 가능',
-                              ),
-                              const SizedBox(height: 18),
-                              SizedBox(
-                                height: 56,
-                                child: FilledButton(
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: const Color(0xFF03C75A),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                  ),
-                                  onPressed: state.isLoading
-                                      ? null
-                                      : _handleNaverLogin,
-                                  child: state.isLoading
-                                      ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.4,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                      : const Row(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.center,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -60,
+                        right: -30,
+                        child: Container(
+                          width: 220,
+                          height: 220,
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 520),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SizedBox(height: topSpace),
+                                const _LoginHeader(),
+                                const SizedBox(height: 26),
+                                AnimatedBuilder(
+                                  animation: _contentController,
+                                  builder: (context, child) {
+                                    return Opacity(
+                                      opacity: _contentOpacity.value,
+                                      child: Transform.translate(
+                                        offset: Offset(0, _contentOffset.value),
+                                        child: child,
+                                      ),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.stretch,
                                     children: [
-                                      Icon(Icons.login, color: Colors.white),
-                                      SizedBox(width: 10),
-                                      Text(
-                                        '네이버로 계속하기',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w800,
+                                      const _FeatureCard(),
+                                      const SizedBox(height: 18),
+                                      Container(
+                                        padding: const EdgeInsets.all(18),
+                                        decoration: BoxDecoration(
                                           color: Colors.white,
+                                          borderRadius:
+                                          BorderRadius.circular(24),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.08),
+                                              blurRadius: 20,
+                                              offset: const Offset(0, 10),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                          children: [
+                                            const Text(
+                                              '네이버 간편 로그인',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w900,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            const Text(
+                                              '가입 시 네이버 카페 닉네임 / 이름 / 전화번호를 확인합니다.',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                height: 1.55,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            const _GuideChip(
+                                              icon: Icons.badge_outlined,
+                                              text:
+                                              '카페 연동 대비 / 카페 닉네임 별도 저장',
+                                            ),
+                                            const SizedBox(height: 10),
+                                            const _GuideChip(
+                                              icon:
+                                              Icons.phone_iphone_outlined,
+                                              text:
+                                              '전화번호는 추후 문자 인증 단계로 확장 가능',
+                                            ),
+                                            const SizedBox(height: 18),
+                                            SizedBox(
+                                              height: 56,
+                                              child: FilledButton(
+                                                style:
+                                                FilledButton.styleFrom(
+                                                  backgroundColor:
+                                                  const Color(0xFF03C75A),
+                                                  shape:
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(
+                                                        18),
+                                                  ),
+                                                ),
+                                                onPressed: state.isLoading
+                                                    ? null
+                                                    : _handleNaverLogin,
+                                                child: state.isLoading
+                                                    ? const SizedBox(
+                                                  width: 22,
+                                                  height: 22,
+                                                  child:
+                                                  CircularProgressIndicator(
+                                                    strokeWidth: 2.4,
+                                                    color: Colors.white,
+                                                  ),
+                                                )
+                                                    : const Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.login,
+                                                      color: Colors.white,
+                                                    ),
+                                                    SizedBox(width: 10),
+                                                    Text(
+                                                      '네이버로 계속하기',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .w800,
+                                                        color:
+                                                        Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            if (state.errorMessage != null) ...[
+                                              const SizedBox(height: 12),
+                                              Text(
+                                                state.errorMessage!,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  color: AppColors.red,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                              if (state.errorMessage != null) ...[
-                                const SizedBox(height: 12),
-                                Text(
-                                  state.errorMessage!,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: AppColors.red,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
                               ],
-                            ],
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -189,22 +299,38 @@ class _LoginHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: 92,
-          height: 92,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white24, width: 2),
-            gradient: const LinearGradient(
-              colors: [AppColors.red, AppColors.royalBlue],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        Hero(
+          tag: LoginPage.heroLogoTag,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 92,
+              height: 92,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white24, width: 2),
+                gradient: const LinearGradient(
+                  colors: [AppColors.red, AppColors.royalBlue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.red.withValues(alpha: 0.22),
+                    blurRadius: 20,
+                  ),
+                  BoxShadow(
+                    color: AppColors.royalBlue.withValues(alpha: 0.22),
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.how_to_vote_outlined,
+                size: 46,
+                color: Colors.white,
+              ),
             ),
-          ),
-          child: const Icon(
-            Icons.how_to_vote_outlined,
-            size: 46,
-            color: Colors.white,
           ),
         ),
         const SizedBox(height: 22),
