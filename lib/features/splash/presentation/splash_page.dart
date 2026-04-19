@@ -335,7 +335,7 @@ class _SplashPageState extends State<SplashPage>
           left: -width * 0.20,
           child: _softOrb(
             size: width * 0.55,
-            color: AppColors.royalBlue.withValues(alpha: 0.22),
+            color: AppColors.koreanBlue.withValues(alpha: 0.30),
           ),
         ),
         Positioned(
@@ -343,7 +343,7 @@ class _SplashPageState extends State<SplashPage>
           right: -width * 0.18,
           child: _softOrb(
             size: width * 0.52,
-            color: AppColors.red.withValues(alpha: 0.22),
+            color: AppColors.koreanRed.withValues(alpha: 0.28),
           ),
         ),
         Positioned(
@@ -397,11 +397,11 @@ class _SplashPageState extends State<SplashPage>
                   shape: BoxShape.circle,
                   gradient: SweepGradient(
                     colors: [
-                      AppColors.red.withValues(alpha: 0.00),
-                      AppColors.red.withValues(alpha: 0.28),
-                      Colors.white.withValues(alpha: 0.25),
-                      AppColors.royalBlue.withValues(alpha: 0.28),
-                      AppColors.royalBlue.withValues(alpha: 0.00),
+                      AppColors.koreanRed.withValues(alpha: 0.00),
+                      AppColors.koreanRed.withValues(alpha: 0.38),
+                      Colors.white.withValues(alpha: 0.30),
+                      AppColors.koreanBlue.withValues(alpha: 0.38),
+                      AppColors.koreanBlue.withValues(alpha: 0.00),
                     ],
                   ),
                 ),
@@ -419,9 +419,9 @@ class _SplashPageState extends State<SplashPage>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Colors.white.withValues(alpha: 0.40),
-                      AppColors.red.withValues(alpha: 0.18),
-                      AppColors.royalBlue.withValues(alpha: 0.12),
+                      Colors.white.withValues(alpha: 0.50),
+                      AppColors.koreanRed.withValues(alpha: 0.22),
+                      AppColors.koreanBlue.withValues(alpha: 0.16),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.35, 0.62, 1.0],
@@ -499,30 +499,26 @@ class _SplashPageState extends State<SplashPage>
               height: size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [AppColors.red, AppColors.royalBlue],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: AppColors.shieldGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.red.withValues(alpha: 0.30),
-                    blurRadius: 26,
-                    spreadRadius: 2,
+                    color: AppColors.koreanRed.withValues(alpha: 0.40),
+                    blurRadius: 32,
+                    spreadRadius: 4,
                   ),
                   BoxShadow(
-                    color: AppColors.royalBlue.withValues(alpha: 0.30),
-                    blurRadius: 26,
-                    spreadRadius: 2,
+                    color: AppColors.koreanBlue.withValues(alpha: 0.40),
+                    blurRadius: 32,
+                    spreadRadius: 4,
                   ),
                 ],
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.26),
-                  width: 1.6,
+                  color: Colors.white.withValues(alpha: 0.32),
+                  width: 2.0,
                 ),
               ),
               child: const Icon(
-                Icons.how_to_vote_outlined,
+                Icons.shield,
                 size: 48,
                 color: Colors.white,
               ),
@@ -541,38 +537,50 @@ class _SplashPageState extends State<SplashPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '한미동맹단',
+            Text(
+              'ROK-US ALLIANCE',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 31,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.6,
+                color: Colors.white.withValues(alpha: 0.50),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 4.5,
               ),
             ),
             const SizedBox(height: 10),
             const Text(
-              '자유를 지키는 연결 / 행동하는 플랫폼',
-              textAlign: TextAlign.center,
+              '한미동맹단',
               style: TextStyle(
-                color: Colors.white70,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                fontSize: 36,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.8,
+                height: 1.0,
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 14),
             Container(
-              width: 168,
-              height: 6,
+              width: 180,
+              height: 4,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(999),
                 gradient: AppColors.flagAccentGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.10),
-                    blurRadius: 10,
+                    color: Colors.white.withValues(alpha: 0.15),
+                    blurRadius: 12,
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              '자유를 지키는 연결 · 행동하는 플랫폼',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.65),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                height: 1.5,
               ),
             ),
           ],
@@ -745,8 +753,8 @@ class _ParticlePainter extends CustomPainter {
         ..color = (particle.index.isEven
             ? Colors.white
             : (particle.index % 3 == 0
-            ? AppColors.red
-            : AppColors.royalBlue))
+            ? AppColors.koreanRed
+            : AppColors.koreanBlue))
             .withValues(alpha: alpha.clamp(0.0, 1.0))
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 

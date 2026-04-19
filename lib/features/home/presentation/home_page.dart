@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/alliance_app_bar.dart';
 import '../../action_board/data/action_event_store.dart';
 import '../../action_board/domain/action_event.dart';
 import '../../action_board/presentation/action_board_page.dart';
@@ -10,6 +11,8 @@ import '../../action_board/presentation/action_notice_detail_page.dart';
 import '../../auth/data/admin_auth_store.dart';
 import '../../calendar/presentation/calendar_page.dart';
 import '../../community/presentation/community_page.dart';
+import '../../membership/data/member_store.dart';
+import '../../membership/presentation/membership_card_modal.dart';
 import '../../profile/presentation/profile_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -38,6 +41,7 @@ class _HomePageState extends State<HomePage> {
     _selectedIndex = widget.initialIndex;
     ActionEventStore.startListening();
     AdminAuthStore.startListening();
+    MemberStore.loadMock();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
@@ -58,7 +62,6 @@ class _HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(_hidePopupDateKey);
     if (saved == null) return false;
-
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day).toIso8601String();
     return saved == today;
@@ -73,7 +76,6 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _showIntroImagePopup() async {
     bool dontShowToday = false;
-
     await showDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -83,7 +85,7 @@ class _HomePageState extends State<HomePage> {
             return Dialog(
               backgroundColor: Colors.transparent,
               insetPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.88,
@@ -115,14 +117,10 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.fromLTRB(
-                                        16,
-                                        14,
-                                        16,
-                                        18,
-                                      ),
+                                          16, 14, 16, 18),
                                       child: Column(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Center(
                                             child: Text(
@@ -150,21 +148,21 @@ class _HomePageState extends State<HomePage> {
                                             decoration: BoxDecoration(
                                               color: AppColors.softSky,
                                               borderRadius:
-                                              BorderRadius.circular(16),
+                                                  BorderRadius.circular(16),
                                               border: Border.all(
-                                                color: AppColors.border,
-                                              ),
+                                                  color: AppColors.border),
                                             ),
                                             child: const Column(
                                               crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 _PopupBullet(
-                                                  '준비물 / 반투명 우산(흰우산)',
-                                                ),
+                                                    '준비물 / 반투명 우산(흰우산)'),
                                                 _PopupBullet('매주 토요일 참여 독려'),
-                                                _PopupBullet('질서 / 배려 / 논쟁 금지'),
-                                                _PopupBullet('정확한 주소는 추후 재공지'),
+                                                _PopupBullet(
+                                                    '질서 / 배려 / 논쟁 금지'),
+                                                _PopupBullet(
+                                                    '정확한 주소는 추후 재공지'),
                                               ],
                                             ),
                                           ),
@@ -173,11 +171,11 @@ class _HomePageState extends State<HomePage> {
                                             children: [
                                               Checkbox(
                                                 value: dontShowToday,
-                                                activeColor: AppColors.navy,
-                                                onChanged: (value) {
+                                                activeColor:
+                                                    AppColors.koreanBlue,
+                                                onChanged: (v) {
                                                   setDialogState(() {
-                                                    dontShowToday =
-                                                        value ?? false;
+                                                    dontShowToday = v ?? false;
                                                   });
                                                 },
                                               ),
@@ -188,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w600,
                                                     color:
-                                                    AppColors.textPrimary,
+                                                        AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
@@ -199,15 +197,8 @@ class _HomePageState extends State<HomePage> {
                                             width: double.infinity,
                                             child: FilledButton(
                                               style: FilledButton.styleFrom(
-                                                backgroundColor: AppColors.navy,
-                                                padding:
-                                                const EdgeInsets.symmetric(
-                                                  vertical: 14,
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(14),
-                                                ),
+                                                backgroundColor:
+                                                    AppColors.koreanBlue,
                                               ),
                                               onPressed: () async {
                                                 if (dontShowToday) {
@@ -239,9 +230,7 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () async {
-                            if (dontShowToday) {
-                              await _hidePopupForToday();
-                            }
+                            if (dontShowToday) await _hidePopupForToday();
                             if (dialogContext.mounted) {
                               Navigator.of(dialogContext).pop();
                             }
@@ -254,11 +243,8 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.black87,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                            child: const Icon(Icons.close,
+                                color: Colors.white, size: 20),
                           ),
                         ),
                       ),
@@ -275,9 +261,23 @@ class _HomePageState extends State<HomePage> {
 
   void _onTap(int index) {
     if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
+  }
+
+  void _showNotificationsSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _NotificationsSheet(),
+    );
+  }
+
+  void _showSettingsSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _SettingsSheet(),
+    );
   }
 
   Widget _buildCurrentPage() {
@@ -290,7 +290,6 @@ class _HomePageState extends State<HomePage> {
         return const CommunityPage();
       case 4:
         return const ProfilePage();
-      case 0:
       default:
         return _HomeDashboard(
           onMoveToActionBoard: () => _onTap(1),
@@ -304,7 +303,7 @@ class _HomePageState extends State<HomePage> {
       case 1:
         return '행동 공지';
       case 2:
-        return '캘린더';
+        return '일정 캘린더';
       case 3:
         return '커뮤니티';
       case 4:
@@ -317,68 +316,101 @@ class _HomePageState extends State<HomePage> {
   String _appBarSubtitle() {
     switch (_selectedIndex) {
       case 1:
-        return '집회 / 모임 / 중요 행동 일정을 확인하세요';
+        return '집회 · 모임 · 중요 행동 일정을 확인하세요';
       case 2:
-        return '한눈에 보는 집회 / 모임 / 중요 일정';
+        return '행사 · 집회 · 모임 일정을 한눈에';
       case 3:
-        return '자유 소통 / 지역모임 / 정보 공유 공간';
+        return '자유 소통 · 지역모임 · 정보 공유 공간';
       case 4:
         return '내 활동 현황과 등급을 확인하세요';
       default:
-        return 'ROK / US Alliance Action Platform';
+        return 'ROK-US Alliance Action Platform';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 16,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _appBarTitle(),
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              _appBarSubtitle(),
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
+      appBar: AllianceAppBar.main(
+        title: _appBarTitle(),
+        subtitle: _appBarSubtitle(),
+        hasNotification: false,
+        onNotification: _showNotificationsSheet,
+        onSettings: _showSettingsSheet,
+        onCard: () => showMembershipCardModal(context),
       ),
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 200),
         child: KeyedSubtree(
           key: ValueKey(_selectedIndex),
           child: _buildCurrentPage(),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: _AllianceNavBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: _onTap,
+        onTap: _onTap,
+      ),
+    );
+  }
+}
+
+// ─── Navigation Bar ───────────────────────────────────────────────────────────
+
+class _AllianceNavBar extends StatelessWidget {
+  const _AllianceNavBar({
+    required this.selectedIndex,
+    required this.onTap,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: AppColors.border.withValues(alpha: 0.7)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onTap,
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        elevation: 0,
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: '홈'),
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: '홈',
+          ),
           NavigationDestination(
             icon: Icon(Icons.campaign_outlined),
+            selectedIcon: Icon(Icons.campaign),
             label: '공지',
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month),
             label: '캘린더',
           ),
           NavigationDestination(
             icon: Icon(Icons.forum_outlined),
+            selectedIcon: Icon(Icons.forum),
             label: '커뮤니티',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
             label: '내정보',
           ),
         ],
@@ -386,6 +418,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+// ─── Home Dashboard ───────────────────────────────────────────────────────────
 
 class _HomeDashboard extends StatelessWidget {
   const _HomeDashboard({
@@ -406,23 +440,45 @@ class _HomeDashboard extends StatelessWidget {
         final urgentEvent = _findNearestUpcoming(events);
 
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
           children: [
-            const _HeroSection(),
-            const SizedBox(height: 16),
+            const _HomeHeroCard(),
+            const SizedBox(height: 14),
             if (urgentEvent != null) ...[
               _UrgentBannerCard(event: urgentEvent),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
             ],
             _QuickActionRow(
               onMoveToActionBoard: onMoveToActionBoard,
               onMoveToCalendar: onMoveToCalendar,
             ),
-            const SizedBox(height: 16),
-            if (mainEvent != null) _NoticeHighlightCard(event: mainEvent),
-            if (mainEvent != null) const SizedBox(height: 16),
+            const SizedBox(height: 18),
+            const _SectionTitle('슬로건', icon: Icons.flag_outlined),
+            const SizedBox(height: 10),
             const _SloganStrip(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
+            if (mainEvent != null) ...[
+              _SectionTitle(
+                '이번 주 대표 공지',
+                icon: Icons.location_on_outlined,
+                trailing: TextButton(
+                  onPressed: onMoveToActionBoard,
+                  child: const Text('전체 보기'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              _NoticeHighlightCard(event: mainEvent),
+              const SizedBox(height: 18),
+            ],
+            _SectionTitle(
+              '다가오는 일정',
+              icon: Icons.schedule_outlined,
+              trailing: TextButton(
+                onPressed: onMoveToCalendar,
+                child: const Text('캘린더 보기'),
+              ),
+            ),
+            const SizedBox(height: 10),
             _CalendarPreviewCard(events: upcoming),
           ],
         );
@@ -433,19 +489,17 @@ class _HomeDashboard extends StatelessWidget {
   ActionEvent? _findNearestUpcoming(List<ActionEvent> events) {
     if (events.isEmpty) return null;
     final now = DateTime.now();
-
     final upcoming = events.where((e) => !e.startAt.isBefore(now)).toList()
       ..sort((a, b) => a.startAt.compareTo(b.startAt));
-
     if (upcoming.isNotEmpty) return upcoming.first;
-
-    final sorted = [...events]..sort((a, b) => b.startAt.compareTo(a.startAt));
-    return sorted.first;
+    return ([...events]..sort((a, b) => b.startAt.compareTo(a.startAt))).first;
   }
 }
 
-class _HeroSection extends StatelessWidget {
-  const _HeroSection();
+// ─── Hero card ────────────────────────────────────────────────────────────────
+
+class _HomeHeroCard extends StatelessWidget {
+  const _HomeHeroCard();
 
   @override
   Widget build(BuildContext context) {
@@ -453,59 +507,86 @@ class _HeroSection extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
-        gradient: AppColors.heroGradient,
+        gradient: const LinearGradient(
+          colors: [AppColors.darkNavy, AppColors.koreanBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.navy.withValues(alpha: 0.16),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            color: AppColors.koreanBlue.withValues(alpha: 0.28),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Stack(
         children: [
+          // Decorative circles
           Positioned(
-            right: -20,
-            top: -10,
+            right: -18,
+            top: -18,
             child: Container(
-              width: 110,
-              height: 110,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: Colors.white.withValues(alpha: 0.06),
                 shape: BoxShape.circle,
               ),
             ),
           ),
-          const Column(
+          Positioned(
+            right: 20,
+            bottom: -24,
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.koreanRed.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _FlagAccentBar(),
-              SizedBox(height: 14),
-              Text(
-                '자유를 지키는 연결',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+              // Flag stripe accent
+              Container(
+                width: 148,
+                height: 5,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  gradient: AppColors.flagAccentGradient,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
               Text(
+                'ROK-US ALLIANCE',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.50),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 3.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
                 '한미동맹의 힘을\n하나로 모으는 플랫폼',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 28,
-                  height: 1.25,
+                  fontSize: 26,
+                  height: 1.3,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
-                '단순 커뮤니티가 아니라 / 사람을 연결하고 / 행동으로 이어지게 합니다.',
+                '사람을 연결하고 / 행동으로 이어지게 합니다.',
                 style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 15,
+                  color: Colors.white.withValues(alpha: 0.65),
+                  fontSize: 13,
                   height: 1.55,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -516,61 +597,48 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
+// ─── Urgent banner ────────────────────────────────────────────────────────────
+
 class _UrgentBannerCard extends StatelessWidget {
   const _UrgentBannerCard({required this.event});
 
   final ActionEvent event;
 
-  String _buildDDayText() {
+  String _dday() {
     final now = DateTime.now();
     final baseNow = DateTime(now.year, now.month, now.day);
-    final baseEvent = DateTime(event.startAt.year, event.startAt.month, event.startAt.day);
+    final baseEvent = DateTime(
+        event.startAt.year, event.startAt.month, event.startAt.day);
     final diff = baseEvent.difference(baseNow).inDays;
-
     if (diff == 0) return 'D-DAY';
     if (diff > 0) return 'D-$diff';
     return '종료';
   }
 
-  String _buildSubText() {
-    final dday = _buildDDayText();
-    if (dday == 'D-DAY') {
-      return '오늘 일정입니다 / 지금 바로 공지를 확인하고 참여 준비를 해주세요.';
-    }
-    if (dday == '종료') {
-      return '가장 최근 일정입니다 / 관련 공지를 다시 확인할 수 있습니다.';
-    }
-    return '$dday 일정입니다 / 미리 위치와 준비물을 확인해두세요.';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final dday = _buildDDayText();
-
+    final dday = _dday();
     return InkWell(
-      borderRadius: BorderRadius.circular(24),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ActionNoticeDetailPage(eventId: event.id),
-          ),
-        );
-      },
+      borderRadius: BorderRadius.circular(22),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ActionNoticeDetailPage(eventId: event.id)),
+      ),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(22),
           gradient: const LinearGradient(
-            colors: [AppColors.red, Color(0xFF8B1E2D)],
+            colors: [AppColors.koreanRed, Color(0xFF8B1E2D)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.red.withValues(alpha: 0.22),
+              color: AppColors.koreanRed.withValues(alpha: 0.24),
               blurRadius: 20,
-              offset: const Offset(0, 10),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -578,11 +646,11 @@ class _UrgentBannerCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 76,
-              height: 76,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: Colors.white24),
               ),
               child: Center(
@@ -591,7 +659,7 @@ class _UrgentBannerCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.w900,
                     height: 1.1,
                   ),
@@ -607,41 +675,32 @@ class _UrgentBannerCard extends StatelessWidget {
                     '긴급 행동 공지',
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   Text(
                     event.title,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
-                      height: 1.35,
+                      fontSize: 17,
+                      height: 1.3,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    _buildSubText(),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.schedule, size: 16, color: Colors.white),
-                      const SizedBox(width: 6),
+                      const Icon(Icons.schedule, size: 14, color: Colors.white70),
+                      const SizedBox(width: 5),
                       Expanded(
                         child: Text(
                           event.dateTimeText,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Colors.white70,
                             fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -650,8 +709,8 @@ class _UrgentBannerCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: Colors.white),
+            const SizedBox(width: 6),
+            const Icon(Icons.chevron_right, color: Colors.white70),
           ],
         ),
       ),
@@ -659,21 +718,7 @@ class _UrgentBannerCard extends StatelessWidget {
   }
 }
 
-class _FlagAccentBar extends StatelessWidget {
-  const _FlagAccentBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 148,
-      height: 8,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        gradient: AppColors.flagAccentGradient,
-      ),
-    );
-  }
-}
+// ─── Quick actions ────────────────────────────────────────────────────────────
 
 class _QuickActionRow extends StatelessWidget {
   const _QuickActionRow({
@@ -689,21 +734,21 @@ class _QuickActionRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _QuickMenuCard(
+          child: _QuickCard(
             title: '행동 공지',
-            subtitle: '집회 / 일정',
+            subtitle: '집회 · 일정 확인',
             icon: Icons.campaign,
-            color: AppColors.red,
+            gradientColors: const [AppColors.koreanRed, Color(0xFF8B1E2D)],
             onTap: onMoveToActionBoard,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _QuickMenuCard(
+          child: _QuickCard(
             title: '캘린더',
-            subtitle: '한눈 일정',
+            subtitle: '한눈에 일정 보기',
             icon: Icons.calendar_month,
-            color: AppColors.navy,
+            gradientColors: const [AppColors.koreanBlue, AppColors.navy],
             onTap: onMoveToCalendar,
           ),
         ),
@@ -712,60 +757,184 @@ class _QuickActionRow extends StatelessWidget {
   }
 }
 
-class _QuickMenuCard extends StatelessWidget {
-  const _QuickMenuCard({
+class _QuickCard extends StatelessWidget {
+  const _QuickCard({
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.color,
+    required this.gradientColors,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
-  final Color color;
+  final List<Color> gradientColors;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(20),
       onTap: onTap,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                backgroundColor: color.withValues(alpha: 0.12),
-                child: Icon(icon, color: color),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors.first.withValues(alpha: 0.25),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.20),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.white, size: 22),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.70),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
+// ─── Section title ────────────────────────────────────────────────────────────
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.title, {this.icon, this.trailing});
+
+  final String title;
+  final IconData? icon;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 20,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+            gradient: AppColors.shieldGradient,
+          ),
+        ),
+        const SizedBox(width: 10),
+        if (icon != null) ...[
+          Icon(icon, size: 18, color: AppColors.koreanBlue),
+          const SizedBox(width: 6),
+        ],
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        if (trailing != null) ...[
+          const Spacer(),
+          trailing!,
+        ],
+      ],
+    );
+  }
+}
+
+// ─── Slogan strip ─────────────────────────────────────────────────────────────
+
+class _SloganStrip extends StatelessWidget {
+  const _SloganStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: const SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _SloganChip('WE GO TOGETHER', AppColors.koreanRed),
+            SizedBox(width: 16),
+            _SloganChip('SAVE KOREA', AppColors.koreanBlue),
+            SizedBox(width: 16),
+            _SloganChip('MAGA WITH ROK', AppColors.koreanRed),
+            SizedBox(width: 16),
+            _SloganChip('한미동맹 필승', AppColors.koreanBlue),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SloganChip extends StatelessWidget {
+  const _SloganChip(this.text, this.color);
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          color: color,
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Notice highlight card ────────────────────────────────────────────────────
 
 class _NoticeHighlightCard extends StatelessWidget {
   const _NoticeHighlightCard({required this.event});
@@ -775,75 +944,45 @@ class _NoticeHighlightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(22),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ActionNoticeDetailPage(eventId: event.id),
-          ),
-        );
-      },
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ActionNoticeDetailPage(eventId: event.id)),
+      ),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: AppColors.softRed,
-                    child: Icon(Icons.location_on, color: AppColors.red),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '이번 주 대표 행동 공지',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                ],
-              ),
-              const SizedBox(height: 14),
               _InfoLine(label: '일시', value: event.dateTimeText),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               _InfoLine(label: '위치', value: event.locationName),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               _InfoLine(label: '준비물', value: event.items.join(', ')),
               const SizedBox(height: 12),
               Text(
-                '슬로건 / ${event.slogans.join(' / ')}',
+                event.slogans.map((s) => '"$s"').join('  ·  '),
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   height: 1.55,
                   color: AppColors.textSecondary,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ActionNoticeDetailPage(eventId: event.id),
-                      ),
-                    );
-                  },
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            ActionNoticeDetailPage(eventId: event.id)),
+                  ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.navy,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+                    backgroundColor: AppColors.koreanBlue,
                   ),
                   child: const Text('상세 공지 보기'),
                 ),
@@ -857,10 +996,7 @@ class _NoticeHighlightCard extends StatelessWidget {
 }
 
 class _InfoLine extends StatelessWidget {
-  const _InfoLine({
-    required this.label,
-    required this.value,
-  });
+  const _InfoLine({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -871,8 +1007,8 @@ class _InfoLine extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 54,
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          width: 50,
+          padding: const EdgeInsets.symmetric(vertical: 5),
           decoration: BoxDecoration(
             color: AppColors.softBlue,
             borderRadius: BorderRadius.circular(999),
@@ -881,9 +1017,9 @@ class _InfoLine extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: AppColors.navy,
+              color: AppColors.koreanBlue,
             ),
           ),
         ),
@@ -907,53 +1043,7 @@ class _InfoLine extends StatelessWidget {
   }
 }
 
-class _SloganStrip extends StatelessWidget {
-  const _SloganStrip();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: const SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _SloganText('WE GO TOGETHER', AppColors.red),
-            SizedBox(width: 18),
-            _SloganText('SAVE KOREA', AppColors.navy),
-            SizedBox(width: 18),
-            _SloganText('MAGA WITH ROK', AppColors.red),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SloganText extends StatelessWidget {
-  const _SloganText(this.text, this.color);
-
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w900,
-        color: color,
-        letterSpacing: 0.2,
-      ),
-    );
-  }
-}
+// ─── Calendar preview ─────────────────────────────────────────────────────────
 
 class _CalendarPreviewCard extends StatelessWidget {
   const _CalendarPreviewCard({required this.events});
@@ -968,27 +1058,16 @@ class _CalendarPreviewCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '다가오는 일정',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 14),
             if (events.isEmpty)
               const Text(
                 '등록된 일정이 없습니다.',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                    fontSize: 14, color: AppColors.textSecondary),
               ),
             ...events.map(
-                  (event) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _ScheduleRow(event: event),
+              (e) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _ScheduleRow(event: e),
               ),
             ),
           ],
@@ -1005,45 +1084,45 @@ class _ScheduleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isProtest = event.type != '모임';
+    final accentColor = isProtest ? AppColors.koreanRed : AppColors.koreanBlue;
+
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ActionNoticeDetailPage(eventId: event.id),
-          ),
-        );
-      },
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ActionNoticeDetailPage(eventId: event.id)),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Row(
           children: [
             Container(
-              width: 58,
-              height: 64,
+              width: 54,
+              height: 60,
               decoration: BoxDecoration(
-                color: AppColors.softBlue,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+                color: accentColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: accentColor.withValues(alpha: 0.20)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     event.monthLabel,
-                    style: const TextStyle(
-                      fontSize: 11,
+                    style: TextStyle(
+                      fontSize: 10,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.red,
+                      color: accentColor,
                     ),
                   ),
                   Text(
                     event.dayLabel,
-                    style: const TextStyle(
-                      fontSize: 24,
+                    style: TextStyle(
+                      fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: AppColors.navy,
+                      color: accentColor,
                     ),
                   ),
                 ],
@@ -1062,25 +1141,200 @@ class _ScheduleRow extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     event.locationName,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            Icon(Icons.chevron_right,
+                color: AppColors.textSecondary.withValues(alpha: 0.6)),
           ],
         ),
       ),
     );
   }
 }
+
+// ─── Bottom sheets (알림 / 설정) ─────────────────────────────────────────────
+
+class _NotificationsSheet extends StatelessWidget {
+  const _NotificationsSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.border,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    gradient: AppColors.shieldGradient,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  '알림',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.softBlue,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.notifications_off_outlined,
+                      color: AppColors.koreanBlue),
+                  SizedBox(width: 12),
+                  Text(
+                    '새로운 알림이 없습니다.',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsSheet extends StatelessWidget {
+  const _SettingsSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      (Icons.notifications_outlined, '알림 설정', '행동 공지 · 커뮤니티 알림'),
+      (Icons.palette_outlined, '테마 설정', '앱 색상 및 표시 방식'),
+      (Icons.language_outlined, '언어 설정', '한국어 / English'),
+      (Icons.privacy_tip_outlined, '개인정보 처리방침', ''),
+      (Icons.info_outlined, '앱 정보', 'v1.0.0'),
+    ];
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.border,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    gradient: AppColors.shieldGradient,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  '설정',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...items.map(
+            (item) => ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+              leading: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.softBlue,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(item.$1, color: AppColors.koreanBlue, size: 18),
+              ),
+              title: Text(
+                item.$2,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.textPrimary),
+              ),
+              subtitle: item.$3.isNotEmpty
+                  ? Text(item.$3,
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.textSecondary))
+                  : null,
+              trailing: const Icon(Icons.chevron_right,
+                  color: AppColors.textSecondary, size: 18),
+              onTap: () {},
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Popup bullet ─────────────────────────────────────────────────────────────
 
 class _PopupBullet extends StatelessWidget {
   const _PopupBullet(this.text);
@@ -1095,12 +1349,8 @@ class _PopupBullet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.only(top: 6),
-            child: Icon(
-              Icons.circle,
-              size: 6,
-              color: AppColors.navy,
-            ),
+            padding: EdgeInsets.only(top: 7),
+            child: Icon(Icons.circle, size: 5, color: AppColors.koreanBlue),
           ),
           const SizedBox(width: 8),
           Expanded(

@@ -94,7 +94,32 @@ class AuthState {
 
 class AuthStore {
   AuthStore._();
+  static Future<void> debugSignInForDesignPreview() async {
+    final now = DateTime.now();
 
+    final user = AppUser(
+      provider: 'debug',
+      providerUserId: 'debug_preview_user',
+      naverNickname: '자유대한_샘플회원',
+      name: '홍길동',
+      phoneNumber: '010-1234-5678',
+      cafeNickname: '자유대한_서울',
+      phoneVerified: true,
+      cafeMatched: true,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await _persistUser(user);
+
+    notifier.value = notifier.value.copyWith(
+      isInitialized: true,
+      isLoading: false,
+      user: user,
+      clearPendingProfile: true,
+      clearError: true,
+    );
+  }
   static const String _userKey = 'app_auth_user_v1';
   static const String _draftKey = 'app_auth_pending_naver_profile_v1';
 
