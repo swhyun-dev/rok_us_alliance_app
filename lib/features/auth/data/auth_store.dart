@@ -1,24 +1,34 @@
 // lib/features/auth/data/auth_store.dart
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/app_user.dart';
+import 'apple_auth_service.dart';
+import 'google_auth_service.dart';
+import 'kakao_auth_service.dart';
 import 'naver_auth_service.dart';
 
-class NaverProfileDraft {
-  const NaverProfileDraft({
+/// 4가지 소셜 OAuth가 모두 공유하는 가입 임시 데이터.
+class SocialSignupDraft {
+  const SocialSignupDraft({
+    required this.provider,
     required this.providerUserId,
-    required this.naverNickname,
+    required this.nickname,
     required this.name,
     this.email,
+    this.profileImageUrl,
   });
 
+  /// 'apple' | 'kakao' | 'naver' | 'google'
+  final String provider;
   final String providerUserId;
-  final String naverNickname;
+  final String nickname;
   final String name;
   final String? email;
+  final String? profileImageUrl;
 }
 
 class AuthState {
@@ -65,6 +75,15 @@ class AuthState {
 class AuthStore {
   AuthStore._();
 
+  static const String _userKey = 'app_auth_user_v1';
+
+  static final ValueNotifier<AuthState> notifier =
+      ValueNotifier<AuthState>(AuthState.initial());
+
+  static AuthState get state => notifier.value;
+  static AppUser? get currentUser => notifier.value.user;
+  static bool get isSignedIn => notifier.value.user != null;
+
   static Future<void> debugSignInForDesignPreview() async {
     final now = DateTime.now();
 
@@ -91,15 +110,6 @@ class AuthStore {
     );
   }
 
-  static const String _userKey = 'app_auth_user_v1';
-
-  static final ValueNotifier<AuthState> notifier =
-  ValueNotifier<AuthState>(AuthState.initial());
-
-  static AuthState get state => notifier.value;
-  static AppUser? get currentUser => notifier.value.user;
-  static bool get isSignedIn => notifier.value.user != null;
-
   static Future<void> initialize() async {
     if (notifier.value.isInitialized) return;
 
@@ -124,62 +134,91 @@ class AuthStore {
     );
   }
 
-  /// 기존 사용자면 [user]를 갱신하고 null을, 신규 사용자면
-  /// [NaverProfileDraft]를 반환한다 (호출자가 가입 페이지로 전달).
-  static Future<NaverProfileDraft?> signInWithNaver() async {
-    notifier.value = notifier.value.copyWith(
-      isLoading: true,
-      clearError: true,
-    );
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // Provider entry points
+  // 모두 동일 계약: 사용자 취소·기존 사용자면 null,
+  // 신규 사용자면 SocialSignupDraft 반환 (호출자가 가입 페이지로 전달).
+  // 실패 시 errorMessage 세팅 후 null.
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    try {
+  static Future<SocialSignupDraft?> signInWithNaver() async {
+    return _runSignIn('네이버', () async {
       final profile = await NaverAuthService.signIn();
-
-      final existingUser = currentUser;
-      if (existingUser != null &&
-          existingUser.provider == 'naver' &&
-          existingUser.providerUserId == profile.providerUserId) {
-        notifier.value = notifier.value.copyWith(
-          isLoading: false,
-          user: existingUser,
-          clearError: true,
-        );
-        await _persistUser(existingUser);
-        return null;
-      }
-
-      notifier.value = notifier.value.copyWith(
-        isLoading: false,
-        clearUser: true,
-        clearError: true,
-      );
-
-      return NaverProfileDraft(
+      return _resolvePostSignIn(
+        provider: 'naver',
         providerUserId: profile.providerUserId,
-        naverNickname: profile.naverNickname,
+        nickname: profile.naverNickname,
         name: profile.name,
         email: profile.email.isEmpty ? null : profile.email,
       );
-    } catch (_) {
-      notifier.value = notifier.value.copyWith(
-        isLoading: false,
-        errorMessage: '네이버 로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
-      );
-      return null;
-    }
+    });
   }
 
+  static Future<SocialSignupDraft?> signInWithGoogle() async {
+    return _runSignIn('Google', () async {
+      final user = await GoogleAuthService.signInWithGoogle();
+      if (user == null) return null;
+      return _resolvePostSignIn(
+        provider: 'google',
+        providerUserId: _providerDataUid(user, 'google.com') ?? user.uid,
+        nickname: user.displayName ?? '',
+        name: user.displayName ?? '',
+        email: user.email,
+        profileImageUrl: user.photoURL,
+      );
+    });
+  }
+
+  static Future<SocialSignupDraft?> signInWithKakao() async {
+    return _runSignIn('카카오', () async {
+      final user = await KakaoAuthService.signInWithKakao();
+      if (user == null) return null;
+      // Custom Token UID 형식: 'kakao:{providerUserId}'
+      final providerUserId = user.uid.startsWith('kakao:')
+          ? user.uid.substring('kakao:'.length)
+          : user.uid;
+      return _resolvePostSignIn(
+        provider: 'kakao',
+        providerUserId: providerUserId,
+        nickname: user.displayName ?? '',
+        name: user.displayName ?? '',
+        email: user.email,
+        profileImageUrl: user.photoURL,
+      );
+    });
+  }
+
+  static Future<SocialSignupDraft?> signInWithApple() async {
+    return _runSignIn('Apple', () async {
+      final user = await AppleAuthService.signInWithApple();
+      if (user == null) return null;
+      return _resolvePostSignIn(
+        provider: 'apple',
+        providerUserId: _providerDataUid(user, 'apple.com') ?? user.uid,
+        nickname: user.displayName ?? '',
+        name: user.displayName ?? '',
+        email: user.email,
+        profileImageUrl: user.photoURL,
+      );
+    });
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // Common signup tail
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   static Future<void> completeSignup({
-    required NaverProfileDraft draft,
+    required SocialSignupDraft draft,
   }) async {
     final now = DateTime.now();
 
     final user = AppUser(
-      provider: 'naver',
+      provider: draft.provider,
       providerUserId: draft.providerUserId,
-      naverNickname: draft.naverNickname,
+      naverNickname: draft.nickname,
       name: draft.name,
       email: draft.email,
+      profileImageUrl: draft.profileImageUrl,
       createdAt: now,
       updatedAt: now,
       lastSignedInAt: now,
@@ -233,9 +272,26 @@ class AuthStore {
   }
 
   static Future<void> signOut() async {
+    final provider = currentUser?.provider;
+
     try {
-      await NaverAuthService.signOut();
-    } catch (_) {}
+      switch (provider) {
+        case 'naver':
+          await NaverAuthService.signOut();
+          break;
+        case 'kakao':
+          await KakaoAuthService.signOut();
+          break;
+        case 'google':
+          await GoogleAuthService.signOut();
+          break;
+        case 'apple':
+        default:
+          await FirebaseAuth.instance.signOut();
+      }
+    } catch (_) {
+      // 외부 SDK 로그아웃 실패해도 로컬 세션은 정리.
+    }
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
@@ -245,6 +301,79 @@ class AuthStore {
       clearUser: true,
       clearError: true,
     );
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // Internal
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  static Future<SocialSignupDraft?> _runSignIn(
+    String label,
+    Future<SocialSignupDraft?> Function() body,
+  ) async {
+    notifier.value = notifier.value.copyWith(
+      isLoading: true,
+      clearError: true,
+    );
+
+    try {
+      return await body();
+    } catch (_) {
+      notifier.value = notifier.value.copyWith(
+        isLoading: false,
+        errorMessage: '$label 로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
+      );
+      return null;
+    }
+  }
+
+  /// 기존 사용자면 [AppUser]를 갱신·캐시하고 null. 신규 사용자면 draft 반환.
+  static Future<SocialSignupDraft?> _resolvePostSignIn({
+    required String provider,
+    required String providerUserId,
+    required String nickname,
+    required String name,
+    String? email,
+    String? profileImageUrl,
+  }) async {
+    final existing = currentUser;
+    if (existing != null &&
+        existing.provider == provider &&
+        existing.providerUserId == providerUserId) {
+      final updated = existing.copyWith(
+        lastSignedInAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _persistUser(updated);
+      notifier.value = notifier.value.copyWith(
+        isLoading: false,
+        user: updated,
+        clearError: true,
+      );
+      return null;
+    }
+
+    notifier.value = notifier.value.copyWith(
+      isLoading: false,
+      clearUser: true,
+      clearError: true,
+    );
+
+    return SocialSignupDraft(
+      provider: provider,
+      providerUserId: providerUserId,
+      nickname: nickname,
+      name: name,
+      email: email,
+      profileImageUrl: profileImageUrl,
+    );
+  }
+
+  static String? _providerDataUid(User user, String providerId) {
+    for (final info in user.providerData) {
+      if (info.providerId == providerId) return info.uid;
+    }
+    return null;
   }
 
   static Future<void> _persistUser(AppUser user) async {

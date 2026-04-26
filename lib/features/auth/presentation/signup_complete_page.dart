@@ -8,7 +8,7 @@ import '../data/auth_store.dart';
 class SignupCompletePage extends StatefulWidget {
   const SignupCompletePage({super.key, required this.draft});
 
-  final NaverProfileDraft draft;
+  final SocialSignupDraft draft;
 
   @override
   State<SignupCompletePage> createState() => _SignupCompletePageState();
@@ -81,8 +81,8 @@ class _SignupCompletePageState extends State<SignupCompletePage> {
               ),
               const SizedBox(height: 10),
               Text(
-                widget.draft.naverNickname.isNotEmpty
-                    ? '${widget.draft.naverNickname}님,\n한미동맹단에 합류하셨습니다.'
+                widget.draft.nickname.isNotEmpty
+                    ? '${widget.draft.nickname}님,\n한미동맹단에 합류하셨습니다.'
                     : '한미동맹단에 합류하셨습니다.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(

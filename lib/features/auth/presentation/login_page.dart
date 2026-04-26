@@ -24,6 +24,10 @@ class _LoginPageState extends State<LoginPage>
 
   bool get _showDebugPreviewButton => kDebugMode;
 
+  // Apple은 iOS 네이티브에서만 지원. (kIsWeb은 false 가정 후 플랫폼 분기.)
+  bool get _showAppleButton =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
   @override
   void initState() {
     super.initState();
@@ -56,8 +60,10 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  Future<void> _handleNaverLogin() async {
-    final draft = await AuthStore.signInWithNaver();
+  Future<void> _handleSocialLogin(
+    Future<SocialSignupDraft?> Function() signIn,
+  ) async {
+    final draft = await signIn();
     if (!mounted) return;
 
     final state = AuthStore.state;
@@ -151,9 +157,17 @@ class _LoginPageState extends State<LoginPage>
                         ),
                         child: _LoginCard(
                           state: state,
-                          onNaverLogin: _handleNaverLogin,
-                          onDebugLogin: _handleDebugPreviewLogin,
+                          showAppleButton: _showAppleButton,
                           showDebugButton: _showDebugPreviewButton,
+                          onAppleLogin: () =>
+                              _handleSocialLogin(AuthStore.signInWithApple),
+                          onKakaoLogin: () =>
+                              _handleSocialLogin(AuthStore.signInWithKakao),
+                          onNaverLogin: () =>
+                              _handleSocialLogin(AuthStore.signInWithNaver),
+                          onGoogleLogin: () =>
+                              _handleSocialLogin(AuthStore.signInWithGoogle),
+                          onDebugLogin: _handleDebugPreviewLogin,
                         ),
                       ),
                     ],
@@ -321,18 +335,28 @@ class _FlagBadge extends StatelessWidget {
 class _LoginCard extends StatelessWidget {
   const _LoginCard({
     required this.state,
-    required this.onNaverLogin,
-    required this.onDebugLogin,
+    required this.showAppleButton,
     required this.showDebugButton,
+    required this.onAppleLogin,
+    required this.onKakaoLogin,
+    required this.onNaverLogin,
+    required this.onGoogleLogin,
+    required this.onDebugLogin,
   });
 
   final AuthState state;
-  final VoidCallback onNaverLogin;
-  final VoidCallback onDebugLogin;
+  final bool showAppleButton;
   final bool showDebugButton;
+  final VoidCallback onAppleLogin;
+  final VoidCallback onKakaoLogin;
+  final VoidCallback onNaverLogin;
+  final VoidCallback onGoogleLogin;
+  final VoidCallback onDebugLogin;
 
   @override
   Widget build(BuildContext context) {
+    final disabled = state.isLoading;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
@@ -352,7 +376,7 @@ class _LoginCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Feature list
+            // Section label
             Row(
               children: [
                 Container(
@@ -365,7 +389,7 @@ class _LoginCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 const Text(
-                  '가입 후 가능한 것',
+                  '소셜 계정으로 시작',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
@@ -375,112 +399,83 @@ class _LoginCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            _FeatureRow(
-              icon: Icons.campaign_outlined,
-              text: '행동 공지 / 집회 일정 빠르게 확인',
+            if (showAppleButton) ...[
+              _SocialButton(
+                label: 'Apple로 시작하기',
+                icon: Icons.apple,
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                onPressed: disabled ? null : onAppleLogin,
+                isLoading: disabled,
+              ),
+              const SizedBox(height: 12),
+            ],
+            _SocialButton(
+              label: '카카오로 시작하기',
+              icon: Icons.chat_bubble,
+              backgroundColor: const Color(0xFFFEE500),
+              foregroundColor: const Color(0xFF181600),
+              onPressed: disabled ? null : onKakaoLogin,
+              isLoading: disabled,
             ),
-            _FeatureRow(
-              icon: Icons.groups_outlined,
-              text: '커뮤니티 참여 / 지역 네트워크 확장',
+            const SizedBox(height: 12),
+            _SocialButton(
+              label: '네이버로 시작하기',
+              icon: Icons.login,
+              backgroundColor: const Color(0xFF03C75A),
+              foregroundColor: Colors.white,
+              onPressed: disabled ? null : onNaverLogin,
+              isLoading: disabled,
             ),
-            _FeatureRow(
-              icon: Icons.verified_user_outlined,
-              text: '활동 점수 기반 회원 등급 시스템',
+            const SizedBox(height: 12),
+            _SocialButton(
+              label: 'Google로 시작하기',
+              icon: Icons.g_mobiledata,
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.textPrimary,
+              borderColor: AppColors.border,
+              onPressed: disabled ? null : onGoogleLogin,
+              isLoading: disabled,
             ),
-            const SizedBox(height: 16),
-            // Section label divider
-            Row(
-              children: [
-                const Expanded(child: Divider(color: AppColors.border)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    '로그인 / 가입',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const Expanded(child: Divider(color: AppColors.border)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Naver login button
-            SizedBox(
-              height: 54,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF03C75A),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 2,
-                ),
-                onPressed: state.isLoading ? null : onNaverLogin,
-                child: state.isLoading
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.login, color: Colors.white, size: 20),
-                          SizedBox(width: 10),
-                          Text(
-                            '네이버로 계속하기',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
+            const SizedBox(height: 14),
+            // 약관 안내
+            Text(
+              '시작하면 이용약관 및 개인정보처리방침에 동의하게 됩니다.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                height: 1.5,
+                color: AppColors.textSecondary.withValues(alpha: 0.85),
+                fontWeight: FontWeight.w500,
               ),
             ),
             if (showDebugButton) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               SizedBox(
-                height: 48,
+                height: 44,
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
                       color: AppColors.navy.withValues(alpha: 0.30),
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  onPressed: state.isLoading ? null : onDebugLogin,
+                  onPressed: disabled ? null : onDebugLogin,
                   icon: const Icon(
                     Icons.visibility_outlined,
                     color: AppColors.navy,
-                    size: 18,
+                    size: 16,
                   ),
                   label: const Text(
                     '디자인 확인용 임시 로그인',
                     style: TextStyle(
                       color: AppColors.navy,
                       fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                      fontSize: 13,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '디버그 모드에서만 보이는 임시 버튼입니다.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textSecondary.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -504,40 +499,67 @@ class _LoginCard extends StatelessWidget {
   }
 }
 
-class _FeatureRow extends StatelessWidget {
-  const _FeatureRow({required this.icon, required this.text});
+class _SocialButton extends StatelessWidget {
+  const _SocialButton({
+    required this.label,
+    required this.icon,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.onPressed,
+    required this.isLoading,
+    this.borderColor,
+  });
 
+  final String label;
   final IconData icon;
-  final String text;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final Color? borderColor;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: AppColors.softBlue,
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Icon(icon, size: 17, color: AppColors.royalBlue),
+    return SizedBox(
+      height: 52,
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
+          disabledBackgroundColor: backgroundColor.withValues(alpha: 0.55),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: borderColor != null
+                ? BorderSide(color: borderColor!, width: 1)
+                : BorderSide.none,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 13,
-                height: 1.4,
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
+          elevation: 1,
+        ),
+        onPressed: onPressed,
+        child: isLoading && onPressed == null
+            ? SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  color: foregroundColor,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: foregroundColor, size: 22),
+                  const SizedBox(width: 10),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: foregroundColor,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -619,4 +641,3 @@ class _StarPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
