@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Future<void> _handleNaverLogin() async {
-    final needsSignup = await AuthStore.signInWithNaver();
+    final draft = await AuthStore.signInWithNaver();
     if (!mounted) return;
 
     final state = AuthStore.state;
@@ -72,10 +72,10 @@ class _LoginPageState extends State<LoginPage>
       return;
     }
 
-    if (needsSignup && state.pendingProfile != null) {
+    if (draft != null) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const SignupCompletePage()),
+        MaterialPageRoute(builder: (_) => SignupCompletePage(draft: draft)),
       );
       return;
     }
@@ -385,7 +385,7 @@ class _LoginCard extends StatelessWidget {
             ),
             _FeatureRow(
               icon: Icons.verified_user_outlined,
-              text: '카페 닉네임 기반 회원 매칭 대비',
+              text: '활동 점수 기반 회원 등급 시스템',
             ),
             const SizedBox(height: 16),
             // Section label divider

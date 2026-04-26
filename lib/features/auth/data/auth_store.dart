@@ -12,35 +12,13 @@ class NaverProfileDraft {
     required this.providerUserId,
     required this.naverNickname,
     required this.name,
-    required this.phoneNumber,
     this.email,
   });
 
   final String providerUserId;
   final String naverNickname;
   final String name;
-  final String phoneNumber;
   final String? email;
-
-  Map<String, dynamic> toMap() {
-    return {
-      'providerUserId': providerUserId,
-      'naverNickname': naverNickname,
-      'name': name,
-      'phoneNumber': phoneNumber,
-      'email': email,
-    };
-  }
-
-  factory NaverProfileDraft.fromMap(Map<String, dynamic> map) {
-    return NaverProfileDraft(
-      providerUserId: (map['providerUserId'] ?? '') as String,
-      naverNickname: (map['naverNickname'] ?? '') as String,
-      name: (map['name'] ?? '') as String,
-      phoneNumber: (map['phoneNumber'] ?? '') as String,
-      email: map['email'] as String?,
-    );
-  }
 }
 
 class AuthState {
@@ -48,14 +26,12 @@ class AuthState {
     required this.isInitialized,
     required this.isLoading,
     required this.user,
-    required this.pendingProfile,
     required this.errorMessage,
   });
 
   final bool isInitialized;
   final bool isLoading;
   final AppUser? user;
-  final NaverProfileDraft? pendingProfile;
   final String? errorMessage;
 
   bool get isSignedIn => user != null;
@@ -65,7 +41,6 @@ class AuthState {
       isInitialized: false,
       isLoading: false,
       user: null,
-      pendingProfile: null,
       errorMessage: null,
     );
   }
@@ -75,8 +50,6 @@ class AuthState {
     bool? isLoading,
     AppUser? user,
     bool clearUser = false,
-    NaverProfileDraft? pendingProfile,
-    bool clearPendingProfile = false,
     String? errorMessage,
     bool clearError = false,
   }) {
@@ -84,9 +57,6 @@ class AuthState {
       isInitialized: isInitialized ?? this.isInitialized,
       isLoading: isLoading ?? this.isLoading,
       user: clearUser ? null : (user ?? this.user),
-      pendingProfile: clearPendingProfile
-          ? null
-          : (pendingProfile ?? this.pendingProfile),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
@@ -94,6 +64,7 @@ class AuthState {
 
 class AuthStore {
   AuthStore._();
+
   static Future<void> debugSignInForDesignPreview() async {
     final now = DateTime.now();
 
@@ -102,12 +73,12 @@ class AuthStore {
       providerUserId: 'debug_preview_user',
       naverNickname: '자유대한_샘플회원',
       name: '홍길동',
-      phoneNumber: '010-1234-5678',
-      cafeNickname: '자유대한_서울',
-      phoneVerified: true,
-      cafeMatched: true,
       createdAt: now,
       updatedAt: now,
+      lastSignedInAt: now,
+      consentedTerms: true,
+      consentedPrivacy: true,
+      consentedAt: now,
     );
 
     await _persistUser(user);
@@ -116,12 +87,11 @@ class AuthStore {
       isInitialized: true,
       isLoading: false,
       user: user,
-      clearPendingProfile: true,
       clearError: true,
     );
   }
+
   static const String _userKey = 'app_auth_user_v1';
-  static const String _draftKey = 'app_auth_pending_naver_profile_v1';
 
   static final ValueNotifier<AuthState> notifier =
   ValueNotifier<AuthState>(AuthState.initial());
@@ -135,10 +105,8 @@ class AuthStore {
 
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString(_userKey);
-    final draftJson = prefs.getString(_draftKey);
 
     AppUser? user;
-    NaverProfileDraft? draft;
 
     if (userJson != null && userJson.isNotEmpty) {
       try {
@@ -149,24 +117,16 @@ class AuthStore {
       }
     }
 
-    if (draftJson != null && draftJson.isNotEmpty) {
-      try {
-        final decoded = jsonDecode(draftJson) as Map<String, dynamic>;
-        draft = NaverProfileDraft.fromMap(decoded);
-      } catch (_) {
-        await prefs.remove(_draftKey);
-      }
-    }
-
     notifier.value = notifier.value.copyWith(
       isInitialized: true,
       user: user,
-      pendingProfile: draft,
       clearError: true,
     );
   }
 
-  static Future<bool> signInWithNaver() async {
+  /// 기존 사용자면 [user]를 갱신하고 null을, 신규 사용자면
+  /// [NaverProfileDraft]를 반환한다 (호출자가 가입 페이지로 전달).
+  static Future<NaverProfileDraft?> signInWithNaver() async {
     notifier.value = notifier.value.copyWith(
       isLoading: true,
       clearError: true,
@@ -182,84 +142,63 @@ class AuthStore {
         notifier.value = notifier.value.copyWith(
           isLoading: false,
           user: existingUser,
-          clearPendingProfile: true,
           clearError: true,
         );
         await _persistUser(existingUser);
-        await _clearDraft();
-        return false;
+        return null;
       }
-
-      final draft = NaverProfileDraft(
-        providerUserId: profile.providerUserId,
-        naverNickname: profile.naverNickname,
-        name: profile.name,
-        phoneNumber: profile.phoneNumber,
-        email: profile.email,
-      );
-
-      await _persistDraft(draft);
 
       notifier.value = notifier.value.copyWith(
         isLoading: false,
-        pendingProfile: draft,
         clearUser: true,
         clearError: true,
       );
 
-      return true;
+      return NaverProfileDraft(
+        providerUserId: profile.providerUserId,
+        naverNickname: profile.naverNickname,
+        name: profile.name,
+        email: profile.email.isEmpty ? null : profile.email,
+      );
     } catch (_) {
       notifier.value = notifier.value.copyWith(
         isLoading: false,
         errorMessage: '네이버 로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
       );
-      return false;
+      return null;
     }
   }
 
   static Future<void> completeSignup({
-    required String name,
-    required String phoneNumber,
-    required String cafeNickname,
-    bool phoneVerified = false,
+    required NaverProfileDraft draft,
   }) async {
-    final pending = notifier.value.pendingProfile;
-    if (pending == null) {
-      throw Exception('가입 대기 중인 네이버 프로필이 없습니다.');
-    }
-
     final now = DateTime.now();
 
     final user = AppUser(
       provider: 'naver',
-      providerUserId: pending.providerUserId,
-      naverNickname: pending.naverNickname,
-      name: name.trim(),
-      phoneNumber: phoneNumber.trim(),
-      cafeNickname: cafeNickname.trim(),
-      phoneVerified: phoneVerified,
-      cafeMatched: false,
+      providerUserId: draft.providerUserId,
+      naverNickname: draft.naverNickname,
+      name: draft.name,
+      email: draft.email,
       createdAt: now,
       updatedAt: now,
+      lastSignedInAt: now,
+      consentedTerms: true,
+      consentedPrivacy: true,
+      consentedAt: now,
     );
 
     await _persistUser(user);
-    await _clearDraft();
 
     notifier.value = notifier.value.copyWith(
       isLoading: false,
       user: user,
-      clearPendingProfile: true,
       clearError: true,
     );
   }
 
   static Future<void> updateProfile({
     String? name,
-    String? phoneNumber,
-    String? cafeNickname,
-    bool? phoneVerified,
-    bool? cafeMatched,
   }) async {
     final user = currentUser;
     if (user == null) {
@@ -274,10 +213,6 @@ class AuthStore {
     try {
       final updatedUser = user.copyWith(
         name: name?.trim(),
-        phoneNumber: phoneNumber?.trim(),
-        cafeNickname: cafeNickname?.trim(),
-        phoneVerified: phoneVerified,
-        cafeMatched: cafeMatched,
         updatedAt: DateTime.now(),
       );
 
@@ -304,20 +239,10 @@ class AuthStore {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
-    await prefs.remove(_draftKey);
 
     notifier.value = notifier.value.copyWith(
       isLoading: false,
       clearUser: true,
-      clearPendingProfile: true,
-      clearError: true,
-    );
-  }
-
-  static Future<void> clearPendingSignup() async {
-    await _clearDraft();
-    notifier.value = notifier.value.copyWith(
-      clearPendingProfile: true,
       clearError: true,
     );
   }
@@ -325,15 +250,5 @@ class AuthStore {
   static Future<void> _persistUser(AppUser user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, jsonEncode(user.toMap()));
-  }
-
-  static Future<void> _persistDraft(NaverProfileDraft profile) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_draftKey, jsonEncode(profile.toMap()));
-  }
-
-  static Future<void> _clearDraft() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_draftKey);
   }
 }

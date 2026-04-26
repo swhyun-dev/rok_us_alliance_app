@@ -57,22 +57,14 @@ class ProfilePage extends StatelessWidget {
   }
 
   _MemberGrade _resolveGrade(AuthState state) {
-    final user = state.user;
-    if (user == null) return _MemberGrade.guest;
-    if (user.cafeMatched) return _MemberGrade.regular;
-    if (user.cafeNickname.trim().isNotEmpty) return _MemberGrade.associate;
+    if (state.user == null) return _MemberGrade.guest;
     return _MemberGrade.notJoined;
   }
 
   int _calcScore(AuthState state) {
     final user = state.user;
     if (user == null) return 0;
-    var s = 20;
-    if (user.cafeNickname.trim().isNotEmpty) s += 20;
-    if (user.phoneNumber.trim().isNotEmpty) s += 20;
-    if (user.phoneVerified) s += 20;
-    if (user.cafeMatched) s += 20;
-    return s.clamp(0, 100);
+    return user.points.clamp(0, 100);
   }
 
   @override
@@ -125,35 +117,10 @@ class ProfilePage extends StatelessWidget {
             _InfoCard(children: [
               _ProfileInfoRow(label: '이름', value: user.name),
               const _RowDivider(),
-              _ProfileInfoRow(label: '전화번호', value: user.phoneNumber),
-              const _RowDivider(),
-              _ProfileInfoRow(label: '카페 닉네임', value: user.cafeNickname),
+              _ProfileInfoRow(label: '닉네임', value: user.naverNickname),
               const _RowDivider(),
               _ProfileInfoRow(
                   label: '식별값', value: user.providerUserId, isMonospace: true),
-            ]),
-            const SizedBox(height: 20),
-            // Certification
-            _SectionHeader(title: '인증 현황', icon: Icons.verified_user_outlined),
-            const SizedBox(height: 10),
-            Row(children: [
-              Expanded(
-                child: _CertCard(
-                  title: '전화번호 인증',
-                  isDone: user.phoneVerified,
-                  doneIcon: Icons.verified_user,
-                  pendingIcon: Icons.phone_iphone_outlined,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _CertCard(
-                  title: '카페 회원 매칭',
-                  isDone: user.cafeMatched,
-                  doneIcon: Icons.how_to_reg,
-                  pendingIcon: Icons.sync_problem_outlined,
-                ),
-              ),
             ]),
             const SizedBox(height: 20),
             // Settings
@@ -223,7 +190,7 @@ class _GuestView extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                '네이버 로그인 후 카페 닉네임을 등록하면\n회원 연동 기반 기능을 모두 사용할 수 있습니다.',
+                '네이버 로그인 후 행사 일정·청원·커뮤니티에\n참여하고 활동 점수와 등급을 쌓을 수 있습니다.',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.70),
                   fontSize: 14,
@@ -457,10 +424,10 @@ class _ActivityScoreCard extends StatelessWidget {
   }
 
   String _scoreMessage(int score) {
-    if (score >= 100) return '🎖 모든 인증을 완료한 완전 회원입니다.';
-    if (score >= 80) return '전화번호 또는 카페 매칭 인증 완료 시 정회원으로 승급됩니다.';
-    if (score >= 60) return '카페 닉네임 등록 후 추가 인증을 완료해보세요.';
-    return '로그인 후 기본 정보를 입력하면 점수가 올라갑니다.';
+    if (score >= 100) return '🎖 활발히 활동하고 있는 핵심 회원입니다.';
+    if (score >= 60) return '꾸준한 활동으로 점수가 올라가고 있습니다.';
+    if (score >= 20) return '게시글 작성·댓글·청원 서명으로 점수를 모아보세요.';
+    return '활동을 시작하면 점수가 적립되고 등급이 올라갑니다.';
   }
 }
 
@@ -630,69 +597,6 @@ class _RowDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Divider(height: 1, color: AppColors.border);
-  }
-}
-
-// ─── Cert card ────────────────────────────────────────────────────────────────
-
-class _CertCard extends StatelessWidget {
-  const _CertCard({
-    required this.title,
-    required this.isDone,
-    required this.doneIcon,
-    required this.pendingIcon,
-  });
-  final String title;
-  final bool isDone;
-  final IconData doneIcon;
-  final IconData pendingIcon;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isDone ? AppColors.koreanBlue : AppColors.koreanRed;
-    final bgColor = isDone ? AppColors.softBlue : AppColors.softRed;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(isDone ? doneIcon : pendingIcon,
-                color: color, size: 20),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            isDone ? '완료' : '미완료',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

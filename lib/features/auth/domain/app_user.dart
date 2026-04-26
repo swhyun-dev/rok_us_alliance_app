@@ -5,50 +5,73 @@ class AppUser {
     required this.providerUserId,
     required this.naverNickname,
     required this.name,
-    required this.phoneNumber,
-    required this.cafeNickname,
-    required this.phoneVerified,
-    required this.cafeMatched,
     required this.createdAt,
     required this.updatedAt,
+    this.email,
+    this.profileImageUrl,
+    this.level = 1,
+    this.points = 0,
+    this.consentedTerms = false,
+    this.consentedPrivacy = false,
+    this.consentedAt,
+    this.lastSignedInAt,
+    this.isAdmin = false,
+    this.isBanned = false,
   });
 
   final String provider;
   final String providerUserId;
   final String naverNickname;
   final String name;
-  final String phoneNumber;
-  final String cafeNickname;
-  final bool phoneVerified;
-  final bool cafeMatched;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  String get normalizedCafeNickname => normalizeNickname(cafeNickname);
+  final String? email;
+  final String? profileImageUrl;
+  final int level;
+  final int points;
+  final bool consentedTerms;
+  final bool consentedPrivacy;
+  final DateTime? consentedAt;
+  final DateTime? lastSignedInAt;
+  final bool isAdmin;
+  final bool isBanned;
 
   AppUser copyWith({
     String? provider,
     String? providerUserId,
     String? naverNickname,
     String? name,
-    String? phoneNumber,
-    String? cafeNickname,
-    bool? phoneVerified,
-    bool? cafeMatched,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? email,
+    String? profileImageUrl,
+    int? level,
+    int? points,
+    bool? consentedTerms,
+    bool? consentedPrivacy,
+    DateTime? consentedAt,
+    DateTime? lastSignedInAt,
+    bool? isAdmin,
+    bool? isBanned,
   }) {
     return AppUser(
       provider: provider ?? this.provider,
       providerUserId: providerUserId ?? this.providerUserId,
       naverNickname: naverNickname ?? this.naverNickname,
       name: name ?? this.name,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      cafeNickname: cafeNickname ?? this.cafeNickname,
-      phoneVerified: phoneVerified ?? this.phoneVerified,
-      cafeMatched: cafeMatched ?? this.cafeMatched,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      email: email ?? this.email,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      level: level ?? this.level,
+      points: points ?? this.points,
+      consentedTerms: consentedTerms ?? this.consentedTerms,
+      consentedPrivacy: consentedPrivacy ?? this.consentedPrivacy,
+      consentedAt: consentedAt ?? this.consentedAt,
+      lastSignedInAt: lastSignedInAt ?? this.lastSignedInAt,
+      isAdmin: isAdmin ?? this.isAdmin,
+      isBanned: isBanned ?? this.isBanned,
     );
   }
 
@@ -58,12 +81,18 @@ class AppUser {
       'providerUserId': providerUserId,
       'naverNickname': naverNickname,
       'name': name,
-      'phoneNumber': phoneNumber,
-      'cafeNickname': cafeNickname,
-      'phoneVerified': phoneVerified,
-      'cafeMatched': cafeMatched,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'email': email,
+      'profileImageUrl': profileImageUrl,
+      'level': level,
+      'points': points,
+      'consentedTerms': consentedTerms,
+      'consentedPrivacy': consentedPrivacy,
+      'consentedAt': consentedAt?.toIso8601String(),
+      'lastSignedInAt': lastSignedInAt?.toIso8601String(),
+      'isAdmin': isAdmin,
+      'isBanned': isBanned,
     };
   }
 
@@ -73,18 +102,21 @@ class AppUser {
       providerUserId: (map['providerUserId'] ?? '') as String,
       naverNickname: (map['naverNickname'] ?? '') as String,
       name: (map['name'] ?? '') as String,
-      phoneNumber: (map['phoneNumber'] ?? '') as String,
-      cafeNickname: (map['cafeNickname'] ?? '') as String,
-      phoneVerified: (map['phoneVerified'] ?? false) as bool,
-      cafeMatched: (map['cafeMatched'] ?? false) as bool,
       createdAt: DateTime.tryParse((map['createdAt'] ?? '') as String) ??
           DateTime.now(),
       updatedAt: DateTime.tryParse((map['updatedAt'] ?? '') as String) ??
           DateTime.now(),
+      email: map['email'] as String?,
+      profileImageUrl: map['profileImageUrl'] as String?,
+      level: (map['level'] ?? 1) as int,
+      points: (map['points'] ?? 0) as int,
+      consentedTerms: (map['consentedTerms'] ?? false) as bool,
+      consentedPrivacy: (map['consentedPrivacy'] ?? false) as bool,
+      consentedAt: DateTime.tryParse((map['consentedAt'] ?? '') as String),
+      lastSignedInAt:
+          DateTime.tryParse((map['lastSignedInAt'] ?? '') as String),
+      isAdmin: (map['isAdmin'] ?? false) as bool,
+      isBanned: (map['isBanned'] ?? false) as bool,
     );
-  }
-
-  static String normalizeNickname(String value) {
-    return value.trim().replaceAll(' ', '').toLowerCase();
   }
 }

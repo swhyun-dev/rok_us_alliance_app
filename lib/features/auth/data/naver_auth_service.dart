@@ -9,14 +9,12 @@ class NaverAuthProfile {
     required this.providerUserId,
     required this.naverNickname,
     required this.name,
-    required this.phoneNumber,
     required this.email,
   });
 
   final String providerUserId;
   final String naverNickname;
   final String name;
-  final String phoneNumber;
   final String email;
 }
 
@@ -36,7 +34,6 @@ class NaverAuthService {
       providerUserId: account.id ?? '',
       naverNickname: account.nickname ?? '',
       name: account.name ?? '',
-      phoneNumber: _extractPhoneNumber(account),
       email: account.email ?? '',
     );
   }
@@ -58,20 +55,10 @@ class NaverAuthService {
         providerUserId: account.id ?? '',
         naverNickname: account.nickname ?? '',
         name: account.name ?? '',
-        phoneNumber: _extractPhoneNumber(account),
         email: account.email ?? '',
       );
     } catch (_) {
       return null;
     }
-  }
-
-  static String _extractPhoneNumber(NaverAccountResult account) {
-    final mobile = (account.mobile ?? '').trim();
-    final mobileE164 = (account.mobileE164 ?? '').trim();
-
-    if (mobile.isNotEmpty) return mobile;
-    if (mobileE164.isNotEmpty) return mobileE164;
-    return '';
   }
 }

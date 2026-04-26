@@ -65,7 +65,6 @@ class Member {
     required this.branch,
     required this.grade,
     required this.points,
-    required this.isVerified,
     required this.joinedAt,
   });
 
@@ -75,7 +74,6 @@ class Member {
   final String branch;
   final MemberGrade grade;
   final int points;
-  final bool isVerified;
   final DateTime joinedAt;
 
   String get joinedDateLabel =>
@@ -92,7 +90,6 @@ class Member {
     String? branch,
     MemberGrade? grade,
     int? points,
-    bool? isVerified,
   }) {
     return Member(
       uid: uid,
@@ -101,7 +98,6 @@ class Member {
       branch: branch ?? this.branch,
       grade: grade ?? this.grade,
       points: points ?? this.points,
-      isVerified: isVerified ?? this.isVerified,
       joinedAt: joinedAt,
     );
   }
@@ -113,7 +109,6 @@ class Member {
         'branch': branch,
         'grade': grade.code,
         'points': points,
-        'isVerified': isVerified,
         'joinedAt': joinedAt.toIso8601String(),
       };
 
@@ -124,7 +119,6 @@ class Member {
         branch: (map['branch'] ?? '') as String,
         grade: MemberGradeExt.fromCode((map['grade'] ?? 'general') as String),
         points: (map['points'] ?? 0) as int,
-        isVerified: (map['isVerified'] ?? false) as bool,
         joinedAt: DateTime.tryParse((map['joinedAt'] ?? '') as String) ??
             DateTime.now(),
       );
@@ -137,7 +131,6 @@ class Member {
         branch: '서울',
         grade: MemberGrade.regular,
         points: 1240,
-        isVerified: true,
         joinedAt: DateTime(2026, 1, 15),
       );
 }
