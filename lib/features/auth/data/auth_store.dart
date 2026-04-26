@@ -1,6 +1,8 @@
 // lib/features/auth/data/auth_store.dart
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +12,9 @@ import 'apple_auth_service.dart';
 import 'google_auth_service.dart';
 import 'kakao_auth_service.dart';
 import 'naver_auth_service.dart';
+
+const String _kTermsVersion = 'v1.0';
+const String _kPrivacyVersion = 'v1.0';
 
 /// 4가지 소셜 OAuth가 모두 공유하는 가입 임시 데이터.
 class SocialSignupDraft {
@@ -207,33 +212,95 @@ class AuthStore {
   // Common signup tail
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+  /// 사용자가 닉네임을 확정한 시점에 호출.
+  /// SharedPreferences AppUser 캐시(현 UI 소스) + Firestore users/{uid}
+  /// (W2 마이그레이션 대비) 양쪽에 기록한다.
   static Future<void> completeSignup({
     required SocialSignupDraft draft,
+    required String nickname,
+    required bool agreedTerms,
+    required bool agreedPrivacy,
+    bool agreedMarketing = false,
   }) async {
     final now = DateTime.now();
+    final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+    final referralCode = _generateReferralCode();
 
     final user = AppUser(
       provider: draft.provider,
       providerUserId: draft.providerUserId,
-      naverNickname: draft.nickname,
+      naverNickname: nickname,
       name: draft.name,
       email: draft.email,
       profileImageUrl: draft.profileImageUrl,
       createdAt: now,
       updatedAt: now,
       lastSignedInAt: now,
-      consentedTerms: true,
-      consentedPrivacy: true,
+      consentedTerms: agreedTerms,
+      consentedPrivacy: agreedPrivacy,
       consentedAt: now,
     );
 
     await _persistUser(user);
+
+    if (firebaseUid != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(firebaseUid)
+          .set({
+        'uid': firebaseUid,
+        'provider': draft.provider,
+        'providerUserId': draft.providerUserId,
+        'email': draft.email,
+        'nickname': nickname,
+        'profileImageUrl': draft.profileImageUrl,
+        'level': 1,
+        'points': 0,
+        'consentedTerms': agreedTerms,
+        'consentedPrivacy': agreedPrivacy,
+        'consentedMarketing': agreedMarketing,
+        'consentedAt': FieldValue.serverTimestamp(),
+        'termsVersion': _kTermsVersion,
+        'privacyVersion': _kPrivacyVersion,
+        'createdAt': FieldValue.serverTimestamp(),
+        'lastSignedInAt': FieldValue.serverTimestamp(),
+        'consecutiveCheckInDays': 0,
+        'isAdmin': false,
+        'isBanned': false,
+        'stats': {
+          'postsCount': 0,
+          'commentsCount': 0,
+          'likesReceivedCount': 0,
+          'petitionsSignedCount': 0,
+          'eventsAttendedCount': 0,
+        },
+        'referralCode': referralCode,
+        'referredBy': null,
+      });
+    }
 
     notifier.value = notifier.value.copyWith(
       isLoading: false,
       user: user,
       clearError: true,
     );
+  }
+
+  /// users/{uid}.nickname 으로 중복 검사. 사용 가능하면 true.
+  /// (개발 단계 임시 방식 — 추후 nickname → uid 매핑 컬렉션으로 교체.)
+  static Future<bool> isNicknameAvailable(String nickname) async {
+    final query = await FirebaseFirestore.instance
+        .collection('users')
+        .where('nickname', isEqualTo: nickname)
+        .limit(1)
+        .get();
+    return query.docs.isEmpty;
+  }
+
+  static String _generateReferralCode() {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    final rand = Random.secure();
+    return List.generate(8, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 
   static Future<void> updateProfile({

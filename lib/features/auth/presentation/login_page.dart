@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../home/presentation/home_page.dart';
 import '../data/auth_store.dart';
-import 'signup_complete_page.dart';
+import 'terms_agreement_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage>
     if (draft != null) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => SignupCompletePage(draft: draft)),
+        MaterialPageRoute(builder: (_) => TermsAgreementPage(draft: draft)),
       );
       return;
     }
