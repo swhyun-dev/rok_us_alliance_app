@@ -1,0 +1,251 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 헬퍼 함수
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isOwnerOrAdmin(uid) {
+      return isOwner(uid) || isAdmin();
+    }
+
+    function isNotBanned() {
+      return isSignedIn() &&
+             (!exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isBanned == false);
+    }
+
+    // 사용자가 보호 필드를 변경하려고 하는지 체크
+    function isChangingProtectedFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['points', 'level', 'isAdmin', 'isBanned', 'bannedReason',
+                   'bannedUntil', 'stats', 'consecutiveCheckInDays', 'lastCheckInAt',
+                   'referralCode', 'createdAt']);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // users
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /users/{uid} {
+      // 본인 또는 관리자만 읽기
+      allow read: if isOwner(uid) || isAdmin();
+
+      // 본인만 생성 (uid 일치 확인)
+      allow create: if isOwner(uid)
+                       && request.resource.data.uid == uid
+                       && request.resource.data.points == 0
+                       && request.resource.data.level == 1
+                       && request.resource.data.isAdmin == false
+                       && request.resource.data.isBanned == false
+                       && request.resource.data.consentedTerms == true
+                       && request.resource.data.consentedPrivacy == true;
+
+      // 본인만 업데이트 (보호 필드 제외)
+      allow update: if isOwner(uid)
+                       && !isChangingProtectedFields();
+
+      // 삭제 불가 (Cloud Function의 deleteUser만 가능)
+      allow delete: if false;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // admins
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /admins/{uid} {
+      // 본인만 자신의 admin 문서 읽기 가능 (admin_login_page 동작)
+      allow read: if isOwner(uid);
+      // 쓰기는 super 관리자 콘솔에서만 (Cloud Function)
+      allow write: if false;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // events
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /events/{eventId} {
+      // 인증 사용자 모두 읽기 가능
+      allow read: if isSignedIn();
+
+      // 관리자만 작성·수정·삭제
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // posts
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+
+      // 작성: 본인 글, 차단되지 않은 사용자만
+      allow create: if isNotBanned()
+                       && request.resource.data.authorId == request.auth.uid
+                       && request.resource.data.isDeleted == false
+                       && request.resource.data.likeCount == 0
+                       && request.resource.data.commentCount == 0
+                       && request.resource.data.viewCount == 0
+                       && request.resource.data.shareCount == 0
+                       // 일반 사용자는 isUrgent/isPinned false 강제
+                       && (isAdmin() || (
+                           request.resource.data.isUrgent == false &&
+                           request.resource.data.isPinned == false
+                       ));
+
+      // 수정: 본인 글 + 카운트 필드 변경 불가, 또는 관리자
+      allow update: if isOwnerOrAdmin(resource.data.authorId)
+                       && (isAdmin() ||
+                           !request.resource.data.diff(resource.data).affectedKeys()
+                               .hasAny(['likeCount', 'commentCount', 'viewCount', 'shareCount',
+                                        'isUrgent', 'isPinned', 'authorId', 'createdAt']));
+
+      // 삭제: 작성자 또는 관리자 (실제로는 isDeleted=true로 update 권장)
+      allow delete: if isOwnerOrAdmin(resource.data.authorId);
+
+      // 댓글
+      match /comments/{commentId} {
+        allow read: if isSignedIn();
+
+        allow create: if isNotBanned()
+                         && request.resource.data.authorId == request.auth.uid
+                         && request.resource.data.isDeleted == false
+                         && request.resource.data.likeCount == 0;
+
+        allow update: if isOwnerOrAdmin(resource.data.authorId)
+                         && (isAdmin() ||
+                             !request.resource.data.diff(resource.data).affectedKeys()
+                                 .hasAny(['likeCount', 'authorId', 'createdAt']));
+
+        allow delete: if isOwnerOrAdmin(resource.data.authorId);
+      }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // petitions
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /petitions/{petitionId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+
+      // 서명: signPetition Cloud Function이 처리하므로 클라이언트 직접 쓰기 불가
+      match /signatures/{uid} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;  // Cloud Function만
+      }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // point_logs (절대 클라이언트 쓰기 불가)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /point_logs/{logId} {
+      // 본인 또는 관리자만 읽기
+      allow read: if isOwner(resource.data.uid) || isAdmin();
+      // 쓰기는 Cloud Function만
+      allow write: if false;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // check_ins
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /check_ins/{checkInId} {
+      allow read: if isOwner(resource.data.uid) || isAdmin();
+      allow write: if false;  // Cloud Function (eventCheckIn) 만
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // reports
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /reports/{reportId} {
+      // 신고자 본인 또는 관리자만 읽기
+      allow read: if isOwner(resource.data.reporterId) || isAdmin();
+
+      // 작성: 본인 신고만
+      allow create: if isNotBanned()
+                       && request.resource.data.reporterId == request.auth.uid
+                       && request.resource.data.status == 'pending'
+                       && request.resource.data.resolvedBy == null;
+
+      // 수정·삭제: 관리자만
+      allow update, delete: if isAdmin();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // notifications
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /notifications/{notifId} {
+      // 본인 알림만 읽기·읽음 처리
+      allow read: if isOwner(resource.data.uid);
+
+      // isRead만 변경 가능
+      allow update: if isOwner(resource.data.uid)
+                       && request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['isRead', 'readAt']);
+
+      // 작성·삭제: Cloud Function만
+      allow create, delete: if false;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // event_codes (체크인 코드 - 검증만 클라이언트, 발급은 관리자)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /event_codes/{code} {
+      // 인증된 사용자가 코드 검증을 위해 읽기 가능
+      allow read: if isSignedIn();
+      // 발급은 관리자, 사용 처리는 Cloud Function
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // daily_check_ins
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /daily_check_ins/{docId} {
+      // 본인 체크인만 읽기 (UI에서 오늘 체크인 여부 확인용)
+      allow read: if isSignedIn() &&
+                     resource.data.uid == request.auth.uid;
+      // 쓰기는 dailyCheckIn Cloud Function만
+      allow write: if false;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // app_meta
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /app_meta/{doc} {
+      // 인증 사용자 모두 읽기 (홈 통계·정책)
+      allow read: if isSignedIn();
+      // 쓰기는 Cloud Function 또는 관리자 콘솔
+      allow write: if false;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 기타 (기본 차단)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
