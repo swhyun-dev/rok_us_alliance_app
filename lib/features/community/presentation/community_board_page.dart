@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../auth/data/auth_store.dart';
 import '../data/community_post_store.dart';
 import '../domain/community_post.dart';
 import 'community_post_detail_page.dart';
@@ -176,8 +177,11 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
                         );
                       },
                       onLike: () {
-                        CommunityPostStore.bumpLikeCount(
-                          post.id,
+                        final uid = AuthStore.currentUser?.providerUserId;
+                        if (uid == null) return;
+                        CommunityPostStore.setLike(
+                          postId: post.id,
+                          uid: uid,
                           liked: !post.isLiked,
                         );
                       },

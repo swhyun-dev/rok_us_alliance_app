@@ -153,11 +153,32 @@ class CommunityPostStore {
     });
   }
 
-  /// likeCount +1 / -1 (낙관적). 사용자별 isLiked 저장은 별도 작업.
-  static Future<void> bumpLikeCount(String id, {required bool liked}) async {
-    await _col.doc(id).update({
-      'likeCount': FieldValue.increment(liked ? 1 : -1),
-    });
+  /// 좋아요 토글. 서브컬렉션 posts/{id}/likes/{uid} 의 doc 을 만들거나
+  /// 지운다. likeCount 와 작성자 점수 갱신은 onLikeReceived/onLikeRemoved
+  /// Cloud Function 이 처리.
+  static Future<void> setLike({
+    required String postId,
+    required String uid,
+    required bool liked,
+  }) async {
+    final ref = _col.doc(postId).collection('likes').doc(uid);
+    if (liked) {
+      await ref.set({
+        'uid': uid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } else {
+      await ref.delete();
+    }
+  }
+
+  /// 본인이 해당 게시글에 좋아요 눌렀는지 1회 확인.
+  static Future<bool> hasLiked({
+    required String postId,
+    required String uid,
+  }) async {
+    final doc = await _col.doc(postId).collection('likes').doc(uid).get();
+    return doc.exists;
   }
 
   /// shareCount +1.

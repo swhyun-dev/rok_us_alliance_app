@@ -510,12 +510,16 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                                         ? AppColors.red
                                         : AppColors.textPrimary,
                                     onTap: () {
-                                      CommunityPostStore.bumpLikeCount(
-                                        post.id,
-                                        liked: !_isLikedLocal,
+                                      final uid = AuthStore
+                                          .currentUser?.providerUserId;
+                                      if (uid == null) return;
+                                      final next = !_isLikedLocal;
+                                      CommunityPostStore.setLike(
+                                        postId: post.id,
+                                        uid: uid,
+                                        liked: next,
                                       );
-                                      setState(() =>
-                                          _isLikedLocal = !_isLikedLocal);
+                                      setState(() => _isLikedLocal = next);
                                     },
                                   ),
                                 ),

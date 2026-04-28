@@ -114,8 +114,22 @@ service cloud.firestore {
                                .hasAny(['likeCount', 'commentCount', 'viewCount', 'shareCount',
                                         'isUrgent', 'isPinned', 'authorId', 'createdAt']));
 
+      // 인증 사용자가 viewCount/shareCount/saveCount(+ updatedAt) 만 변경하는 분기.
+      // likeCount/commentCount 는 서브컬렉션 트리거 Cloud Function 만 갱신.
+      allow update: if isSignedIn()
+                       && request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['viewCount', 'shareCount', 'saveCount', 'updatedAt']);
+
       // 삭제: 작성자 또는 관리자 (실제로는 isDeleted=true로 update 권장)
       allow delete: if isOwnerOrAdmin(resource.data.authorId);
+
+      // 좋아요 — 본인 uid 문서로만 작성/삭제. likeCount 갱신·점수 적립은
+      // onLikeReceived / onLikeRemoved Cloud Function 이 담당.
+      match /likes/{uid} {
+        allow read: if isSignedIn();
+        allow create, delete: if isOwner(uid);
+        allow update: if false;
+      }
 
       // 댓글
       match /comments/{commentId} {
