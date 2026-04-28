@@ -279,11 +279,15 @@ class _CalendarGrid extends StatelessWidget {
         DateTime(now.year, now.month, now.day);
 
     final cells = <DateTime?>[];
-    for (int i = 0; i < startWeekday; i++) cells.add(null);
+    for (int i = 0; i < startWeekday; i++) {
+      cells.add(null);
+    }
     for (int d = 1; d <= totalDays; d++) {
       cells.add(DateTime(currentMonth.year, currentMonth.month, d));
     }
-    while (cells.length % 7 != 0) cells.add(null);
+    while (cells.length % 7 != 0) {
+      cells.add(null);
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -344,9 +348,13 @@ class _CalendarGrid extends StatelessWidget {
               final isSaturday = date.weekday == 6;
 
               Color textColor = AppColors.textPrimary;
-              if (isSelected) textColor = Colors.white;
-              else if (isSunday) textColor = AppColors.koreanRed;
-              else if (isSaturday) textColor = AppColors.koreanBlue;
+              if (isSelected) {
+                textColor = Colors.white;
+              } else if (isSunday) {
+                textColor = AppColors.koreanRed;
+              } else if (isSaturday) {
+                textColor = AppColors.koreanBlue;
+              }
 
               return InkWell(
                 borderRadius: BorderRadius.circular(11),
