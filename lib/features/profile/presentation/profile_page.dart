@@ -52,7 +52,7 @@ class ProfilePage extends StatelessWidget {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (_) => const HomePage(showIntroPopup: false, initialIndex: 0),
+        builder: (_) => const HomePage(showIntroPopup: false, initialIndex: 2),
       ),
       (route) => false,
     );

@@ -6,21 +6,22 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/alliance_app_bar.dart';
 import '../../action_board/data/action_event_store.dart';
 import '../../action_board/domain/action_event.dart';
-import '../../action_board/presentation/action_board_page.dart';
 import '../../action_board/presentation/action_notice_detail_page.dart';
 import '../../auth/data/admin_auth_store.dart';
 import '../../calendar/presentation/calendar_page.dart';
 import '../../community/presentation/community_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/presentation/membership_card_modal.dart';
+import '../../petition/presentation/petition_page.dart';
 import '../../profile/presentation/profile_page.dart';
+import '../../../shared/widgets/bump_bottom_nav.dart';
 import '../../../shared/widgets/daily_check_in_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     this.showIntroPopup = false,
-    this.initialIndex = 0,
+    this.initialIndex = 2,
   });
 
   final bool showIntroPopup;
@@ -280,34 +281,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 5탭: 0 피드 / 1 청원 / 2 홈(중앙 범프) / 3 일정 / 4 마이
   Widget _buildCurrentPage() {
     switch (_selectedIndex) {
-      case 1:
-        return const ActionBoardPage();
-      case 2:
-        return const CalendarPage();
-      case 3:
+      case 0:
         return const CommunityPage();
+      case 1:
+        return const PetitionPage();
+      case 3:
+        return const CalendarPage();
       case 4:
         return const ProfilePage();
+      case 2:
       default:
         return _HomeDashboard(
-          onMoveToActionBoard: () => _onTap(1),
-          onMoveToCalendar: () => _onTap(2),
+          onMoveToActionBoard: () => _onTap(0),
+          onMoveToCalendar: () => _onTap(3),
         );
     }
   }
 
   String _appBarTitle() {
     switch (_selectedIndex) {
+      case 0:
+        return '실시간 피드';
       case 1:
-        return '행동 공지';
-      case 2:
-        return '일정 캘린더';
+        return '청원';
       case 3:
-        return '커뮤니티';
+        return '일정 캘린더';
       case 4:
         return '내 정보';
+      case 2:
       default:
         return '한미동맹단';
     }
@@ -315,14 +319,15 @@ class _HomePageState extends State<HomePage> {
 
   String _appBarSubtitle() {
     switch (_selectedIndex) {
+      case 0:
+        return '긴급 · 정책 · 네트워크 · 행사 소식';
       case 1:
-        return '집회 · 모임 · 중요 행동 일정을 확인하세요';
-      case 2:
-        return '행사 · 집회 · 모임 일정을 한눈에';
+        return '진행중 · 인기 · 신규 · 완료된 청원';
       case 3:
-        return '자유 소통 · 지역모임 · 정보 공유 공간';
+        return '행사 · 집회 · 모임 일정을 한눈에';
       case 4:
         return '내 활동 현황과 등급을 확인하세요';
+      case 2:
       default:
         return 'ROK-US Alliance Action Platform';
     }
@@ -346,72 +351,34 @@ class _HomePageState extends State<HomePage> {
           child: _buildCurrentPage(),
         ),
       ),
-      bottomNavigationBar: _AllianceNavBar(
-        selectedIndex: _selectedIndex,
+      bottomNavigationBar: BumpBottomNav(
+        currentIndex: _selectedIndex,
         onTap: _onTap,
-      ),
-    );
-  }
-}
-
-// ─── Navigation Bar ───────────────────────────────────────────────────────────
-
-class _AllianceNavBar extends StatelessWidget {
-  const _AllianceNavBar({
-    required this.selectedIndex,
-    required this.onTap,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: AppColors.border.withValues(alpha: 0.7)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+        tabs: const [
+          BumpNavTab(
+            label: '피드',
+            icon: Icons.article_outlined,
+            activeIcon: Icons.article,
           ),
-        ],
-      ),
-      child: NavigationBar(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onTap,
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        elevation: 0,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: '홈',
+          BumpNavTab(
+            label: '청원',
+            icon: Icons.edit_outlined,
+            activeIcon: Icons.edit,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.campaign_outlined),
-            selectedIcon: Icon(Icons.campaign),
-            label: '공지',
+          BumpNavTab(
+            label: '',
+            icon: Icons.home_filled,
+            activeIcon: Icons.home_filled,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: '캘린더',
+          BumpNavTab(
+            label: '일정',
+            icon: Icons.calendar_today_outlined,
+            activeIcon: Icons.calendar_today,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.forum_outlined),
-            selectedIcon: Icon(Icons.forum),
-            label: '커뮤니티',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: '내정보',
+          BumpNavTab(
+            label: '마이',
+            icon: Icons.person_outline,
+            activeIcon: Icons.person,
           ),
         ],
       ),
