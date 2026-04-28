@@ -1,6 +1,8 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
+import { startOfTodayKst } from "../shared/time";
+
 const COMMENT_DAILY_LIMIT = 10;
 const COMMENT_REWARD = 5;
 
@@ -78,22 +80,3 @@ export const onCommentCreated = functions.firestore
     }
   });
 
-function startOfTodayKst(): Date {
-  const now = new Date();
-  // KST는 UTC+9. 자정 KST 시점의 UTC 표현.
-  const utcMs = now.getTime();
-  const kstOffsetMs = 9 * 60 * 60 * 1000;
-  const kstNow = new Date(utcMs + kstOffsetMs);
-  const kstMidnight = new Date(
-    Date.UTC(
-      kstNow.getUTCFullYear(),
-      kstNow.getUTCMonth(),
-      kstNow.getUTCDate(),
-      0,
-      0,
-      0,
-      0
-    )
-  );
-  return new Date(kstMidnight.getTime() - kstOffsetMs);
-}
