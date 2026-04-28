@@ -350,7 +350,7 @@ class _ActionEventFormPageState extends State<ActionEventFormPage> {
                         child: TextFormField(
                           controller: _slogansController,
                           decoration: const InputDecoration(
-                            hintText: '예: MAGA WITH ROK, WE GO TOGETHER',
+                            hintText: '예: 한미동맹 강화, 자유민주 회복, 시민 행동',
                           ),
                           validator: (value) {
                             final list = _splitCsv(value ?? '');
