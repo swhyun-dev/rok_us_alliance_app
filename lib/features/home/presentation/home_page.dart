@@ -9,6 +9,7 @@ import '../../calendar/presentation/calendar_page.dart';
 import '../../feed/presentation/feed_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/presentation/membership_card_modal.dart';
+import '../../notifications/presentation/notification_page.dart';
 import '../../petition/presentation/petition_page.dart';
 import '../../profile/presentation/profile_page.dart';
 import '../../../shared/widgets/bump_bottom_nav.dart';
@@ -263,10 +264,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showNotificationsSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _NotificationsSheet(),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationPage()),
     );
   }
 
@@ -378,87 +378,6 @@ class _HomePageState extends State<HomePage> {
             icon: Icons.person_outline,
             activeIcon: Icons.person,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Bottom sheets (알림 / 설정) ─────────────────────────────────────────────
-
-class _NotificationsSheet extends StatelessWidget {
-  const _NotificationsSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.border,
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(2),
-                    gradient: AppColors.shieldGradient,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  '알림',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.softBlue,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.notifications_off_outlined,
-                      color: AppColors.koreanBlue),
-                  SizedBox(width: 12),
-                  Text(
-                    '새로운 알림이 없습니다.',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
         ],
       ),
     );

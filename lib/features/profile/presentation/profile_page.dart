@@ -9,6 +9,7 @@ import '../../home/presentation/home_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/domain/member.dart';
 import '../../membership/presentation/membership_card_modal.dart';
+import '../../notifications/presentation/notification_page.dart';
 import '../../settings/presentation/terms_page.dart';
 import 'level_guide_page.dart';
 import 'point_history_page.dart';
@@ -136,7 +137,7 @@ class ProfilePage extends StatelessWidget {
                 _MenuItem(Icons.workspace_premium_outlined, '등급 안내',
                     subtitle: '5단계 등급과 혜택'),
                 _MenuItem(Icons.person_outline, '회원정보 수정', subtitle: '이름 · 닉네임'),
-                _MenuItem(Icons.notifications_outlined, '알림 설정', subtitle: '공지 · 커뮤니티 알림'),
+                _MenuItem(Icons.notifications_outlined, '알림 목록', subtitle: '내가 받은 알림 모아보기'),
                 _MenuItem(Icons.shield_outlined, '보안 설정', subtitle: '로그인 · 인증 관리'),
                 _MenuItem(Icons.help_outline, '고객센터 · FAQ', subtitle: '문의 및 도움말'),
                 _MenuItem(Icons.description_outlined, '이용약관'),
@@ -157,6 +158,14 @@ class ProfilePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const LevelGuidePage()),
+                  );
+                  return;
+                }
+                if (title == '알림 목록') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NotificationPage()),
                   );
                   return;
                 }
