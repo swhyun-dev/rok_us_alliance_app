@@ -11,6 +11,7 @@ import '../../auth/presentation/admin_login_page.dart';
 import '../data/action_event_store.dart';
 import '../domain/action_event.dart';
 import 'action_event_form_page.dart';
+import 'event_checkin_section.dart';
 
 class ActionNoticeDetailPage extends StatefulWidget {
   const ActionNoticeDetailPage({
@@ -385,6 +386,8 @@ class _ActionNoticeDetailPageState extends State<ActionNoticeDetailPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              EventCheckInSection(eventId: widget.eventId),
               const SizedBox(height: 16),
               Row(
                 children: [
