@@ -39,6 +39,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
   bool _isLikedLocal = false;
   bool _isSavedLocal = false;
   StreamSubscription<List<CommunityComment>>? _commentsSub;
+  StreamSubscription<bool>? _likedSub;
   List<CommunityComment> _comments = const [];
 
   @override
@@ -49,11 +50,22 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
       if (!mounted) return;
       setState(() => _comments = list);
     });
+    final uid = AuthStore.currentUser?.providerUserId;
+    if (uid != null) {
+      _likedSub = CommunityPostStore.watchLikedByMe(
+        postId: widget.postId,
+        uid: uid,
+      ).listen((liked) {
+        if (!mounted) return;
+        setState(() => _isLikedLocal = liked);
+      });
+    }
   }
 
   @override
   void dispose() {
     _commentsSub?.cancel();
+    _likedSub?.cancel();
     _commentAuthorController.dispose();
     _commentController.dispose();
     for (final controller in _replyControllers.values) {
@@ -513,13 +525,15 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                                       final uid = AuthStore
                                           .currentUser?.providerUserId;
                                       if (uid == null) return;
-                                      final next = !_isLikedLocal;
+                                      // Optimistic UI: 즉시 토글, Firestore
+                                      // 구독이 권위적 상태로 다시 덮어씀.
+                                      setState(() =>
+                                          _isLikedLocal = !_isLikedLocal);
                                       CommunityPostStore.setLike(
                                         postId: post.id,
                                         uid: uid,
-                                        liked: next,
+                                        liked: _isLikedLocal,
                                       );
-                                      setState(() => _isLikedLocal = next);
                                     },
                                   ),
                                 ),

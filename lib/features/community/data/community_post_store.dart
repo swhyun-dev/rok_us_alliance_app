@@ -196,6 +196,19 @@ class CommunityPostStore {
     return doc.exists;
   }
 
+  /// 본인 좋아요 상태를 실시간 구독. 다른 기기에서 토글해도 즉시 반영.
+  static Stream<bool> watchLikedByMe({
+    required String postId,
+    required String uid,
+  }) {
+    return _col
+        .doc(postId)
+        .collection('likes')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.exists);
+  }
+
   /// shareCount +1.
   static Future<void> bumpShareCount(String id) async {
     await _col.doc(id).update({
