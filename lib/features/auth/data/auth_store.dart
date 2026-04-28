@@ -1,4 +1,5 @@
 // lib/features/auth/data/auth_store.dart
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -89,6 +90,54 @@ class AuthStore {
   static AppUser? get currentUser => notifier.value.user;
   static bool get isSignedIn => notifier.value.user != null;
 
+  static StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+      _userDocSub;
+
+  /// users/{firebaseUid} 실시간 구독 시작. 점수/등급/상태 변경 시 AppUser
+  /// 캐시와 SharedPreferences 양쪽을 갱신한다.
+  static void _attachFirestoreSubscription(String firebaseUid) {
+    _userDocSub?.cancel();
+    _userDocSub = FirebaseFirestore.instance
+        .collection('users')
+        .doc(firebaseUid)
+        .snapshots()
+        .listen(_handleUserDocChange);
+  }
+
+  static void _detachFirestoreSubscription() {
+    _userDocSub?.cancel();
+    _userDocSub = null;
+  }
+
+  static Future<void> _handleUserDocChange(
+    DocumentSnapshot<Map<String, dynamic>> snap,
+  ) async {
+    if (!snap.exists) return;
+    final cached = currentUser;
+    if (cached == null) return;
+    final data = snap.data() ?? const <String, dynamic>{};
+
+    final lastSignedInTs = data['lastSignedInAt'];
+    final updated = cached.copyWith(
+      level: (data['level'] as int?) ?? cached.level,
+      points: (data['points'] as int?) ?? cached.points,
+      profileImageUrl: data['profileImageUrl'] as String?,
+      email: (data['email'] as String?) ?? cached.email,
+      isAdmin: (data['isAdmin'] as bool?) ?? cached.isAdmin,
+      isBanned: (data['isBanned'] as bool?) ?? cached.isBanned,
+      lastSignedInAt: lastSignedInTs is Timestamp
+          ? lastSignedInTs.toDate()
+          : cached.lastSignedInAt,
+      updatedAt: DateTime.now(),
+    );
+
+    notifier.value = notifier.value.copyWith(
+      user: updated,
+      clearError: true,
+    );
+    await _persistUser(updated);
+  }
+
   static Future<void> debugSignInForDesignPreview() async {
     final now = DateTime.now();
 
@@ -137,6 +186,12 @@ class AuthStore {
       user: user,
       clearError: true,
     );
+
+    // 앱 재시작 후에도 Firebase Auth 세션이 살아 있으면 user doc 구독 재개.
+    final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+    if (user != null && firebaseUid != null) {
+      _attachFirestoreSubscription(firebaseUid);
+    }
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -277,6 +332,7 @@ class AuthStore {
         'referralCode': referralCode,
         'referredBy': null,
       });
+      _attachFirestoreSubscription(firebaseUid);
     }
 
     notifier.value = notifier.value.copyWith(
@@ -360,6 +416,8 @@ class AuthStore {
       // 외부 SDK 로그아웃 실패해도 로컬 세션은 정리.
     }
 
+    _detachFirestoreSubscription();
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
 
@@ -417,6 +475,10 @@ class AuthStore {
         user: updated,
         clearError: true,
       );
+      final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+      if (firebaseUid != null) {
+        _attachFirestoreSubscription(firebaseUid);
+      }
       return null;
     }
 
