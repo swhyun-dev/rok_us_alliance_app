@@ -6,6 +6,7 @@ import '../../auth/data/admin_auth_store.dart';
 import '../data/petition_store.dart';
 import '../domain/petition.dart';
 import 'petition_detail_page.dart';
+import 'petition_form_page.dart';
 import 'widgets/petition_card.dart';
 
 class PetitionPage extends StatefulWidget {
@@ -40,8 +41,11 @@ class _PetitionPageState extends State<PetitionPage> {
                 tooltip: '청원 등록',
                 icon: const Icon(Icons.add),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('청원 등록 화면은 준비 중입니다.')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PetitionFormPage(),
+                    ),
                   );
                 },
               );
