@@ -6,7 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/alliance_app_bar.dart';
 import '../../auth/data/admin_auth_store.dart';
 import '../../calendar/presentation/calendar_page.dart';
-import '../../community/presentation/community_page.dart';
+import '../../feed/presentation/feed_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/presentation/membership_card_modal.dart';
 import '../../petition/presentation/petition_page.dart';
@@ -282,7 +282,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildCurrentPage() {
     switch (_selectedIndex) {
       case 0:
-        return const CommunityPage();
+        return const FeedPage();
       case 1:
         return const PetitionPage();
       case 3:

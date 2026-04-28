@@ -38,6 +38,21 @@ class CommunityPostStore {
     });
   }
 
+  /// 카테고리별 구독 (urgent/policy/network/event/general). 피드 탭용.
+  static Stream<List<CommunityPost>> watchByCategory(
+    String category, {
+    int limit = _pageSize,
+  }) {
+    return _col
+        .where('isDeleted', isEqualTo: false)
+        .where('category', isEqualTo: category)
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map(CommunityPost.fromFirestore).toList());
+  }
+
   /// 게시판 종류별 구독.
   static Stream<List<CommunityPost>> watchByBoard(
     CommunityBoardType boardType, {
