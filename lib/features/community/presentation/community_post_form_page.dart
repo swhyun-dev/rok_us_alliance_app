@@ -134,7 +134,7 @@ class _CommunityPostFormPageState extends State<CommunityPostFormPage> {
           authorId: authorIdValue,
           authorNickname: authorNicknameInput.isNotEmpty
               ? authorNicknameInput
-              : (user?.naverNickname ?? '익명'),
+              : (user?.nickname ?? '익명'),
           authorLevel: user?.level ?? 1,
           boardType: _boardType,
           title: _titleController.text.trim(),

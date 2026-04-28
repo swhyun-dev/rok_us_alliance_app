@@ -166,7 +166,7 @@ class _SummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${user.naverNickname}님의 누적 활동 점수',
+            '${user.nickname}님의 누적 활동 점수',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.65),
               fontSize: 13,

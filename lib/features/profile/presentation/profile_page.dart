@@ -121,7 +121,7 @@ class ProfilePage extends StatelessWidget {
             _InfoCard(children: [
               _ProfileInfoRow(label: '이름', value: user.name),
               const _RowDivider(),
-              _ProfileInfoRow(label: '닉네임', value: user.naverNickname),
+              _ProfileInfoRow(label: '닉네임', value: user.nickname),
               const _RowDivider(),
               _ProfileInfoRow(
                   label: '식별값', value: user.providerUserId, isMonospace: true),
@@ -327,8 +327,8 @@ class _ProfileHeroCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      user.naverNickname.isNotEmpty
-                          ? '@${user.naverNickname}'
+                      user.nickname.isNotEmpty
+                          ? '@${user.nickname}'
                           : '네이버 닉네임 없음',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.60),

@@ -3,7 +3,7 @@ class AppUser {
   const AppUser({
     required this.provider,
     required this.providerUserId,
-    required this.naverNickname,
+    required this.nickname,
     required this.name,
     required this.createdAt,
     required this.updatedAt,
@@ -21,7 +21,7 @@ class AppUser {
 
   final String provider;
   final String providerUserId;
-  final String naverNickname;
+  final String nickname;
   final String name;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -40,7 +40,7 @@ class AppUser {
   AppUser copyWith({
     String? provider,
     String? providerUserId,
-    String? naverNickname,
+    String? nickname,
     String? name,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -58,7 +58,7 @@ class AppUser {
     return AppUser(
       provider: provider ?? this.provider,
       providerUserId: providerUserId ?? this.providerUserId,
-      naverNickname: naverNickname ?? this.naverNickname,
+      nickname: nickname ?? this.nickname,
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -79,7 +79,7 @@ class AppUser {
     return {
       'provider': provider,
       'providerUserId': providerUserId,
-      'naverNickname': naverNickname,
+      'nickname': nickname,
       'name': name,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
@@ -97,10 +97,12 @@ class AppUser {
   }
 
   factory AppUser.fromMap(Map<String, dynamic> map) {
+    // 'naverNickname' 은 v2 잔재 키. 기존 캐시 호환을 위해 fallback 으로만 둔다.
+    final legacyNickname = map['naverNickname'];
     return AppUser(
       provider: (map['provider'] ?? 'naver') as String,
       providerUserId: (map['providerUserId'] ?? '') as String,
-      naverNickname: (map['naverNickname'] ?? '') as String,
+      nickname: (map['nickname'] ?? legacyNickname ?? '') as String,
       name: (map['name'] ?? '') as String,
       createdAt: DateTime.tryParse((map['createdAt'] ?? '') as String) ??
           DateTime.now(),

@@ -121,6 +121,7 @@ class AuthStore {
     final updated = cached.copyWith(
       level: (data['level'] as int?) ?? cached.level,
       points: (data['points'] as int?) ?? cached.points,
+      nickname: (data['nickname'] as String?) ?? cached.nickname,
       profileImageUrl: data['profileImageUrl'] as String?,
       email: (data['email'] as String?) ?? cached.email,
       isAdmin: (data['isAdmin'] as bool?) ?? cached.isAdmin,
@@ -144,7 +145,7 @@ class AuthStore {
     final user = AppUser(
       provider: 'debug',
       providerUserId: 'debug_preview_user',
-      naverNickname: '자유대한_샘플회원',
+      nickname: '자유대한_샘플회원',
       name: '홍길동',
       createdAt: now,
       updatedAt: now,
@@ -207,7 +208,7 @@ class AuthStore {
       return _resolvePostSignIn(
         provider: 'naver',
         providerUserId: profile.providerUserId,
-        nickname: profile.naverNickname,
+        nickname: profile.nickname,
         name: profile.name,
         email: profile.email.isEmpty ? null : profile.email,
       );
@@ -284,7 +285,7 @@ class AuthStore {
     final user = AppUser(
       provider: draft.provider,
       providerUserId: draft.providerUserId,
-      naverNickname: nickname,
+      nickname: nickname,
       name: draft.name,
       email: draft.email,
       profileImageUrl: draft.profileImageUrl,

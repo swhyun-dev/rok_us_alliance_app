@@ -9,13 +9,13 @@ import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 class NaverAuthProfile {
   const NaverAuthProfile({
     required this.providerUserId,
-    required this.naverNickname,
+    required this.nickname,
     required this.name,
     required this.email,
   });
 
   final String providerUserId;
-  final String naverNickname;
+  final String nickname;
   final String name;
   final String email;
 }
@@ -54,7 +54,7 @@ class NaverAuthService {
 
     return NaverAuthProfile(
       providerUserId: account.id ?? '',
-      naverNickname: account.nickname ?? '',
+      nickname: account.nickname ?? '',
       name: account.name ?? '',
       email: account.email ?? '',
     );
