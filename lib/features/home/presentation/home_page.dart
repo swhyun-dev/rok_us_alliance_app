@@ -14,6 +14,7 @@ import '../../community/presentation/community_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/presentation/membership_card_modal.dart';
 import '../../profile/presentation/profile_page.dart';
+import '../../../shared/widgets/daily_check_in_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -443,6 +444,8 @@ class _HomeDashboard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
           children: [
             const _HomeHeroCard(),
+            const SizedBox(height: 14),
+            const DailyCheckInButton(),
             const SizedBox(height: 14),
             if (urgentEvent != null) ...[
               _UrgentBannerCard(event: urgentEvent),
