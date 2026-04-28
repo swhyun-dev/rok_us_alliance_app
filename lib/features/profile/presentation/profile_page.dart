@@ -9,6 +9,7 @@ import '../../home/presentation/home_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/domain/member.dart';
 import '../../membership/presentation/membership_card_modal.dart';
+import '../../settings/presentation/terms_page.dart';
 import 'level_guide_page.dart';
 import 'point_history_page.dart';
 
@@ -138,6 +139,8 @@ class ProfilePage extends StatelessWidget {
                 _MenuItem(Icons.notifications_outlined, '알림 설정', subtitle: '공지 · 커뮤니티 알림'),
                 _MenuItem(Icons.shield_outlined, '보안 설정', subtitle: '로그인 · 인증 관리'),
                 _MenuItem(Icons.help_outline, '고객센터 · FAQ', subtitle: '문의 및 도움말'),
+                _MenuItem(Icons.description_outlined, '이용약관'),
+                _MenuItem(Icons.privacy_tip_outlined, '개인정보처리방침'),
                 _MenuItem(Icons.home_outlined, '홈으로 이동'),
                 _MenuItem(Icons.logout, '로그아웃', isDestructive: true),
               ],
@@ -154,6 +157,20 @@ class ProfilePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const LevelGuidePage()),
+                  );
+                  return;
+                }
+                if (title == '이용약관') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TermsPage()),
+                  );
+                  return;
+                }
+                if (title == '개인정보처리방침') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PrivacyPage()),
                   );
                   return;
                 }
