@@ -1,8 +1,12 @@
 // lib/features/membership/presentation/membership_card_page.dart
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/alliance_loading_indicator.dart';
@@ -21,6 +25,37 @@ class MembershipCardPage extends StatefulWidget {
 class _MembershipCardPageState extends State<MembershipCardPage> {
   String? _qrToken;
   Timer? _refreshTimer;
+  final ScreenshotController _screenshotController = ScreenshotController();
+  bool _sharing = false;
+
+  Future<void> _shareCard(Member member) async {
+    if (_sharing) return;
+    setState(() => _sharing = true);
+    try {
+      final bytes = await _screenshotController.capture();
+      if (bytes == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('카드 캡처에 실패했습니다.')),
+        );
+        return;
+      }
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/membership_${member.uid}.png');
+      await file.writeAsBytes(bytes);
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'image/png')],
+        subject: '${member.name} 한미동맹단증',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('공유 실패: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
 
   @override
   void initState() {
@@ -88,13 +123,39 @@ class _MembershipCardPageState extends State<MembershipCardPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _MembershipCard(
-                  member: member,
-                  qrToken: _qrToken,
-                  onQrTap: _qrToken != null
-                      ? () => _openQrFullscreen(member, _qrToken!)
-                      : null,
+                Screenshot(
+                  controller: _screenshotController,
+                  child: _MembershipCard(
+                    member: member,
+                    qrToken: _qrToken,
+                    onQrTap: _qrToken != null
+                        ? () => _openQrFullscreen(member, _qrToken!)
+                        : null,
+                  ),
                 ),
+                const SizedBox(height: 12),
+                if (member.grade.canIssueCard)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.border),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: _sharing ? null : () => _shareCard(member),
+                      icon: _sharing
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.ios_share),
+                      label: Text(_sharing ? '준비 중...' : '카드 공유하기'),
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 _StatsRow(member: member),
                 const SizedBox(height: 20),

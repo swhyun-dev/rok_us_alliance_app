@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../domain/member.dart';
@@ -26,14 +27,29 @@ class _QrFullscreenPageState extends State<QrFullscreenPage> {
   @override
   void initState() {
     super.initState();
-    // 화면 최대 밝기 + 가로세로 잠금 해제
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    _maxBrightness();
   }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _restoreBrightness();
     super.dispose();
+  }
+
+  Future<void> _maxBrightness() async {
+    try {
+      await ScreenBrightness().setApplicationScreenBrightness(1.0);
+    } catch (_) {
+      // 일부 플랫폼(Web/desktop)에서 미지원 — 무시.
+    }
+  }
+
+  Future<void> _restoreBrightness() async {
+    try {
+      await ScreenBrightness().resetApplicationScreenBrightness();
+    } catch (_) {}
   }
 
   @override
