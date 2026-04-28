@@ -31,6 +31,7 @@ export const createCustomTokenFromKakao = functions.https.onCall(
       );
       kakaoUser = response.data;
     } catch (error) {
+      functions.logger.warn('Kakao /v2/user/me 검증 실패', error);
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Kakao access token validation failed'

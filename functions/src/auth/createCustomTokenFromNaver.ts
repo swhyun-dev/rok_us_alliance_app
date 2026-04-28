@@ -32,6 +32,7 @@ export const createCustomTokenFromNaver = functions.https.onCall(
       );
       payload = response.data;
     } catch (error) {
+      functions.logger.warn('Naver /v1/nid/me 검증 실패', error);
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Naver access token validation failed'
