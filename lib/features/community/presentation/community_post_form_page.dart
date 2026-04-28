@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../auth/data/auth_store.dart';
 import '../data/community_post_store.dart';
 import '../domain/community_post.dart';
 
@@ -86,43 +87,81 @@ class _CommunityPostFormPageState extends State<CommunityPostFormPage> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_isSaving) return;
     if (!_formKey.currentState!.validate()) return;
+
+    final user = AuthStore.currentUser;
+    if (user == null && !_isEdit) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인이 필요합니다.')),
+      );
+      return;
+    }
 
     setState(() {
       _isSaving = true;
     });
 
     final previous = widget.initialPost;
+    final authorIdValue = previous?.authorId.isNotEmpty == true
+        ? previous!.authorId
+        : (user?.providerUserId ?? 'system');
+    final authorNicknameInput = _authorController.text.trim();
 
-    final post = CommunityPost(
-      id: previous?.id ?? 'post-${DateTime.now().millisecondsSinceEpoch}',
-      boardType: _boardType,
-      title: _titleController.text.trim(),
-      content: _contentController.text.trim(),
-      author: _authorController.text.trim(),
-      region: _regionController.text.trim(),
-      createdAt: previous?.createdAt ?? DateTime.now(),
-      commentCount: previous?.commentCount ?? 0,
-      likeCount: previous?.likeCount ?? 0,
-      isPinned: previous?.isPinned ?? false,
-      isLiked: previous?.isLiked ?? false,
-      comments: previous?.comments ?? const [],
-      resourceType: _isResourceBoard ? _resourceType : CommunityResourceType.none,
-      resourceLabel: _isResourceBoard ? _resourceLabelController.text.trim() : '',
-      resourceUrl: _isResourceBoard ? _resourceUrlController.text.trim() : '',
-      thumbnailUrl: _thumbnailUrlController.text.trim(),
-    );
+    try {
+      if (_isEdit) {
+        final updated = previous!.copyWith(
+          boardType: _boardType,
+          title: _titleController.text.trim(),
+          content: _contentController.text.trim(),
+          authorNickname: authorNicknameInput.isNotEmpty
+              ? authorNicknameInput
+              : previous.authorNickname,
+          region: _regionController.text.trim(),
+          resourceType:
+              _isResourceBoard ? _resourceType : CommunityResourceType.none,
+          resourceLabel:
+              _isResourceBoard ? _resourceLabelController.text.trim() : '',
+          resourceUrl:
+              _isResourceBoard ? _resourceUrlController.text.trim() : '',
+          thumbnailUrl: _thumbnailUrlController.text.trim(),
+        );
+        await CommunityPostStore.update(updated.id, updated.toMap());
+      } else {
+        final draft = CommunityPost(
+          id: '',
+          authorId: authorIdValue,
+          authorNickname: authorNicknameInput.isNotEmpty
+              ? authorNicknameInput
+              : (user?.naverNickname ?? '익명'),
+          authorLevel: user?.level ?? 1,
+          boardType: _boardType,
+          title: _titleController.text.trim(),
+          content: _contentController.text.trim(),
+          region: _regionController.text.trim(),
+          createdAt: DateTime.now(),
+          resourceType:
+              _isResourceBoard ? _resourceType : CommunityResourceType.none,
+          resourceLabel:
+              _isResourceBoard ? _resourceLabelController.text.trim() : '',
+          resourceUrl:
+              _isResourceBoard ? _resourceUrlController.text.trim() : '',
+          thumbnailUrl: _thumbnailUrlController.text.trim(),
+        );
+        await CommunityPostStore.add(draft);
+      }
 
-    if (_isEdit) {
-      CommunityPostStore.update(post);
-    } else {
-      CommunityPostStore.add(post);
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('저장 실패: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
-
-    if (!mounted) return;
-    Navigator.pop(context, true);
   }
 
   @override

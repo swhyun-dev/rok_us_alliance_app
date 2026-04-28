@@ -44,28 +44,37 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
     }
   }
 
+  static const List<String> _meetupRegions = [
+    '전체',
+    '서울',
+    '경기',
+    '인천',
+    '부산',
+    '대구',
+    '대전',
+    '광주',
+    '강원',
+    '충청',
+    '전라',
+    '경상',
+    '제주',
+    '해외',
+  ];
+
   List<String> get _regions {
     if (widget.boardType != CommunityBoardType.meetup) {
       return const ['전체'];
     }
-
-    final regions = CommunityPostStore.getByBoard(CommunityBoardType.meetup)
-        .map((e) => e.region)
-        .toSet()
-        .toList()
-      ..sort();
-
-    return ['전체', ...regions];
+    return _meetupRegions;
   }
 
-  List<CommunityPost> _posts() {
-    if (widget.boardType == CommunityBoardType.meetup) {
-      return CommunityPostStore.getByBoardAndRegion(
-        boardType: widget.boardType,
-        region: _selectedRegion,
-      );
-    }
-    return CommunityPostStore.getByBoard(widget.boardType);
+  Stream<List<CommunityPost>> _postsStream() {
+    return CommunityPostStore.watchByBoard(
+      widget.boardType,
+      region: widget.boardType == CommunityBoardType.meetup
+          ? _selectedRegion
+          : '전체',
+    );
   }
 
   @override
@@ -74,10 +83,10 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
       appBar: AppBar(
         title: Text(_title),
       ),
-      body: ValueListenableBuilder<List<CommunityPost>>(
-        valueListenable: CommunityPostStore.notifier,
-        builder: (context, _, __) {
-          final posts = _posts();
+      body: StreamBuilder<List<CommunityPost>>(
+        stream: _postsStream(),
+        builder: (context, snapshot) {
+          final posts = snapshot.data ?? const <CommunityPost>[];
 
           return Column(
             children: [
@@ -167,7 +176,10 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
                         );
                       },
                       onLike: () {
-                        CommunityPostStore.toggleLike(post.id);
+                        CommunityPostStore.bumpLikeCount(
+                          post.id,
+                          liked: !post.isLiked,
+                        );
                       },
                     );
                   },

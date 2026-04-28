@@ -27,16 +27,28 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  void _search(String keyword) {
+  Future<void> _search(String keyword) async {
     final trimmed = keyword.trim();
     if (trimmed.isEmpty) return;
-    final result = CommunityPostStore.search(trimmed);
     setState(() {
-      _results = result;
       _hasSearched = true;
+      _results = const [];
     });
     SearchHistoryStore.add(trimmed);
     _focusNode.unfocus();
+
+    try {
+      final result = await CommunityPostStore.search(trimmed);
+      if (!mounted) return;
+      setState(() {
+        _results = result;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('검색 중 오류가 발생했습니다.')),
+      );
+    }
   }
 
   void _clear() {

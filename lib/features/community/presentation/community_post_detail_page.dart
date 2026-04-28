@@ -1,10 +1,14 @@
 // 파일경로: lib/features/community/presentation/community_post_detail_page.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../auth/data/auth_store.dart';
+import '../data/community_comment_store.dart';
 import '../data/community_post_store.dart';
 import '../domain/community_post.dart';
 import 'community_post_form_page.dart';
@@ -32,9 +36,24 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
   YoutubePlayerController? _youtubeController;
   String? _lastYoutubeId;
   bool _viewCounted = false;
+  bool _isLikedLocal = false;
+  bool _isSavedLocal = false;
+  StreamSubscription<List<CommunityComment>>? _commentsSub;
+  List<CommunityComment> _comments = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _commentsSub =
+        CommunityCommentStore.watchByPost(widget.postId).listen((list) {
+      if (!mounted) return;
+      setState(() => _comments = list);
+    });
+  }
 
   @override
   void dispose() {
+    _commentsSub?.cancel();
     _commentAuthorController.dispose();
     _commentController.dispose();
     for (final controller in _replyControllers.values) {
@@ -133,12 +152,12 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
 
     if (result != true) return;
 
-    CommunityPostStore.remove(post.id);
+    await CommunityPostStore.softDelete(post.id);
     if (!mounted) return;
     Navigator.pop(context);
   }
 
-  void _addComment(CommunityPost post) {
+  Future<void> _addComment(CommunityPost post) async {
     final author = _commentAuthorController.text.trim();
     final content = _commentController.text.trim();
 
@@ -149,12 +168,16 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
       return;
     }
 
-    CommunityPostStore.addComment(
+    final user = AuthStore.currentUser;
+    await CommunityCommentStore.add(
       postId: post.id,
-      author: author,
+      authorId: user?.providerUserId ?? 'anonymous',
+      authorNickname: author,
+      authorLevel: user?.level ?? 1,
       content: content,
     );
 
+    if (!mounted) return;
     _commentController.clear();
     FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -162,10 +185,10 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
     );
   }
 
-  void _addReply({
+  Future<void> _addReply({
     required CommunityPost post,
     required CommunityComment parent,
-  }) {
+  }) async {
     final content = _replyControllerOf(parent.id).text.trim();
     final author = _commentAuthorController.text.trim().isEmpty
         ? '익명'
@@ -178,14 +201,18 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
       return;
     }
 
-    CommunityPostStore.addComment(
+    final user = AuthStore.currentUser;
+    await CommunityCommentStore.add(
       postId: post.id,
-      author: author,
+      authorId: user?.providerUserId ?? 'anonymous',
+      authorNickname: author,
+      authorLevel: user?.level ?? 1,
       content: content,
       parentCommentId: parent.id,
     );
 
     _replyControllerOf(parent.id).clear();
+    if (!mounted) return;
     setState(() {
       _replyOpenMap[parent.id] = false;
     });
@@ -197,10 +224,10 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<CommunityPost>>(
-      valueListenable: CommunityPostStore.notifier,
-      builder: (context, _, __) {
-        final post = CommunityPostStore.findById(widget.postId);
+    return StreamBuilder<CommunityPost?>(
+      stream: CommunityPostStore.watchById(widget.postId),
+      builder: (context, snapshot) {
+        final post = snapshot.data;
 
         if (post == null) {
           return Scaffold(
@@ -220,7 +247,10 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
           CommunityBoardType.resource => AppColors.royalBlue,
         };
 
-        final rootComments = post.rootComments;
+        final rootComments =
+            _comments.where((c) => c.parentCommentId == null).toList();
+        List<CommunityComment> repliesOf(String commentId) =>
+            _comments.where((c) => c.parentCommentId == commentId).toList();
 
         return Scaffold(
           body: Column(
@@ -238,9 +268,15 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                       backgroundColor: AppColors.navy,
                       actions: [
                         IconButton(
-                          onPressed: () => CommunityPostStore.toggleSave(post.id),
+                          onPressed: () {
+                            CommunityPostStore.bumpSaveCount(
+                              post.id,
+                              saved: !_isSavedLocal,
+                            );
+                            setState(() => _isSavedLocal = !_isSavedLocal);
+                          },
                           icon: Icon(
-                            post.isSaved ? Icons.favorite : Icons.favorite_border,
+                            _isSavedLocal ? Icons.favorite : Icons.favorite_border,
                             color: Colors.white,
                           ),
                         ),
@@ -466,27 +502,41 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                               children: [
                                 Expanded(
                                   child: _ActionOutlinedButton(
-                                    icon: post.isLiked
+                                    icon: _isLikedLocal
                                         ? Icons.favorite
                                         : Icons.favorite_border,
                                     label: '좋아요 ${post.likeCount}',
-                                    color: post.isLiked
+                                    color: _isLikedLocal
                                         ? AppColors.red
                                         : AppColors.textPrimary,
-                                    onTap: () => CommunityPostStore.toggleLike(post.id),
+                                    onTap: () {
+                                      CommunityPostStore.bumpLikeCount(
+                                        post.id,
+                                        liked: !_isLikedLocal,
+                                      );
+                                      setState(() =>
+                                          _isLikedLocal = !_isLikedLocal);
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: _ActionOutlinedButton(
-                                    icon: post.isSaved
+                                    icon: _isSavedLocal
                                         ? Icons.bookmark
                                         : Icons.bookmark_border,
                                     label: '저장 ${post.saveCount}',
-                                    color: post.isSaved
+                                    color: _isSavedLocal
                                         ? AppColors.navy
                                         : AppColors.textPrimary,
-                                    onTap: () => CommunityPostStore.toggleSave(post.id),
+                                    onTap: () {
+                                      CommunityPostStore.bumpSaveCount(
+                                        post.id,
+                                        saved: !_isSavedLocal,
+                                      );
+                                      setState(() =>
+                                          _isSavedLocal = !_isSavedLocal);
+                                    },
                                   ),
                                 ),
                               ],
@@ -635,7 +685,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                         delegate: SliverChildBuilderDelegate(
                               (context, index) {
                             final comment = rootComments[index];
-                            final replies = post.repliesOf(comment.id);
+                            final replies = repliesOf(comment.id);
                             final isReplyOpen = _replyOpenMap[comment.id] ?? false;
                             final replyController = _replyControllerOf(comment.id);
 

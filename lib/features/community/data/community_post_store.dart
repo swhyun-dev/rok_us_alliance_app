@@ -1,163 +1,176 @@
 // lib/features/community/data/community_post_store.dart
-import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../domain/community_post.dart';
-import 'community_post_seed.dart';
+
+class CommunityPostPage {
+  const CommunityPostPage({
+    required this.posts,
+    required this.cursor,
+    required this.hasMore,
+  });
+  final List<CommunityPost> posts;
+  final DocumentSnapshot? cursor;
+  final bool hasMore;
+}
 
 class CommunityPostStore {
   CommunityPostStore._();
 
-  static final ValueNotifier<List<CommunityPost>> notifier =
-  ValueNotifier<List<CommunityPost>>([...CommunityPostSeed.posts]);
+  static const int _pageSize = 20;
+  static final CollectionReference<Map<String, dynamic>> _col =
+      FirebaseFirestore.instance.collection('posts');
 
-  static List<CommunityPost> get posts => notifier.value;
-
-  static void add(CommunityPost post) {
-    final updated = [post, ...notifier.value];
-    notifier.value = _sorted(updated);
-  }
-
-  static void update(CommunityPost post) {
-    final updated = notifier.value
-        .map((e) => e.id == post.id ? post : e)
-        .toList();
-    notifier.value = _sorted(updated);
-  }
-
-  static void remove(String id) {
-    notifier.value = notifier.value.where((e) => e.id != id).toList();
-  }
-
-  static CommunityPost? findById(String id) {
-    try {
-      return notifier.value.firstWhere((e) => e.id == id);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static void toggleLike(String id) {
-    final post = findById(id);
-    if (post == null) return;
-
-    final nextLiked = !post.isLiked;
-    final nextLikeCount = nextLiked
-        ? post.likeCount + 1
-        : (post.likeCount > 0 ? post.likeCount - 1 : 0);
-
-    update(
-      post.copyWith(
-        isLiked: nextLiked,
-        likeCount: nextLikeCount,
-      ),
-    );
-  }
-
-  static void toggleSave(String id) {
-    final post = findById(id);
-    if (post == null) return;
-
-    final nextSaved = !post.isSaved;
-    final nextSaveCount = nextSaved
-        ? post.saveCount + 1
-        : (post.saveCount > 0 ? post.saveCount - 1 : 0);
-
-    update(
-      post.copyWith(
-        isSaved: nextSaved,
-        saveCount: nextSaveCount,
-      ),
-    );
-  }
-
-  static void addComment({
-    required String postId,
-    required String author,
-    required String content,
-    String? parentCommentId,
-  }) {
-    final post = findById(postId);
-    if (post == null) return;
-
-    final isFirstRoot =
-        parentCommentId == null &&
-            post.comments.where((e) => e.parentCommentId == null).isEmpty;
-
-    final nextComments = [
-      CommunityComment(
-        id: 'cmt-${DateTime.now().millisecondsSinceEpoch}',
-        author: author,
-        content: content,
-        createdAt: DateTime.now(),
-        parentCommentId: parentCommentId,
-        isFirstComment: isFirstRoot,
-      ),
-      ...post.comments,
-    ];
-
-    update(
-      post.copyWith(
-        comments: nextComments,
-        commentCount: nextComments.length,
-      ),
-    );
-  }
-
-  static void incrementView(String id) {
-    final post = findById(id);
-    if (post == null) return;
-    update(post.copyWith(viewCount: post.viewCount + 1));
-  }
-
-  static List<CommunityPost> getByBoard(CommunityBoardType boardType) {
-    final filtered = notifier.value.where((e) => e.boardType == boardType).toList();
-    return _sorted(filtered);
-  }
-
-  static List<CommunityPost> getByBoardAndRegion({
-    required CommunityBoardType boardType,
-    required String region,
-  }) {
-    final filtered = notifier.value.where((e) {
-      if (e.boardType != boardType) return false;
-      if (region == '전체') return true;
-      return e.region == region;
-    }).toList();
-
-    return _sorted(filtered);
-  }
-
-  static List<CommunityPost> search(String keyword) {
-    final k = keyword.trim().toLowerCase();
-    if (k.isEmpty) return [];
-
-    final filtered = notifier.value.where((post) {
-      final inTitle = post.title.toLowerCase().contains(k);
-      final inContent = post.content.toLowerCase().contains(k);
-      final inAuthor = post.author.toLowerCase().contains(k);
-      final inRegion = post.region.toLowerCase().contains(k);
-      final inTags = post.tags.any((t) => t.toLowerCase().contains(k));
-      final inResourceLabel = post.resourceLabel.toLowerCase().contains(k);
-
-      return inTitle ||
-          inContent ||
-          inAuthor ||
-          inRegion ||
-          inTags ||
-          inResourceLabel;
-    }).toList();
-
-    return _sorted(filtered);
-  }
-
-  static List<CommunityPost> _sorted(List<CommunityPost> list) {
-    final copied = [...list];
-    copied.sort((a, b) {
-      if (a.isPinned != b.isPinned) {
-        return a.isPinned ? -1 : 1;
-      }
-      return b.createdAt.compareTo(a.createdAt);
+  /// 모든 게시글을 createdAt 내림차순 + 핀 우선으로 구독.
+  static Stream<List<CommunityPost>> watchAll({int limit = _pageSize}) {
+    return _col
+        .where('isDeleted', isEqualTo: false)
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) {
+      final list = snap.docs.map(CommunityPost.fromFirestore).toList();
+      list.sort((a, b) {
+        if (a.isPinned != b.isPinned) return a.isPinned ? -1 : 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+      return list;
     });
-    return copied;
+  }
+
+  /// 게시판 종류별 구독.
+  static Stream<List<CommunityPost>> watchByBoard(
+    CommunityBoardType boardType, {
+    String region = '전체',
+    int limit = _pageSize,
+  }) {
+    Query<Map<String, dynamic>> q = _col
+        .where('isDeleted', isEqualTo: false)
+        .where('boardType', isEqualTo: boardType.name);
+    if (region != '전체') {
+      q = q.where('region', isEqualTo: region);
+    }
+    return q
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) {
+      final list = snap.docs.map(CommunityPost.fromFirestore).toList();
+      list.sort((a, b) {
+        if (a.isPinned != b.isPinned) return a.isPinned ? -1 : 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+      return list;
+    });
+  }
+
+  /// 단일 게시글 실시간 구독.
+  static Stream<CommunityPost?> watchById(String id) {
+    return _col.doc(id).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      return CommunityPost.fromFirestore(doc);
+    });
+  }
+
+  /// 페이지네이션. cursor=null 이면 첫 페이지.
+  static Future<CommunityPostPage> fetchPage({
+    DocumentSnapshot? cursor,
+    int limit = _pageSize,
+  }) async {
+    Query<Map<String, dynamic>> q = _col
+        .where('isDeleted', isEqualTo: false)
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+    if (cursor != null) q = q.startAfterDocument(cursor);
+
+    final snap = await q.get();
+    final posts = snap.docs.map(CommunityPost.fromFirestore).toList();
+    return CommunityPostPage(
+      posts: posts,
+      cursor: snap.docs.isEmpty ? null : snap.docs.last,
+      hasMore: snap.docs.length == limit,
+    );
+  }
+
+  /// 키워드 단발 검색. Firestore는 full-text 미지원이라 클라이언트에서 필터.
+  /// 작은 데이터셋 대상. 추후 Algolia 등으로 대체.
+  static Future<List<CommunityPost>> search(String keyword) async {
+    final k = keyword.trim().toLowerCase();
+    if (k.isEmpty) return const [];
+    final snap = await _col
+        .where('isDeleted', isEqualTo: false)
+        .orderBy('createdAt', descending: true)
+        .limit(200)
+        .get();
+    final all = snap.docs.map(CommunityPost.fromFirestore);
+    return all.where((p) {
+      if (p.title.toLowerCase().contains(k)) return true;
+      if (p.content.toLowerCase().contains(k)) return true;
+      if (p.authorNickname.toLowerCase().contains(k)) return true;
+      if (p.region.toLowerCase().contains(k)) return true;
+      if (p.tags.any((t) => t.toLowerCase().contains(k))) return true;
+      if (p.resourceLabel.toLowerCase().contains(k)) return true;
+      return false;
+    }).toList();
+  }
+
+  /// 새 게시글. 작성자 정보(authorId/Nickname/Level)는 호출자 책임.
+  /// rules: 본인 글 + isDeleted=false + 카운트 0 + 일반 사용자는 isUrgent/Pinned=false.
+  static Future<String> add(CommunityPost post) async {
+    final ref = _col.doc();
+    final draft = post.copyWith(
+      id: ref.id,
+      isDeleted: false,
+      viewCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+      shareCount: 0,
+    );
+    await ref.set(draft.toMap());
+    return ref.id;
+  }
+
+  /// 본인 글 수정. 카운트·플래그는 변경 금지(rules).
+  static Future<void> update(String id, Map<String, dynamic> changes) async {
+    await _col.doc(id).update({
+      ...changes,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// 본인 글 soft delete. hard delete 는 admin Cloud Function 만.
+  static Future<void> softDelete(String id) async {
+    await _col.doc(id).update({
+      'isDeleted': true,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// 조회수 +1.
+  static Future<void> incrementView(String id) async {
+    await _col.doc(id).update({
+      'viewCount': FieldValue.increment(1),
+    });
+  }
+
+  /// likeCount +1 / -1 (낙관적). 사용자별 isLiked 저장은 별도 작업.
+  static Future<void> bumpLikeCount(String id, {required bool liked}) async {
+    await _col.doc(id).update({
+      'likeCount': FieldValue.increment(liked ? 1 : -1),
+    });
+  }
+
+  /// shareCount +1.
+  static Future<void> bumpShareCount(String id) async {
+    await _col.doc(id).update({
+      'shareCount': FieldValue.increment(1),
+    });
+  }
+
+  /// saveCount +1 / -1.
+  static Future<void> bumpSaveCount(String id, {required bool saved}) async {
+    await _col.doc(id).update({
+      'saveCount': FieldValue.increment(saved ? 1 : -1),
+    });
   }
 }
