@@ -45,9 +45,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<ActionEvent>>(
-      valueListenable: ActionEventStore.notifier,
-      builder: (context, events, _) {
+    return StreamBuilder<List<ActionEvent>>(
+      stream: ActionEventStore.watchAll(),
+      builder: (context, snapshot) {
+        final events = snapshot.data ?? const <ActionEvent>[];
         final selectedEvents = _eventsForDate(events, _selectedDate);
 
         return ListView(

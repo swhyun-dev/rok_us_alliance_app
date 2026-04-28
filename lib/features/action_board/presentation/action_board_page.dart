@@ -38,9 +38,16 @@ class _ActionBoardPageState extends State<ActionBoardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ValueListenableBuilder<List<ActionEvent>>(
-        valueListenable: ActionEventStore.notifier,
-        builder: (context, events, _) {
+      body: StreamBuilder<List<ActionEvent>>(
+        stream: ActionEventStore.watchAll(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('행사 목록을 불러오지 못했습니다.\n${snapshot.error}',
+                  textAlign: TextAlign.center),
+            );
+          }
+          final events = snapshot.data ?? const <ActionEvent>[];
           final filtered = _applyFilter(events);
 
           return ListView.separated(

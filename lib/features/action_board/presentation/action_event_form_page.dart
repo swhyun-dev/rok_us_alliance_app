@@ -183,7 +183,7 @@ class _ActionEventFormPageState extends State<ActionEventFormPage> {
 
     try {
       if (_isEdit) {
-        await ActionEventStore.update(event);
+        await ActionEventStore.update(event.id, event.toMap());
       } else {
         await ActionEventStore.add(event);
       }

@@ -39,7 +39,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
-    ActionEventStore.startListening();
     AdminAuthStore.startListening();
     MemberStore.loadMock();
 
@@ -432,9 +431,10 @@ class _HomeDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<ActionEvent>>(
-      valueListenable: ActionEventStore.notifier,
-      builder: (context, events, _) {
+    return StreamBuilder<List<ActionEvent>>(
+      stream: ActionEventStore.watchAll(),
+      builder: (context, snapshot) {
+        final events = snapshot.data ?? const <ActionEvent>[];
         final mainEvent = events.isNotEmpty ? events.first : null;
         final upcoming = events.take(3).toList();
         final urgentEvent = _findNearestUpcoming(events);

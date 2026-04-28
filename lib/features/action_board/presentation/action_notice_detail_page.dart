@@ -161,17 +161,17 @@ class _ActionNoticeDetailPageState extends State<ActionNoticeDetailPage> {
     );
 
     if (result != true) return;
-    await ActionEventStore.remove(event.id);
+    await ActionEventStore.delete(event.id);
     if (!mounted) return;
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<ActionEvent>>(
-      valueListenable: ActionEventStore.notifier,
-      builder: (context, _, __) {
-        final event = ActionEventStore.findById(widget.eventId);
+    return StreamBuilder<ActionEvent?>(
+      stream: ActionEventStore.watchById(widget.eventId),
+      builder: (context, snapshot) {
+        final event = snapshot.data;
 
         if (event == null) {
           return Scaffold(
