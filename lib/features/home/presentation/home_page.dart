@@ -1,14 +1,18 @@
 // lib/features/home/presentation/home_page.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/alliance_app_bar.dart';
 import '../../auth/data/admin_auth_store.dart';
+import '../../auth/data/auth_store.dart';
 import '../../calendar/presentation/calendar_page.dart';
 import '../../feed/presentation/feed_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/presentation/membership_card_modal.dart';
+import '../../notifications/data/notification_store.dart';
 import '../../notifications/presentation/notification_page.dart';
 import '../../petition/presentation/petition_page.dart';
 import '../../profile/presentation/profile_page.dart';
@@ -34,6 +38,8 @@ class _HomePageState extends State<HomePage> {
 
   late int _selectedIndex;
   bool _popupShown = false;
+  StreamSubscription<int>? _unreadSub;
+  int _unreadCount = 0;
 
   @override
   void initState() {
@@ -41,6 +47,8 @@ class _HomePageState extends State<HomePage> {
     _selectedIndex = widget.initialIndex;
     AdminAuthStore.startListening();
     MemberStore.loadMock();
+    AuthStore.notifier.addListener(_attachUnreadStream);
+    _attachUnreadStream();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
@@ -71,6 +79,29 @@ class _HomePageState extends State<HomePage> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day).toIso8601String();
     await prefs.setString(_hidePopupDateKey, today);
+  }
+
+  void _attachUnreadStream() {
+    _unreadSub?.cancel();
+    final user = AuthStore.currentUser;
+    if (user == null) {
+      if (_unreadCount != 0 && mounted) {
+        setState(() => _unreadCount = 0);
+      }
+      return;
+    }
+    _unreadSub =
+        NotificationStore.watchUnreadCount(user.providerUserId).listen((c) {
+      if (!mounted) return;
+      setState(() => _unreadCount = c);
+    });
+  }
+
+  @override
+  void dispose() {
+    AuthStore.notifier.removeListener(_attachUnreadStream);
+    _unreadSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _showIntroImagePopup() async {
@@ -337,7 +368,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AllianceAppBar.main(
         title: _appBarTitle(),
         subtitle: _appBarSubtitle(),
-        hasNotification: false,
+        hasNotification: _unreadCount > 0,
         onNotification: _showNotificationsSheet,
         onSettings: _showSettingsSheet,
         onCard: () => showMembershipCardModal(context),
