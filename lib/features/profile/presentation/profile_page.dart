@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/alliance_loading_indicator.dart';
+import '../../../shared/services/profile_image_service.dart';
 import '../../admin/presentation/admin_dashboard_page.dart';
 import '../../auth/data/admin_auth_store.dart';
 import '../../auth/data/auth_store.dart';
@@ -336,7 +337,7 @@ class _GuestView extends StatelessWidget {
 
 // ─── Profile hero card ────────────────────────────────────────────────────────
 
-class _ProfileHeroCard extends StatelessWidget {
+class _ProfileHeroCard extends StatefulWidget {
   const _ProfileHeroCard({
     required this.user,
     required this.grade,
@@ -347,7 +348,68 @@ class _ProfileHeroCard extends StatelessWidget {
   final int score;
 
   @override
+  State<_ProfileHeroCard> createState() => _ProfileHeroCardState();
+}
+
+class _ProfileHeroCardState extends State<_ProfileHeroCard> {
+  bool _uploading = false;
+
+  Future<void> _handleAvatarTap() async {
+    if (_uploading) return;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('갤러리에서 선택'),
+              onTap: () => Navigator.pop(ctx, 'gallery'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('취소'),
+              onTap: () => Navigator.pop(ctx, null),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action != 'gallery') return;
+    if (!mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final file = await ProfileImageService.pickFromGallery();
+      if (file == null) return;
+      if (!mounted) return;
+      setState(() => _uploading = true);
+      await ProfileImageService.uploadAndPersist(file);
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text('프로필 사진이 업데이트되었습니다.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('업로드 실패: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final user = widget.user;
+    final grade = widget.grade;
+    final score = widget.score;
+    final imageUrl = user.profileImageUrl as String?;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -369,19 +431,81 @@ class _ProfileHeroCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              // Avatar
-              Container(
-                width: 74,
-                height: 74,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppColors.shieldGradient,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    width: 2,
-                  ),
+              // Avatar (tap to upload)
+              GestureDetector(
+                onTap: _handleAvatarTap,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 74,
+                      height: 74,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: imageUrl == null
+                            ? AppColors.shieldGradient
+                            : null,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 2,
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: imageUrl != null
+                          ? Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 36,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 36,
+                            ),
+                    ),
+                    if (_uploading)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withValues(alpha: 0.45),
+                          ),
+                          alignment: Alignment.center,
+                          child: const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.4,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Positioned(
+                        right: -2,
+                        bottom: -2,
+                        child: Container(
+                          width: 26,
+                          height: 26,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.koreanRed,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 36),
               ),
               const SizedBox(width: 16),
               Expanded(

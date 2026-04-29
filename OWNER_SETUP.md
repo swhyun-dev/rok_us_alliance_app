@@ -84,10 +84,14 @@ firebase emulators:start --only firestore
 **배포**:
 
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules,firestore:indexes,storage:rules
 ```
 
 ✅ Firebase Console > Firestore > Indexes 에서 빌드가 1~5분 안에 완료되면 끝.
+✅ Storage rules 는 콘솔 > Storage > Rules 탭에서 즉시 반영 확인 가능.
+
+> **참고**: `storage.rules` 는 프로필 사진 업로드(users/{uid}/profile.jpg) 권한을 정의합니다.
+> 누락 시 **Storage 업로드가 실패**하므로 반드시 위 명령에 포함해 배포하세요.
 
 ---
 

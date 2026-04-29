@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules
+// 핵심 원칙:
+//  - 인증된 사용자만 자기 자신의 폴더에 쓰기 가능
+//  - 본인 프로필 사진은 5MB 이하 image/* 만 허용
+//  - 모든 사용자 프로필 사진은 누구나 read (앱 전역에서 노출되므로)
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 사용자별 프로필 사진
+    //   users/{uid}/profile.jpg
+    match /users/{uid}/profile.jpg {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // 그 외 사용자 폴더 하위는 본인만 read/write
+    match /users/{uid}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // 그 외 모든 경로 차단
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
