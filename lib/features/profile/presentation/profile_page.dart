@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/alliance_loading_indicator.dart';
+import '../../admin/presentation/admin_dashboard_page.dart';
+import '../../auth/data/admin_auth_store.dart';
 import '../../auth/data/auth_store.dart';
 import '../../auth/presentation/login_page.dart';
 import '../../home/presentation/home_page.dart';
@@ -185,6 +187,10 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 10),
             _MenuCard(
               items: [
+                if (AdminAuthStore.notifier.value.isAdmin)
+                  _MenuItem(Icons.admin_panel_settings_outlined,
+                      '관리자 대시보드',
+                      subtitle: '신고 큐 · 점수 조정 · 차단'),
                 _MenuItem(Icons.timeline_outlined, '활동 점수 이력',
                     subtitle: '내가 적립한 점수 내역'),
                 _MenuItem(Icons.workspace_premium_outlined, '등급 안내',
@@ -202,6 +208,14 @@ class ProfilePage extends StatelessWidget {
                     subtitle: '회원 정보 즉시 삭제'),
               ],
               onTap: (title) {
+                if (title == '관리자 대시보드') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const AdminDashboardPage()),
+                  );
+                  return;
+                }
                 if (title == '활동 점수 이력') {
                   Navigator.push(
                     context,
