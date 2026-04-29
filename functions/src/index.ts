@@ -7,3 +7,4 @@ export * from "./points";
 export * from "./stats";
 export * from "./admin";
 export * from "./moderation";
+export * from "./notifications";
