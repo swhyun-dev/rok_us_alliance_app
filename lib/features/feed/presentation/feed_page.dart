@@ -9,6 +9,7 @@ import '../../community/domain/community_post.dart';
 import '../../community/presentation/community_post_detail_page.dart';
 import '../../community/presentation/community_post_form_page.dart';
 import '../../home/presentation/widgets/live_indicator.dart';
+import '../../search/presentation/search_page.dart';
 
 enum FeedFilter {
   all('전체', null),
@@ -141,7 +142,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 8, 4, 4),
       child: Row(
         children: [
           const Text(
@@ -155,6 +156,14 @@ class _Header extends StatelessWidget {
           const SizedBox(width: 10),
           const LiveIndicator(),
           const Spacer(),
+          IconButton(
+            tooltip: '검색',
+            icon: const Icon(Icons.search),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SearchPage()),
+            ),
+          ),
         ],
       ),
     );
