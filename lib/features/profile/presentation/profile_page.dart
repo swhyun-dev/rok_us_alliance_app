@@ -1,4 +1,5 @@
 // lib/features/profile/presentation/profile_page.dart
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -48,6 +49,58 @@ class ProfilePage extends StatelessWidget {
       MaterialPageRoute(builder: (_) => const LoginPage()),
       (route) => false,
     );
+  }
+
+  Future<void> _handleDeleteAccount(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('계정 탈퇴',
+            style: TextStyle(fontWeight: FontWeight.w900)),
+        content: const Text(
+          '계정을 탈퇴하면 회원 정보가 즉시 삭제되고 복구할 수 없습니다.\n'
+          '진행하시겠습니까?',
+          style: TextStyle(height: 1.55),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            style:
+                FilledButton.styleFrom(backgroundColor: AppColors.koreanRed),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('탈퇴'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('deleteUserAccount');
+      await callable.call();
+      // 서버에서 Auth 사용자가 삭제됐으므로 클라이언트 캐시·세션도 정리.
+      await AuthStore.signOut();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('계정이 탈퇴 처리되었습니다.')),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('탈퇴 처리 실패: $e')),
+      );
+    }
   }
 
   void _goToHome(BuildContext context) {
@@ -144,6 +197,9 @@ class ProfilePage extends StatelessWidget {
                 _MenuItem(Icons.privacy_tip_outlined, '개인정보처리방침'),
                 _MenuItem(Icons.home_outlined, '홈으로 이동'),
                 _MenuItem(Icons.logout, '로그아웃', isDestructive: true),
+                _MenuItem(Icons.person_off_outlined, '계정 탈퇴',
+                    isDestructive: true,
+                    subtitle: '회원 정보 즉시 삭제'),
               ],
               onTap: (title) {
                 if (title == '활동 점수 이력') {
@@ -185,6 +241,7 @@ class ProfilePage extends StatelessWidget {
                 }
                 if (title == '홈으로 이동') _goToHome(context);
                 if (title == '로그아웃') _handleLogout(context);
+                if (title == '계정 탈퇴') _handleDeleteAccount(context);
               },
             ),
           ],
