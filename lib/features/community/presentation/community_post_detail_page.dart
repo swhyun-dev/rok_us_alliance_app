@@ -8,6 +8,8 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../auth/data/auth_store.dart';
+import '../../reports/domain/report_reason.dart';
+import '../../reports/presentation/report_dialog.dart';
 import '../data/community_comment_store.dart';
 import '../data/community_post_store.dart';
 import '../domain/community_post.dart';
@@ -114,9 +116,34 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
     );
   }
 
-  void _showReportSnack(String target) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$target 신고가 접수되었습니다.')),
+  Future<void> _reportPost(CommunityPost post) async {
+    await showReportDialog(
+      context,
+      targetType: ReportTargetType.post,
+      targetId: post.id,
+      targetSnapshot: {
+        'title': post.title,
+        'content': post.content,
+        'authorId': post.authorId,
+        'authorNickname': post.authorNickname,
+      },
+    );
+  }
+
+  Future<void> _reportComment(
+    CommunityPost post,
+    CommunityComment comment,
+  ) async {
+    await showReportDialog(
+      context,
+      targetType: ReportTargetType.comment,
+      targetId: comment.id,
+      targetSnapshot: {
+        'postId': post.id,
+        'content': comment.content,
+        'authorId': comment.authorId,
+        'authorNickname': comment.authorNickname,
+      },
     );
   }
 
@@ -309,7 +336,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                             } else if (value == 'delete') {
                               await _deletePost(post);
                             } else if (value == 'report') {
-                              _showReportSnack('게시글');
+                              await _reportPost(post);
                             }
                           },
                           itemBuilder: (_) => const [
@@ -720,7 +747,8 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                               onSubmitReply: () {
                                 _addReply(post: post, parent: comment);
                               },
-                              onReportComment: () => _showReportSnack('댓글'),
+                              onReportComment: () =>
+                                  _reportComment(post, comment),
                             );
                           },
                           childCount: rootComments.length,
