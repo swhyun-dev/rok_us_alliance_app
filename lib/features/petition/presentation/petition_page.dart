@@ -17,20 +17,14 @@ class PetitionPage extends StatefulWidget {
 }
 
 class _PetitionPageState extends State<PetitionPage> {
-  PetitionFilter _filter = PetitionFilter.active;
-
-  static const _segments = <(PetitionFilter, String)>[
-    (PetitionFilter.active, '진행중'),
-    (PetitionFilter.popular, '인기'),
-    (PetitionFilter.newest, '신규'),
-    (PetitionFilter.completed, '완료'),
-  ];
+  PetitionTab _tab = PetitionTab.nationalPetition;
+  PetitionStatusFilter _status = PetitionStatusFilter.active;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('청원',
+        title: const Text('청원·법안',
             style: TextStyle(fontWeight: FontWeight.w900)),
         actions: [
           ValueListenableBuilder<AdminAuthState>(
@@ -38,13 +32,14 @@ class _PetitionPageState extends State<PetitionPage> {
             builder: (context, authState, _) {
               if (!authState.isAdmin) return const SizedBox.shrink();
               return IconButton(
-                tooltip: '청원 등록',
+                tooltip: '청원·법안 등록',
                 icon: const Icon(Icons.add),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const PetitionFormPage(),
+                      builder: (_) =>
+                          PetitionFormPage(initialTab: _tab),
                     ),
                   );
                 },
@@ -55,21 +50,27 @@ class _PetitionPageState extends State<PetitionPage> {
       ),
       body: Column(
         children: [
-          _SegmentBar(
-            current: _filter,
-            segments: _segments,
-            onSelect: (f) => setState(() => _filter = f),
+          _TopTabBar(
+            current: _tab,
+            onSelect: (t) => setState(() => _tab = t),
+          ),
+          _StatusSegmentBar(
+            current: _status,
+            onSelect: (s) => setState(() => _status = s),
           ),
           Expanded(
             child: StreamBuilder<List<Petition>>(
-              stream: PetitionStore.watchAll(_filter),
+              stream: PetitionStore.watchByTab(
+                tab: _tab,
+                status: _status,
+              ),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(
-                        '청원을 불러오지 못했습니다.\n${snapshot.error}',
+                        '청원·법안을 불러오지 못했습니다.\n${snapshot.error}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: AppColors.koreanRed),
                       ),
@@ -81,15 +82,7 @@ class _PetitionPageState extends State<PetitionPage> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (list.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(36),
-                      child: Text(
-                        '해당 상태의 청원이 없습니다.',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ),
-                  );
+                  return _EmptyHint(tab: _tab, status: _status);
                 }
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -123,56 +116,161 @@ class _PetitionPageState extends State<PetitionPage> {
   }
 }
 
-class _SegmentBar extends StatelessWidget {
-  const _SegmentBar({
-    required this.current,
-    required this.segments,
-    required this.onSelect,
-  });
+class _TopTabBar extends StatelessWidget {
+  const _TopTabBar({required this.current, required this.onSelect});
+  final PetitionTab current;
+  final ValueChanged<PetitionTab> onSelect;
 
-  final PetitionFilter current;
-  final List<(PetitionFilter, String)> segments;
-  final ValueChanged<PetitionFilter> onSelect;
+  static const _items = <(PetitionTab, String, IconData)>[
+    (PetitionTab.nationalPetition, '국민청원', Icons.how_to_vote_outlined),
+    (PetitionTab.legislativeBill, '입법법안', Icons.gavel),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: segments.map((entry) {
-            final selected = entry.$1 == current;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(999),
-                onTap: () => onSelect(entry.$1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 9),
-                  decoration: BoxDecoration(
-                    color: selected ? AppColors.koreanBlue : Colors.white,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color:
-                          selected ? AppColors.koreanBlue : AppColors.border,
-                    ),
-                  ),
-                  child: Text(
-                    entry.$2,
-                    style: TextStyle(
-                      color: selected ? Colors.white : AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+      child: Row(
+        children: _items.map((entry) {
+          final selected = entry.$1 == current;
+          return Expanded(
+            child: InkWell(
+              onTap: () => onSelect(entry.$1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: selected
+                          ? AppColors.koreanBlue
+                          : Colors.transparent,
+                      width: 2.5,
                     ),
                   ),
                 ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      entry.$3,
+                      size: 16,
+                      color: selected
+                          ? AppColors.koreanBlue
+                          : AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      entry.$2,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: selected
+                            ? AppColors.koreanBlue
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            );
-          }).toList(),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _StatusSegmentBar extends StatelessWidget {
+  const _StatusSegmentBar({required this.current, required this.onSelect});
+  final PetitionStatusFilter current;
+  final ValueChanged<PetitionStatusFilter> onSelect;
+
+  static const _items = <(PetitionStatusFilter, String)>[
+    (PetitionStatusFilter.active, '진행중'),
+    (PetitionStatusFilter.completed, '완료'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      child: Row(
+        children: _items.map((entry) {
+          final selected = entry.$1 == current;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => onSelect(entry.$1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: selected ? AppColors.koreanBlue : Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color:
+                        selected ? AppColors.koreanBlue : AppColors.border,
+                  ),
+                ),
+                child: Text(
+                  entry.$2,
+                  style: TextStyle(
+                    color: selected ? Colors.white : AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _EmptyHint extends StatelessWidget {
+  const _EmptyHint({required this.tab, required this.status});
+  final PetitionTab tab;
+  final PetitionStatusFilter status;
+
+  String get _label {
+    final tabLabel =
+        tab == PetitionTab.legislativeBill ? '입법법안' : '국민청원';
+    final statusLabel =
+        status == PetitionStatusFilter.active ? '진행중인' : '완료된';
+    return '$statusLabel $tabLabel 이 없습니다.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              tab == PetitionTab.legislativeBill
+                  ? Icons.gavel_outlined
+                  : Icons.how_to_vote_outlined,
+              size: 56,
+              color: AppColors.textSecondary.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
         ),
       ),
     );

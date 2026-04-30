@@ -34,6 +34,17 @@ class PetitionCard extends StatelessWidget {
     return AppColors.koreanBlue;
   }
 
+  Color get _stanceColor {
+    switch (petition.stance) {
+      case PetitionStance.support:
+        return AppColors.koreanBlue;
+      case PetitionStance.oppose:
+        return AppColors.koreanRed;
+      case PetitionStance.neutral:
+        return AppColors.textSecondary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -51,6 +62,7 @@ class PetitionCard extends StatelessWidget {
           children: [
             Row(
               children: [
+                // 카테고리 뱃지
                 Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 5),
@@ -67,6 +79,28 @@ class PetitionCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                // 입법법안: 입장 뱃지
+                if (petition.stance != PetitionStance.neutral) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _stanceColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                          color: _stanceColor.withValues(alpha: 0.45)),
+                    ),
+                    child: Text(
+                      petition.stanceLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: _stanceColor,
+                      ),
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -90,6 +124,22 @@ class PetitionCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            // 의안번호·청원번호 (있을 때만)
+            if (petition.referenceNumber.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  petition.isLegislativeBill
+                      ? '의안번호 ${petition.referenceNumber}'
+                      : '청원번호 ${petition.referenceNumber}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
             Text(
               petition.title,
               maxLines: 2,
@@ -113,34 +163,96 @@ class PetitionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            PetitionProgressBar(percent: petition.progressPercent),
-            const SizedBox(height: 8),
+            // 진행 현황 (입법법안) 또는 진행률 바 (국민청원·targetCount 있을 때)
+            if (petition.isLegislativeBill &&
+                petition.progressStatus.isNotEmpty)
+              _ProgressStatusRow(status: petition.progressStatus)
+            else if (petition.hasProgressBar) ...[
+              PetitionProgressBar(percent: petition.progressPercent),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    '${petition.currentCount}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    ' / ${petition.targetCount} 명',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 10),
             Row(
               children: [
-                Text(
-                  '${petition.currentCount}',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
-                  ),
+                Icon(
+                  petition.isLegislativeBill
+                      ? Icons.gavel
+                      : Icons.how_to_vote_outlined,
+                  size: 14,
+                  color: AppColors.textSecondary,
                 ),
+                const SizedBox(width: 6),
                 Text(
-                  ' / ${petition.targetCount} 명',
+                  petition.ctaLabel,
                   style: const TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const Spacer(),
-                Icon(Icons.arrow_forward,
+                Icon(Icons.open_in_new,
                     size: 16,
                     color: AppColors.textSecondary.withValues(alpha: 0.6)),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ProgressStatusRow extends StatelessWidget {
+  const _ProgressStatusRow({required this.status});
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.softBlue,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.timeline,
+              size: 14, color: AppColors.koreanBlue),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              status,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.koreanBlue,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

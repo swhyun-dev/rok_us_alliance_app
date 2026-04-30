@@ -9,33 +9,27 @@ class PetitionStore {
   static final CollectionReference<Map<String, dynamic>> _col =
       FirebaseFirestore.instance.collection('petitions');
 
-  /// 필터별 청원 리스트 구독.
-  /// 진행중: status=active orderBy deadline asc
-  /// 인기: status=active orderBy currentCount desc
-  /// 신규: status=active orderBy createdAt desc
-  /// 완료: status=completed orderBy completedAt desc (없으면 createdAt)
-  static Stream<List<Petition>> watchAll(
-    PetitionFilter filter, {
+  /// 상위 [tab] (국민청원/입법법안) + 하위 [status] (진행중/완료) 필터.
+  /// active 는 deadline asc, completed 는 completedAt desc.
+  static Stream<List<Petition>> watchByTab({
+    required PetitionTab tab,
+    required PetitionStatusFilter status,
     int limit = 30,
   }) {
-    Query<Map<String, dynamic>> q = _col;
-    switch (filter) {
-      case PetitionFilter.active:
+    final typeName = tab == PetitionTab.legislativeBill
+        ? PetitionType.legislativeBill.name
+        : PetitionType.nationalPetition.name;
+
+    Query<Map<String, dynamic>> q =
+        _col.where('type', isEqualTo: typeName);
+
+    switch (status) {
+      case PetitionStatusFilter.active:
         q = q
             .where('status', isEqualTo: 'active')
             .orderBy('deadline', descending: false);
         break;
-      case PetitionFilter.popular:
-        q = q
-            .where('status', isEqualTo: 'active')
-            .orderBy('currentCount', descending: true);
-        break;
-      case PetitionFilter.newest:
-        q = q
-            .where('status', isEqualTo: 'active')
-            .orderBy('createdAt', descending: true);
-        break;
-      case PetitionFilter.completed:
+      case PetitionStatusFilter.completed:
         q = q
             .where('status', isEqualTo: 'completed')
             .orderBy('createdAt', descending: true);
@@ -46,11 +40,12 @@ class PetitionStore {
         );
   }
 
-  /// isFeatured 청원 + currentCount desc (홈 HotPetitionSection 용).
+  /// 홈 HotPetitionSection — 진행중 전체에서 isFeatured 우선·신규순 limit.
   static Stream<List<Petition>> watchFeatured({int limit = 3}) {
     return _col
         .where('status', isEqualTo: 'active')
-        .orderBy('currentCount', descending: true)
+        .orderBy('isFeatured', descending: true)
+        .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
         .map((snap) => snap.docs.map(Petition.fromFirestore).toList());
@@ -63,21 +58,20 @@ class PetitionStore {
     });
   }
 
-  /// 사용자가 해당 청원에 서명했는지 1회 확인.
-  static Future<bool> hasSigned({
-    required String petitionId,
-    required String uid,
+  /// referenceNumber 가 이미 등록되어 있는지 검사 (중복 방지).
+  /// type 별로 분리해서 검사 — 청원번호와 의안번호는 네임스페이스가 다를 수 있음.
+  static Future<bool> isReferenceTaken({
+    required PetitionType type,
+    required String referenceNumber,
   }) async {
-    final doc = await _col.doc(petitionId).collection('signatures').doc(uid).get();
-    return doc.exists;
-  }
-
-  static Stream<int> watchSignatureCount(String petitionId) {
-    return _col
-        .doc(petitionId)
-        .collection('signatures')
-        .snapshots()
-        .map((snap) => snap.size);
+    final ref = referenceNumber.trim();
+    if (ref.isEmpty) return false;
+    final snap = await _col
+        .where('type', isEqualTo: type.name)
+        .where('referenceNumber', isEqualTo: ref)
+        .limit(1)
+        .get();
+    return snap.docs.isNotEmpty;
   }
 
   /// 관리자만 (rules에서 isAdmin 검증).
