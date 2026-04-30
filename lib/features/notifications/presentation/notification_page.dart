@@ -46,6 +46,47 @@ class NotificationPage extends StatelessWidget {
     }
   }
 
+  Future<void> _confirmDeleteAll(BuildContext context, String uid) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('전체 삭제', style: TextStyle(fontWeight: FontWeight.w800)),
+        content: const Text(
+          '받은 알림을 모두 삭제하시겠습니까?\n삭제된 알림은 복구할 수 없습니다.',
+          style: TextStyle(height: 1.55),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            style:
+                FilledButton.styleFrom(backgroundColor: AppColors.koreanRed),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('전체 삭제'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final n = await NotificationStore.deleteAll(uid);
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('알림 $n건이 삭제되었습니다.')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('삭제 실패: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = AuthStore.currentUser?.providerUserId;
@@ -69,10 +110,35 @@ class NotificationPage extends StatelessWidget {
                 );
               },
             ),
+          if (uid != null)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (v) {
+                if (v == 'delete_all') _confirmDeleteAll(context, uid);
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: 'delete_all',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_sweep_outlined,
+                          size: 18, color: AppColors.koreanRed),
+                      SizedBox(width: 8),
+                      Text('전체 삭제',
+                          style: TextStyle(color: AppColors.koreanRed)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
       body: uid == null
-          ? const Center(child: Text('로그인이 필요합니다.'))
+          ? const _EmptyState(
+              icon: Icons.lock_outline,
+              title: '로그인이 필요합니다',
+              subtitle: '로그인 후 받은 알림을 확인할 수 있습니다.',
+            )
           : StreamBuilder<List<AppNotification>>(
               stream: NotificationStore.watchMine(uid),
               builder: (context, snapshot) {
@@ -93,37 +159,102 @@ class NotificationPage extends StatelessWidget {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (list.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Text(
-                        '아직 받은 알림이 없습니다.',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ),
+                  return const _EmptyState(
+                    icon: Icons.notifications_off_outlined,
+                    title: '아직 받은 알림이 없어요',
+                    subtitle:
+                        '활동을 시작하면 점수 적립·승급·답글 등의 알림이 여기에 쌓입니다.',
                   );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                   itemCount: list.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 10),
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, i) {
                     final n = list[i];
-                    return _NotificationTile(
-                      notification: n,
-                      icon: _iconForType(n.type),
-                      color: _colorForType(n.type),
-                      onTap: () async {
-                        if (!n.isRead) {
-                          await NotificationStore.markAsRead(n.id);
+                    return Dismissible(
+                      key: ValueKey(n.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: AppColors.koreanRed,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(Icons.delete_outline,
+                            color: Colors.white),
+                      ),
+                      onDismissed: (_) async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          await NotificationStore.delete(n.id);
+                        } catch (e) {
+                          messenger.showSnackBar(
+                            SnackBar(content: Text('삭제 실패: $e')),
+                          );
                         }
                       },
+                      child: _NotificationTile(
+                        notification: n,
+                        icon: _iconForType(n.type),
+                        color: _colorForType(n.type),
+                        onTap: () async {
+                          if (!n.isRead) {
+                            await NotificationStore.markAsRead(n.id);
+                          }
+                        },
+                      ),
                     );
                   },
                 );
               },
             ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 56, color: AppColors.textSecondary.withValues(alpha: 0.5)),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.55,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

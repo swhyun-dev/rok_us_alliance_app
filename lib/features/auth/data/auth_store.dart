@@ -360,13 +360,35 @@ class AuthStore {
     return List.generate(8, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 
+  /// 회원정보 수정 — name 또는 nickname 변경 시 호출.
+  /// Firestore users/{uid} 와 SharedPreferences 캐시 양쪽 갱신.
+  /// 닉네임 변경 시에는 호출자가 사전 [isNicknameAvailable] 검사 권장.
   static Future<void> updateProfile({
     String? name,
+    String? nickname,
   }) async {
     final user = currentUser;
     if (user == null) {
       throw Exception('로그인된 사용자가 없습니다.');
     }
+
+    final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+    if (firebaseUid == null) {
+      throw Exception('Firebase 인증 세션이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    final trimmedName = name?.trim();
+    final trimmedNickname = nickname?.trim();
+    final patch = <String, dynamic>{
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (trimmedName != null && trimmedName.isNotEmpty) {
+      patch['name'] = trimmedName;
+    }
+    if (trimmedNickname != null && trimmedNickname.isNotEmpty) {
+      patch['nickname'] = trimmedNickname;
+    }
+    if (patch.length == 1) return; // 변경 없음
 
     notifier.value = notifier.value.copyWith(
       isLoading: true,
@@ -374,8 +396,14 @@ class AuthStore {
     );
 
     try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(firebaseUid)
+          .update(patch);
+
       final updatedUser = user.copyWith(
-        name: name?.trim(),
+        name: trimmedName?.isNotEmpty == true ? trimmedName : null,
+        nickname: trimmedNickname?.isNotEmpty == true ? trimmedNickname : null,
         updatedAt: DateTime.now(),
       );
 

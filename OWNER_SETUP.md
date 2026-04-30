@@ -27,6 +27,7 @@
 | 12 | Google Play Console 가입 | $25 일회 | 1~2일 | Android 출시 |
 | 13 | App Store Connect 정보 입력 | (포함) | 1시간 | iOS 심사 |
 | 14 | 약관 외부 페이지 게시 | 0원 | 30분 | 심사 요건 |
+| 15 | 폰트·앱 아이콘 자산 배치 | 0원 | 30분 | 출시 디자인 완성도 |
 
 ---
 
@@ -397,6 +398,62 @@ keytool -list -v -keystore $HOME/.android/rokus-alliance-release.jks -alias roku
    - 예: `https://rokus-alliance.com/terms`, `/privacy`
 3. App Store Connect / Play Console 의 정책 URL 칸에 입력
 4. 앱 내 약관 페이지(`TermsPage`/`PrivacyPage`) 도 외부 URL 링크 추가 가능
+
+---
+
+## 🟢 15. 폰트 · 앱 아이콘 자산 배치
+
+**왜**: 브랜딩 완성도 + 스토어 심사 자료(아이콘은 1024×1024 필수). 코드는 시스템 기본 폰트로 동작하지만, CLAUDE.md Section 3-3 에 정의된 디자인 시스템과 다릅니다.
+
+**방법**:
+
+### 1. 폰트 — `assets/fonts/README.md` 참조
+
+- Pretendard (한글 본문): https://github.com/orioncactus/pretendard/releases
+  - `Regular.otf` / `Medium.otf` / `Bold.otf` 3개를 `assets/fonts/` 에 복사
+- Bebas Neue (숫자·헤드라인): https://fonts.google.com/specimen/Bebas+Neue
+  - `BebasNeue-Regular.ttf` 를 같은 폴더에 복사
+- 라이선스: 둘 다 SIL OFL 1.1 — 상업적 사용·수정·임베드 가능
+
+배치 후 `pubspec.yaml` 에 다음 추가 (`assets/fonts/README.md` 의 예시 그대로):
+
+```yaml
+flutter:
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700
+    - family: BebasNeue
+      fonts:
+        - asset: assets/fonts/BebasNeue-Regular.ttf
+```
+
+`flutter clean && flutter pub get` 후 빌드.
+
+### 2. 앱 아이콘 — `assets/images/APP_ICON_README.md` 참조
+
+1. 1024 × 1024 마스터 PNG 디자인 → `assets/images/app_icon.png` 로 저장
+2. `flutter_launcher_icons` 패키지로 모든 사이즈 자동 생성:
+
+   ```bash
+   flutter pub add --dev flutter_launcher_icons
+   # pubspec.yaml 에 flutter_launcher_icons 설정 추가 (README 예시 참조)
+   dart run flutter_launcher_icons
+   ```
+
+3. 결과 확인:
+   - Android: `android/app/src/main/res/mipmap-*/ic_launcher.png`
+   - iOS: `ios/Runner/Assets.xcassets/AppIcon.appiconset/*`
+
+### 3. 스토어 스크린샷 (별도)
+
+App Store / Play Store 제출 시 필요 — 기기별 권장 사이즈는 각 콘솔 안내 따라 5종 캡처(로그인·홈·피드·청원·멤버십카드 권장).
+
+✅ 출시 빌드 시 `flutter build apk --release` / `flutter build ipa` 결과물에 새 폰트·아이콘이 반영되면 끝.
 
 ---
 

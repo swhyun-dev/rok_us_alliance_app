@@ -8,12 +8,15 @@ import '../../../shared/services/profile_image_service.dart';
 import '../../admin/presentation/admin_dashboard_page.dart';
 import '../../auth/data/admin_auth_store.dart';
 import '../../auth/data/auth_store.dart';
+import '../../auth/presentation/edit_profile_page.dart';
 import '../../auth/presentation/login_page.dart';
 import '../../home/presentation/home_page.dart';
 import '../../membership/data/member_store.dart';
 import '../../membership/domain/member.dart';
 import '../../membership/presentation/membership_card_modal.dart';
 import '../../notifications/presentation/notification_page.dart';
+import '../../settings/presentation/security_page.dart';
+import '../../settings/presentation/support_page.dart';
 import '../../settings/presentation/terms_page.dart';
 import 'level_guide_page.dart';
 import 'point_history_page.dart';
@@ -237,6 +240,29 @@ class ProfilePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const NotificationPage()),
+                  );
+                  return;
+                }
+                if (title == '회원정보 수정') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const EditProfilePage()),
+                  );
+                  return;
+                }
+                if (title == '보안 설정') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const SecurityPage()),
+                  );
+                  return;
+                }
+                if (title == '고객센터 · FAQ') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SupportPage()),
                   );
                   return;
                 }

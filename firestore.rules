@@ -207,7 +207,7 @@ service cloud.firestore {
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     match /notifications/{notifId} {
-      // 본인 알림만 읽기·읽음 처리
+      // 본인 알림만 읽기·읽음 처리·삭제
       allow read: if isOwner(resource.data.uid);
 
       // isRead만 변경 가능
@@ -215,8 +215,11 @@ service cloud.firestore {
                        && request.resource.data.diff(resource.data).affectedKeys()
                            .hasOnly(['isRead', 'readAt']);
 
-      // 작성·삭제: Cloud Function만
-      allow create, delete: if false;
+      // 본인 알림 삭제 허용 (단일·일괄)
+      allow delete: if isOwner(resource.data.uid);
+
+      // 작성: Cloud Function만
+      allow create: if false;
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

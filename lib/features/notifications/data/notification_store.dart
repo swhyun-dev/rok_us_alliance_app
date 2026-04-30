@@ -50,4 +50,24 @@ class NotificationStore {
     }
     await batch.commit();
   }
+
+  /// 단일 알림 삭제. firestore.rules 에서 본인 문서만 delete 허용.
+  static Future<void> delete(String notificationId) async {
+    await _col.doc(notificationId).delete();
+  }
+
+  /// 본인 알림 전체 삭제. 한 번에 최대 [limit] 개만 처리(과다 삭제 방지).
+  static Future<int> deleteAll(String uid, {int limit = 200}) async {
+    final snap = await _col
+        .where('uid', isEqualTo: uid)
+        .limit(limit)
+        .get();
+    if (snap.docs.isEmpty) return 0;
+    final batch = FirebaseFirestore.instance.batch();
+    for (final doc in snap.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+    return snap.docs.length;
+  }
 }
