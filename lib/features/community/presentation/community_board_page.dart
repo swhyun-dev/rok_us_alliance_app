@@ -200,11 +200,7 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => CommunityPostFormPage(
-                initialBoardType: widget.boardType,
-                initialRegion:
-                widget.boardType == CommunityBoardType.meetup ? _selectedRegion : null,
-              ),
+              builder: (_) => const CommunityPostFormPage(),
             ),
           );
         },

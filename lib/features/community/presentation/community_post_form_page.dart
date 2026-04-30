@@ -6,451 +6,203 @@ import '../../auth/data/auth_store.dart';
 import '../data/community_post_store.dart';
 import '../domain/community_post.dart';
 
+/// 트위터(X) 스타일의 짧은 글 작성 화면.
+/// - 본문 280자 + 카테고리 칩 1개 선택
+/// - 제목은 본문 첫 줄에서 자동 추출 (모델의 title 필드 채우기용)
+/// - 옛 게시판 필드(boardType/region/resourceUrl/thumbnail) 는 기본값 고정
 class CommunityPostFormPage extends StatefulWidget {
-  const CommunityPostFormPage({
-    super.key,
-    this.initialPost,
-    this.initialBoardType,
-    this.initialRegion,
-  });
+  const CommunityPostFormPage({super.key, this.initialPost});
 
   final CommunityPost? initialPost;
-  final CommunityBoardType? initialBoardType;
-  final String? initialRegion;
 
   @override
   State<CommunityPostFormPage> createState() => _CommunityPostFormPageState();
 }
 
 class _CommunityPostFormPageState extends State<CommunityPostFormPage> {
-  final _formKey = GlobalKey<FormState>();
+  static const int _maxLength = 280;
 
-  late final TextEditingController _titleController;
   late final TextEditingController _contentController;
-  late final TextEditingController _authorController;
-  late final TextEditingController _regionController;
-  late final TextEditingController _resourceLabelController;
-  late final TextEditingController _resourceUrlController;
-  late final TextEditingController _thumbnailUrlController;
 
-  late CommunityBoardType _boardType;
-  late CommunityResourceType _resourceType;
-  bool _isSaving = false;
+  String _category = 'general';
+  bool _submitting = false;
 
   bool get _isEdit => widget.initialPost != null;
-  bool get _isResourceBoard => _boardType == CommunityBoardType.resource;
+
+  static const List<({String code, String label, Color color})> _categories = [
+    (code: 'urgent', label: '긴급', color: AppColors.koreanRed),
+    (code: 'policy', label: '정책', color: AppColors.koreanBlue),
+    (code: 'network', label: '네트워크', color: AppColors.brightRed),
+    (code: 'event', label: '행사', color: AppColors.gold),
+    (code: 'general', label: '일반', color: AppColors.darkNavy),
+  ];
 
   @override
   void initState() {
     super.initState();
     final post = widget.initialPost;
-
-    _titleController = TextEditingController(text: post?.title ?? '');
     _contentController = TextEditingController(text: post?.content ?? '');
-    _authorController = TextEditingController(text: post?.author ?? '');
-    _regionController = TextEditingController(
-      text: post?.region ??
-          widget.initialRegion ??
-          (_resolveDefaultRegion(widget.initialBoardType) ?? '전국'),
-    );
-    _resourceLabelController =
-        TextEditingController(text: post?.resourceLabel ?? '');
-    _resourceUrlController = TextEditingController(text: post?.resourceUrl ?? '');
-    _thumbnailUrlController =
-        TextEditingController(text: post?.thumbnailUrl ?? '');
-
-    _boardType = post?.boardType ?? widget.initialBoardType ?? CommunityBoardType.free;
-    _resourceType = post?.resourceType == CommunityResourceType.none
-        ? CommunityResourceType.url
-        : (post?.resourceType ?? CommunityResourceType.url);
-  }
-
-  String? _resolveDefaultRegion(CommunityBoardType? boardType) {
-    if (boardType == CommunityBoardType.meetup) {
-      return widget.initialRegion == '전체' ? '' : widget.initialRegion;
+    if (post != null) {
+      _category = post.category.isNotEmpty ? post.category : 'general';
     }
-    if (boardType == CommunityBoardType.resource) {
-      return '온라인';
-    }
-    return '전국';
+    _contentController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
     _contentController.dispose();
-    _authorController.dispose();
-    _regionController.dispose();
-    _resourceLabelController.dispose();
-    _resourceUrlController.dispose();
-    _thumbnailUrlController.dispose();
     super.dispose();
   }
 
-  Future<void> _save() async {
-    if (_isSaving) return;
-    if (!_formKey.currentState!.validate()) return;
+  int get _currentLength => _contentController.text.characters.length;
+  int get _remaining => _maxLength - _currentLength;
 
+  bool get _canSubmit {
+    final trimmed = _contentController.text.trim();
+    return trimmed.isNotEmpty &&
+        _currentLength <= _maxLength &&
+        !_submitting;
+  }
+
+  /// 본문 첫 줄(또는 첫 30자)을 제목으로 추출.
+  String _deriveTitle(String content) {
+    final firstLine = content.split('\n').first.trim();
+    if (firstLine.isEmpty) return content.trim();
+    if (firstLine.characters.length <= 30) return firstLine;
+    return '${firstLine.characters.take(30).toString()}…';
+  }
+
+  Future<void> _submit() async {
+    if (!_canSubmit) return;
     final user = AuthStore.currentUser;
-    if (user == null && !_isEdit) {
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('로그인이 필요합니다.')),
       );
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
-
-    final previous = widget.initialPost;
-    final authorIdValue = previous?.authorId.isNotEmpty == true
-        ? previous!.authorId
-        : (user?.providerUserId ?? 'system');
-    final authorNicknameInput = _authorController.text.trim();
-
+    setState(() => _submitting = true);
+    final messenger = ScaffoldMessenger.of(context);
     try {
+      final content = _contentController.text.trim();
+      final title = _deriveTitle(content);
+      final isUrgent = _category == 'urgent';
+
       if (_isEdit) {
-        final updated = previous!.copyWith(
-          boardType: _boardType,
-          title: _titleController.text.trim(),
-          content: _contentController.text.trim(),
-          authorNickname: authorNicknameInput.isNotEmpty
-              ? authorNicknameInput
-              : previous.authorNickname,
-          region: _regionController.text.trim(),
-          resourceType:
-              _isResourceBoard ? _resourceType : CommunityResourceType.none,
-          resourceLabel:
-              _isResourceBoard ? _resourceLabelController.text.trim() : '',
-          resourceUrl:
-              _isResourceBoard ? _resourceUrlController.text.trim() : '',
-          thumbnailUrl: _thumbnailUrlController.text.trim(),
-        );
-        await CommunityPostStore.update(updated.id, updated.toMap());
+        await CommunityPostStore.update(widget.initialPost!.id, {
+          'title': title,
+          'content': content,
+          'category': _category,
+          'isUrgent': isUrgent,
+        });
       } else {
         final draft = CommunityPost(
           id: '',
-          authorId: authorIdValue,
-          authorNickname: authorNicknameInput.isNotEmpty
-              ? authorNicknameInput
-              : (user?.nickname ?? '익명'),
-          authorLevel: user?.level ?? 1,
-          boardType: _boardType,
-          title: _titleController.text.trim(),
-          content: _contentController.text.trim(),
-          region: _regionController.text.trim(),
-          createdAt: DateTime.now(),
-          resourceType:
-              _isResourceBoard ? _resourceType : CommunityResourceType.none,
-          resourceLabel:
-              _isResourceBoard ? _resourceLabelController.text.trim() : '',
-          resourceUrl:
-              _isResourceBoard ? _resourceUrlController.text.trim() : '',
-          thumbnailUrl: _thumbnailUrlController.text.trim(),
+          authorId: user.providerUserId,
+          authorNickname:
+              user.nickname.isNotEmpty ? user.nickname : user.name,
+          authorLevel: user.level,
+          boardType: CommunityBoardType.free,
+          category: _category,
+          title: title,
+          content: content,
+          region: '전국',
+          createdAt: DateTime(0), // serverTimestamp 사용
+          isUrgent: isUrgent,
         );
         await CommunityPostStore.add(draft);
       }
-
       if (!mounted) return;
-      Navigator.pop(context, true);
+      messenger.showSnackBar(
+        SnackBar(content: Text(_isEdit ? '글을 수정했습니다.' : '+30P 적립! 글이 게시되었습니다.')),
+      );
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('저장 실패: $e')),
+      messenger.showSnackBar(
+        SnackBar(content: Text('등록 실패: $e')),
       );
     } finally {
-      if (mounted) setState(() => _isSaving = false);
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_isEdit ? '게시글 수정' : '게시글 작성'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        children: [
-          Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                _SectionCard(
-                  title: '기본 정보',
-                  child: Column(
-                    children: [
-                      _LabeledField(
-                        label: '게시판',
-                        child: DropdownButtonFormField<CommunityBoardType>(
-                          initialValue: _boardType,
-                          items: const [
-                            DropdownMenuItem(
-                              value: CommunityBoardType.free,
-                              child: Text('자유게시판'),
-                            ),
-                            DropdownMenuItem(
-                              value: CommunityBoardType.meetup,
-                              child: Text('지역모임'),
-                            ),
-                            DropdownMenuItem(
-                              value: CommunityBoardType.resource,
-                              child: Text('자료공유'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            if (value == null) return;
-                            setState(() {
-                              _boardType = value;
-                              if (_boardType == CommunityBoardType.resource &&
-                                  _regionController.text.trim().isEmpty) {
-                                _regionController.text = '온라인';
-                              }
-                              if (_boardType == CommunityBoardType.free &&
-                                  _regionController.text.trim().isEmpty) {
-                                _regionController.text = '전국';
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      _LabeledField(
-                        label: '작성자',
-                        child: TextFormField(
-                          controller: _authorController,
-                          decoration: const InputDecoration(
-                            hintText: '예: 자유수호',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return '작성자를 입력해주세요.';
-                            }
-                            if (value.trim().length < 2) {
-                              return '작성자는 최소 2자 이상 입력해주세요.';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      _LabeledField(
-                        label: _boardType == CommunityBoardType.meetup ? '지역' : '표시 지역',
-                        child: TextFormField(
-                          controller: _regionController,
-                          decoration: InputDecoration(
-                            hintText: _boardType == CommunityBoardType.meetup
-                                ? '예: 서울 / 경기/평택 / 부산'
-                                : '예: 전국 / 온라인',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return '지역을 입력해주세요.';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      _LabeledField(
-                        label: '썸네일 이미지 URL',
-                        child: TextFormField(
-                          controller: _thumbnailUrlController,
-                          decoration: const InputDecoration(
-                            hintText: '예: https://.../thumbnail.jpg',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: Text(
+          _isEdit ? '글 수정' : '새 글',
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.koreanBlue,
+                disabledBackgroundColor:
+                    AppColors.koreanBlue.withValues(alpha: 0.35),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
                 ),
-                const SizedBox(height: 16),
-                _SectionCard(
-                  title: '게시글 내용',
-                  child: Column(
-                    children: [
-                      _LabeledField(
-                        label: '제목',
-                        child: TextFormField(
-                          controller: _titleController,
-                          decoration: const InputDecoration(
-                            hintText: '게시글 제목을 입력해주세요.',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return '제목을 입력해주세요.';
-                            }
-                            if (value.trim().length < 5) {
-                              return '제목은 최소 5자 이상 입력해주세요.';
-                            }
-                            return null;
-                          },
-                        ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              ),
+              onPressed: _canSubmit ? _submit : null,
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
                       ),
-                      const SizedBox(height: 14),
-                      _LabeledField(
-                        label: '본문',
-                        child: TextFormField(
-                          controller: _contentController,
-                          maxLines: 8,
-                          decoration: const InputDecoration(
-                            hintText: '자유롭게 내용을 작성해주세요.',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return '본문을 입력해주세요.';
-                            }
-                            if (value.trim().length < 10) {
-                              return '본문은 최소 10자 이상 입력해주세요.';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (_isResourceBoard) ...[
-                  const SizedBox(height: 16),
-                  _SectionCard(
-                    title: '자료 정보',
-                    child: Column(
-                      children: [
-                        _LabeledField(
-                          label: '자료 유형',
-                          child: DropdownButtonFormField<CommunityResourceType>(
-                            initialValue: _resourceType,
-                            items: const [
-                              DropdownMenuItem(
-                                value: CommunityResourceType.youtube,
-                                child: Text('유튜브'),
-                              ),
-                              DropdownMenuItem(
-                                value: CommunityResourceType.image,
-                                child: Text('이미지'),
-                              ),
-                              DropdownMenuItem(
-                                value: CommunityResourceType.file,
-                                child: Text('파일'),
-                              ),
-                              DropdownMenuItem(
-                                value: CommunityResourceType.url,
-                                child: Text('URL'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() {
-                                _resourceType = value;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        _LabeledField(
-                          label: '자료 이름',
-                          child: TextFormField(
-                            controller: _resourceLabelController,
-                            decoration: const InputDecoration(
-                              hintText: '예: 추천 영상 / 문구파일 / 참고 링크',
-                            ),
-                            validator: (value) {
-                              if (!_isResourceBoard) return null;
-                              if (value == null || value.trim().isEmpty) {
-                                return '자료 이름을 입력해주세요.';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        _LabeledField(
-                          label: '자료 링크 / 경로',
-                          child: TextFormField(
-                            controller: _resourceUrlController,
-                            decoration: InputDecoration(
-                              hintText: switch (_resourceType) {
-                                CommunityResourceType.youtube =>
-                                '예: https://www.youtube.com/watch?v=...',
-                                CommunityResourceType.image =>
-                                '예: https://.../image.jpg',
-                                CommunityResourceType.file =>
-                                '예: https://.../file.pdf',
-                                CommunityResourceType.url =>
-                                '예: https://example.com',
-                                CommunityResourceType.none => '예: https://example.com',
-                              },
-                            ),
-                            validator: (value) {
-                              if (!_isResourceBoard) return null;
-                              if (value == null || value.trim().isEmpty) {
-                                return '자료 링크나 경로를 입력해주세요.';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _save,
-                    icon: const Icon(Icons.edit_outlined),
-                    label: Text(
-                      _isSaving
-                          ? '저장 중...'
-                          : (_isEdit ? '수정 저장' : '게시글 등록'),
-                    ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.navy,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                    )
+                  : Text(_isEdit ? '저장' : '게시',
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w800)),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: TextField(
+                  controller: _contentController,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  autofocus: true,
+                  decoration: const InputDecoration.collapsed(
+                    hintText: '지금 어떤 일이 있나요?',
+                  ),
+                  style: const TextStyle(
+                    fontSize: 17,
+                    height: 1.5,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 14),
-            child,
+            const Divider(height: 0, color: AppColors.border),
+            _CategoryChips(
+              current: _category,
+              categories: _categories,
+              onSelect: (c) => setState(() => _category = c),
+            ),
+            _Footer(remaining: _remaining, max: _maxLength),
           ],
         ),
       ),
@@ -458,31 +210,100 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _LabeledField extends StatelessWidget {
-  const _LabeledField({
-    required this.label,
-    required this.child,
+class _CategoryChips extends StatelessWidget {
+  const _CategoryChips({
+    required this.current,
+    required this.categories,
+    required this.onSelect,
   });
 
-  final String label;
-  final Widget child;
+  final String current;
+  final List<({String code, String label, Color color})> categories;
+  final ValueChanged<String> onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textSecondary,
-          ),
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: categories.map((c) {
+            final selected = c.code == current;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(999),
+                onTap: () => onSelect(c.code),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: selected ? c.color : Colors.white,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: selected ? c.color : AppColors.border,
+                    ),
+                  ),
+                  child: Text(
+                    c.label,
+                    style: TextStyle(
+                      color: selected ? Colors.white : AppColors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
-        const SizedBox(height: 8),
-        child,
-      ],
+      ),
+    );
+  }
+}
+
+class _Footer extends StatelessWidget {
+  const _Footer({required this.remaining, required this.max});
+  final int remaining;
+  final int max;
+
+  @override
+  Widget build(BuildContext context) {
+    final overflow = remaining < 0;
+    final warn = remaining <= 20 && !overflow;
+    final color = overflow
+        ? AppColors.koreanRed
+        : (warn ? AppColors.gold : AppColors.textSecondary);
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              value: ((max - remaining) / max).clamp(0.0, 1.0),
+              backgroundColor: AppColors.border,
+              valueColor: AlwaysStoppedAnimation(color),
+              strokeWidth: 3,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '$remaining',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
