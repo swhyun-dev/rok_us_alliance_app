@@ -66,5 +66,47 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+	<!-- 외부 OAuth Callback URL Schemes                                  -->
+	<!--                                                                   -->
+	<!-- ⚠️ OWNER_SETUP 9단계에서 다음을 정확한 값으로 교체 필요:           -->
+	<!--   - YOUR_KAKAO_NATIVE_APP_KEY  (Kakao Developers > 앱 키)          -->
+	<!--   - YOUR_GOOGLE_REVERSED_CLIENT_ID (GoogleService-Info.plist 의    -->
+	<!--     REVERSED_CLIENT_ID 값. 형태: com.googleusercontent.apps.XXXX)  -->
+	<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<!-- Kakao 로그인 콜백 -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>kakao</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kakaoYOUR_KAKAO_NATIVE_APP_KEY</string>
+			</array>
+		</dict>
+		<!-- Google Sign-In 콜백 -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>YOUR_GOOGLE_REVERSED_CLIENT_ID</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- 카카오톡 앱 호출 가능 여부 검사용 (iOS 9+ 필수) -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaokompassauth</string>
+		<string>kakaolink</string>
+		<string>kakaoplus</string>
+	</array>
 </dict>
 </plist>

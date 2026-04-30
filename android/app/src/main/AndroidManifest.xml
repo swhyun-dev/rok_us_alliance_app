@@ -1,11 +1,24 @@
 <!-- android/app/src/main/AndroidManifest.xml -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <!-- 카카오톡 앱 설치 여부 검사 + 외부 인텐트 (Android 11+ 필수) -->
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <queries>
+        <package android:name="com.kakao.talk" />
+        <intent>
+            <action android:name="com.kakao.sdk.talk.intent.action.CAPRI_LOGGED_IN_ACTIVITY" />
+        </intent>
+    </queries>
+
     <application
         android:name="${applicationName}"
         android:label="rok_us_alliance_app"
         android:icon="@mipmap/ic_launcher">
 
+        <!-- ━━━ Naver SDK ━━━ -->
         <meta-data
             android:name="com.naver.sdk.clientId"
             android:value="@string/client_id" />
@@ -31,6 +44,25 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- Kakao 로그인 Callback Activity                              -->
+        <!-- KAKAO_NATIVE_APP_KEY 는 build.gradle.kts 의 manifestPlaceholders -->
+        <!-- 로 주입됨. 빌드 전 local.properties 에 다음을 설정해야 함:    -->
+        <!--   kakao.native.app.key=YOUR_KAKAO_NATIVE_APP_KEY              -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <activity
+            android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
+            android:exported="true">
+            <intent-filter android:label="kakao_oauth">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="kakao${KAKAO_NATIVE_APP_KEY}"
+                    android:host="oauth" />
             </intent-filter>
         </activity>
 

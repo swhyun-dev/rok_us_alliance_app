@@ -31,6 +31,29 @@
 
 ---
 
+## ✅ 진행 체크리스트
+
+대표님이 단계 끝낼 때마다 Claude에게 "N단계 끝" 이라고 말씀해주세요. 본 체크박스를 `[x]` 로 갱신해드립니다.
+
+- [x] **0.** Windows Developer Mode 켜기
+- [x] **1.** Firebase CLI 설치 + `firebase login` + `firebase use rok-us-alliance-app`
+- [x] **2.** `firebase deploy --only firestore:rules,firestore:indexes,storage`
+- [x] **3.** Cloud Functions 빌드·배포 (`cd functions && npm install && npm run build && cd .. && firebase deploy --only functions`)
+- [x] **4.** 시드 데이터 업로드 (events + app_meta + 관리자 계정)
+- [x] **5.** Naver Developers 검수 신청 (선택)
+- [x] **6.** Kakao Developers + Native App Key 발급
+- [x] **7.** Android SHA-1 등록 + google-services.json 갱신
+- [ ] **8.** Apple Developer Program 가입 ($99/년)
+- [ ] **9.** iOS Bundle ID 결정 + GoogleService-Info.plist 발급 + URL Schemes
+- [ ] **10.** Android 릴리즈 keystore 생성
+- [ ] **11.** iOS APNs 인증서 (FCM 푸시 활성화)
+- [ ] **12.** Google Play Console 가입 ($25 일회)
+- [ ] **13.** App Store Connect 정보 입력
+- [ ] **14.** 약관·개인정보처리방침 외부 페이지 게시
+- [ ] **15.** 폰트 · 앱 아이콘 자산 배치
+
+---
+
 ## 🟢 0. Windows Developer Mode
 
 **왜**: Flutter가 플러그인 빌드 시 symlink를 만드는데, Windows는 Developer Mode가 켜져 있어야 symlink 생성을 허용합니다. 이게 없으면 `flutter run`이 시작도 안 됩니다.
@@ -85,7 +108,7 @@ firebase emulators:start --only firestore
 **배포**:
 
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes,storage:rules
+firebase deploy --only firestore:rules,firestore:indexes,storage
 ```
 
 ✅ Firebase Console > Firestore > Indexes 에서 빌드가 1~5분 안에 완료되면 끝.
@@ -250,6 +273,8 @@ cd ..
 
 **왜**: 현재 Bundle ID 가 placeholder `com.example.rokUsAllianceApp`. iOS 빌드를 한 번이라도 하려면 정식 ID 필요.
 
+> 📦 **자리 마련 완료**: `Info.plist` 의 URL Schemes·LSApplicationQueriesSchemes 골격, `AndroidManifest.xml` 의 Kakao Activity, `build.gradle.kts` 의 KAKAO_NATIVE_APP_KEY 주입 패턴이 이미 코드에 들어가 있습니다. 아래 절차에서 **placeholder 값만 실제 키로 교체**하면 됩니다.
+
 **방법**:
 
 1. **Bundle ID 결정** (이후 변경 금지): `com.rokus.alliance` 권장
@@ -258,45 +283,22 @@ cd ..
 4. Firebase Console → 프로젝트 설정 → 앱 추가 → iOS → Bundle ID 입력
 5. **GoogleService-Info.plist 다운로드** → `ios/Runner/` 에 추가 (Xcode에서 Runner target 에 포함)
 6. plist 파일을 텍스트로 열어 `REVERSED_CLIENT_ID` 값 복사
-7. `ios/Runner/Info.plist` 의 `CFBundleURLTypes` 배열에 추가:
+7. **`ios/Runner/Info.plist` placeholder 교체** — 두 개:
+   - `kakaoYOUR_KAKAO_NATIVE_APP_KEY` → `kakao` + 실제 카카오 Native App Key (예: `kakao1234567890abcdef`)
+   - `YOUR_GOOGLE_REVERSED_CLIENT_ID` → 6번에서 복사한 REVERSED_CLIENT_ID 값 (예: `com.googleusercontent.apps.123-abc`)
+8. **`android/app/build.gradle.kts`** 의 `applicationId` 를 정식 Bundle ID 로 변경 (iOS 와 동일하게 — 권장)
+9. **`android/local.properties`** 에 다음 한 줄 추가 (이 파일은 gitignored):
 
-   ```xml
-   <key>CFBundleURLTypes</key>
-   <array>
-     <dict>
-       <key>CFBundleURLSchemes</key>
-       <array>
-         <string>(REVERSED_CLIENT_ID 값)</string>
-         <string>kakao(KAKAO_NATIVE_APP_KEY)</string>
-       </array>
-     </dict>
-   </array>
-   <key>LSApplicationQueriesSchemes</key>
-   <array>
-     <string>kakaokompassauth</string>
-     <string>kakaolink</string>
-   </array>
+   ```properties
+   kakao.native.app.key=YOUR_KAKAO_NATIVE_APP_KEY
    ```
 
-8. **Android applicationId** 도 `android/app/build.gradle.kts` 에서 같이 변경 (Bundle ID 와 동일하게)
-9. **AndroidManifest.xml** 에 Kakao Activity 추가:
-
-   ```xml
-   <activity
-       android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
-       android:exported="true">
-     <intent-filter android:label="flutter_web_auth">
-       <action android:name="android.intent.action.VIEW" />
-       <category android:name="android.intent.category.DEFAULT" />
-       <category android:name="android.intent.category.BROWSABLE" />
-       <data android:scheme="kakao(KAKAO_NATIVE_APP_KEY)" android:host="oauth"/>
-     </intent-filter>
-   </activity>
-   ```
-
+   build.gradle.kts 가 이 값을 읽어 AndroidManifest.xml 의 `${KAKAO_NATIVE_APP_KEY}` 자리에 자동 주입합니다.
 10. `flutter clean && flutter pub get` 으로 캐시 정리
 
 11. **Firebase Console** → 기존 placeholder 앱은 삭제하고 새 Bundle ID 로 등록한 앱만 남김. `lib/firebase_options.dart` 도 `flutterfire configure --project=rok-us-alliance-app` 으로 재생성.
+
+12. **Kakao Developers** → 앱 설정 > 플랫폼 → Android/iOS 패키지명을 정식 Bundle ID 로 갱신 + Android 키 해시 등록 (debug 키 해시는 SHA-1 → base64. 첫 실행 후 logcat 에 잘못된 키 해시 출력이 뜨면 그 값을 등록하는 게 가장 정확)
 
 ⚠️ **Bundle ID/applicationId는 한 번 변경 후 재변경 금지** (Firebase·Kakao·Naver·Apple 모든 키 재발급 필요). 8~9단계는 한 자리에서 한 번에 하세요.
 
@@ -305,6 +307,8 @@ cd ..
 ## 🟢 10. Android 릴리즈 keystore 생성
 
 **왜**: Google Play Store에 release APK/AAB를 올리려면 서명 필요.
+
+> 📦 **자리 마련 완료**: `android/app/build.gradle.kts` 가 `key.properties` 가 있으면 release 빌드에 자동 적용, 없으면 debug 키로 fallback 하도록 이미 설정돼 있습니다. 아래 절차로 **keystore 파일과 key.properties 만 생성**하면 됩니다.
 
 **방법**:
 
@@ -315,16 +319,16 @@ keytool -genkey -v -keystore $HOME/.android/rokus-alliance-release.jks \
 # 비밀번호·이름·조직·국가 입력 (CN/Country만 KR이면 OK)
 ```
 
-`android/key.properties` 생성 (.gitignore에 등록):
+`android/key.properties` 생성 (.gitignore 에 이미 등록됨):
 
 ```properties
-storeFile=/Users/.../rokus-alliance-release.jks
+storeFile=C:/Users/swhyun/.android/rokus-alliance-release.jks
 storePassword=...
 keyAlias=rokus
 keyPassword=...
 ```
 
-`android/app/build.gradle.kts` 에 release 서명 설정 추가 (별도 안내 가능).
+`flutter build apk --release` 또는 `flutter build appbundle --release` 실행 → 자동으로 release keystore 사용.
 
 ⚠️ **keystore 파일과 비밀번호는 절대 git에 커밋 금지**. 분실 시 앱 업데이트 영구 불가. 1Password 등 안전한 곳에 백업 필수.
 
