@@ -96,6 +96,9 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stanceColor = petition.stance == PetitionStance.support
+        ? AppColors.koreanBlue
+        : AppColors.koreanRed;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -105,6 +108,14 @@ class _Row extends StatelessWidget {
           children: [
             Row(
               children: [
+                Icon(
+                  petition.isLegislativeBill
+                      ? Icons.gavel
+                      : Icons.how_to_vote_outlined,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     petition.title,
@@ -119,21 +130,33 @@ class _Row extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  '${petition.progressPercent}%',
+                  petition.ddayLabel,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.koreanBlue,
+                    color: AppColors.koreanRed,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            PetitionProgressBar(
-              percent: petition.progressPercent,
-              height: 6,
-              showLabel: false,
-            ),
+            if (petition.hasProgressBar) ...[
+              const SizedBox(height: 8),
+              PetitionProgressBar(
+                percent: petition.progressPercent,
+                height: 6,
+                showLabel: false,
+              ),
+            ] else if (petition.stance != PetitionStance.neutral) ...[
+              const SizedBox(height: 6),
+              Text(
+                petition.stanceLabel,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: stanceColor,
+                ),
+              ),
+            ],
           ],
         ),
       ),
