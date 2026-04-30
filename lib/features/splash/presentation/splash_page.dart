@@ -1,4 +1,6 @@
 // lib/features/splash/presentation/splash_page.dart
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -7,11 +9,12 @@ import '../../auth/data/auth_store.dart';
 import '../../auth/presentation/login_page.dart';
 import '../../home/presentation/home_page.dart';
 
-/// 단순한 fade-in splash.
-/// - 깊은 네이비 배경 + 미세한 그라디언트 글로우
-/// - 중앙 [AllianceLogo] (방패 + 별)
-/// - 한미동맹단 한글 + ROK·US ALLIANCE 영문 캡션
-/// - 전체 약 1.8초 후 다음 화면으로 fade transition
+/// 게임 인트로 스타일 합체 splash:
+/// 1) 좌측에서 붉은 호(韓), 우측에서 푸른 호(美)가 회전하며 슬라이드인
+/// 2) 화면 중앙에서 충돌 → 흰 flash burst
+/// 3) flash 잦아들며 둘이 합쳐진 골드 메달(AllianceLogo) 가 점진적으로 완성
+/// 4) 한미동맹단 텍스트 + flag stripe + ROK·US ALLIANCE caption 순차
+/// 총 ~2.4초.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -24,12 +27,29 @@ class _SplashPageState extends State<SplashPage>
   static const _heroLogoTag = 'app_main_logo';
 
   late final AnimationController _controller;
-  late final Animation<double> _logoOpacity;
-  late final Animation<double> _logoScale;
+
+  // Incoming arcs
+  late final Animation<double> _leftArcSlide; // -1 → 0
+  late final Animation<double> _rightArcSlide; // 1 → 0
+  late final Animation<double> _arcsRotation; // -π/3 → 0
+  late final Animation<double> _arcsFadeIn;
+  late final Animation<double> _arcsFadeOut;
+  late final Animation<double> _arcsScale;
+
+  // Flash burst
+  late final Animation<double> _flashOpacity;
+  late final Animation<double> _flashScale;
+
+  // Medal
+  late final Animation<double> _medalProgress; // 0 → 1, 외곽 링이 그려지는 진행
+  late final Animation<double> _medalOpacity;
+  late final Animation<double> _medalScale;
+
+  // Texts
   late final Animation<double> _titleOpacity;
   late final Animation<double> _titleOffset;
-  late final Animation<double> _captionOpacity;
   late final Animation<double> _stripeWidth;
+  late final Animation<double> _captionOpacity;
 
   bool _navigated = false;
 
@@ -39,38 +59,106 @@ class _SplashPageState extends State<SplashPage>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 2400),
     );
 
-    _logoOpacity = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.00, 0.45, curve: Curves.easeOut),
-    );
-    _logoScale = Tween<double>(begin: 0.86, end: 1.0).animate(
+    // ━━━ 좌·우 호 슬라이드인 (0.00 ~ 0.32) ━━━
+    _leftArcSlide = Tween<double>(begin: -1.05, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.00, 0.55, curve: Curves.easeOutCubic),
+        curve: const Interval(0.00, 0.32, curve: Curves.easeOutCubic),
       ),
     );
+    _rightArcSlide = Tween<double>(begin: 1.05, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.00, 0.32, curve: Curves.easeOutCubic),
+      ),
+    );
+    _arcsRotation = Tween<double>(begin: -math.pi / 3, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.00, 0.34, curve: Curves.easeOutCubic),
+      ),
+    );
+    _arcsScale = Tween<double>(begin: 0.7, end: 1.05).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.00, 0.34, curve: Curves.easeOutBack),
+      ),
+    );
+    _arcsFadeIn = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.00, 0.18, curve: Curves.easeIn),
+    );
+    _arcsFadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.34, 0.46, curve: Curves.easeIn),
+      ),
+    );
+
+    // ━━━ Flash burst (0.30 ~ 0.50) ━━━
+    _flashOpacity = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 30,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 70,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.30, 0.52),
+      ),
+    );
+    _flashScale = Tween<double>(begin: 0.4, end: 2.6).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.30, 0.52, curve: Curves.easeOutQuart),
+      ),
+    );
+
+    // ━━━ Medal 등장 (0.36 ~ 0.78) ━━━
+    _medalOpacity = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.36, 0.58, curve: Curves.easeOut),
+    );
+    _medalScale = Tween<double>(begin: 0.78, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.36, 0.66, curve: Curves.easeOutBack),
+      ),
+    );
+    _medalProgress = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.46, 0.78, curve: Curves.easeOutCubic),
+    );
+
+    // ━━━ 텍스트 시퀀스 (0.66 ~ 1.00) ━━━
     _titleOpacity = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.40, 0.75, curve: Curves.easeOut),
+      curve: const Interval(0.66, 0.85, curve: Curves.easeOut),
     );
     _titleOffset = Tween<double>(begin: 14, end: 0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.40, 0.75, curve: Curves.easeOutCubic),
+        curve: const Interval(0.66, 0.85, curve: Curves.easeOutCubic),
       ),
     );
     _stripeWidth = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.55, 0.85, curve: Curves.easeOutCubic),
+        curve: const Interval(0.78, 0.92, curve: Curves.easeOutCubic),
       ),
     );
     _captionOpacity = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.65, 1.00, curve: Curves.easeOut),
+      curve: const Interval(0.84, 1.00, curve: Curves.easeOut),
     );
 
     _controller.forward();
@@ -80,7 +168,7 @@ class _SplashPageState extends State<SplashPage>
   Future<void> _bootstrap() async {
     await Future.wait([
       AuthStore.initialize(),
-      Future<void>.delayed(const Duration(milliseconds: 1900)),
+      Future<void>.delayed(const Duration(milliseconds: 2500)),
     ]);
 
     if (!mounted || _navigated) return;
@@ -118,99 +206,174 @@ class _SplashPageState extends State<SplashPage>
     final size = MediaQuery.sizeOf(context);
     final shortest =
         size.shortestSide.clamp(320.0, double.infinity).toDouble();
-    final logoSize = shortest * 0.32;
+    final logoSize = shortest * 0.34;
+    final arcSize = shortest * 0.42;
 
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.heroGradient),
         child: Stack(
           children: [
-            // 부드러운 양쪽 글로우
             _BackgroundGlow(width: size.width, height: size.height),
-            // 본문
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _logoOpacity.value,
-                        child: Transform.scale(
-                          scale: _logoScale.value,
-                          child: child,
+            // 합체 시퀀스
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) {
+                final arcsOpacity =
+                    (_arcsFadeIn.value * _arcsFadeOut.value).clamp(0.0, 1.0);
+                final leftDx = size.width * 0.55 * _leftArcSlide.value;
+                final rightDx = size.width * 0.55 * _rightArcSlide.value;
+                final scale = _arcsScale.value;
+
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // 좌측 빨강 호
+                    if (arcsOpacity > 0.01)
+                      Transform.translate(
+                        offset: Offset(leftDx, 0),
+                        child: Transform.rotate(
+                          angle: _arcsRotation.value,
+                          child: Transform.scale(
+                            scale: scale,
+                            child: Opacity(
+                              opacity: arcsOpacity,
+                              child: SizedBox(
+                                width: arcSize,
+                                height: arcSize,
+                                child: CustomPaint(
+                                  painter: _IncomingArcPainter(
+                                    color: AppColors.koreanRed,
+                                    isLeft: true,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                    child: Hero(
-                      tag: _heroLogoTag,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: AllianceLogo(size: logoSize),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return Opacity(
+                    // 우측 파랑 호
+                    if (arcsOpacity > 0.01)
+                      Transform.translate(
+                        offset: Offset(rightDx, 0),
+                        child: Transform.rotate(
+                          angle: -_arcsRotation.value,
+                          child: Transform.scale(
+                            scale: scale,
+                            child: Opacity(
+                              opacity: arcsOpacity,
+                              child: SizedBox(
+                                width: arcSize,
+                                height: arcSize,
+                                child: CustomPaint(
+                                  painter: _IncomingArcPainter(
+                                    color: AppColors.koreanBlue,
+                                    isLeft: false,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Flash burst
+                    if (_flashOpacity.value > 0.01)
+                      Opacity(
+                        opacity: _flashOpacity.value,
+                        child: Transform.scale(
+                          scale: _flashScale.value,
+                          child: Container(
+                            width: shortest * 0.45,
+                            height: shortest * 0.45,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  Colors.white,
+                                  Color(0x80FFFFFF),
+                                  Color(0x00FFFFFF),
+                                ],
+                                stops: [0.0, 0.45, 1.0],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    // 메달 (합체 결과)
+                    if (_medalOpacity.value > 0.0)
+                      Opacity(
+                        opacity: _medalOpacity.value,
+                        child: Transform.scale(
+                          scale: _medalScale.value,
+                          child: Hero(
+                            tag: _heroLogoTag,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: AllianceLogo(
+                                size: logoSize,
+                                progress: _medalProgress.value,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            // 텍스트 영역
+            Align(
+              alignment: const Alignment(0, 0.55),
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Opacity(
                         opacity: _titleOpacity.value,
                         child: Transform.translate(
                           offset: Offset(0, _titleOffset.value),
-                          child: child,
+                          child: const Text(
+                            '한미동맹단',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                              height: 1.0,
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                    child: const Text(
-                      '한미동맹단',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        height: 1.0,
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  AnimatedBuilder(
-                    animation: _stripeWidth,
-                    builder: (context, _) {
-                      return Container(
+                      const SizedBox(height: 14),
+                      Container(
                         width: 140 * _stripeWidth.value,
                         height: 2,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(999),
                           gradient: AppColors.flagAccentGradient,
                         ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  AnimatedBuilder(
-                    animation: _captionOpacity,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _captionOpacity.value,
-                        child: child,
-                      );
-                    },
-                    child: Text(
-                      'ROK · US ALLIANCE',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.62),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 4.0,
                       ),
-                    ),
-                  ),
-                ],
+                      const SizedBox(height: 14),
+                      Opacity(
+                        opacity: _captionOpacity.value,
+                        child: Text(
+                          'ROK · US ALLIANCE',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.62),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 4.0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-            // 하단 푸터
+            // 하단 카피
             Positioned(
               left: 0,
               right: 0,
@@ -240,6 +403,52 @@ class _SplashPageState extends State<SplashPage>
         ),
       ),
     );
+  }
+}
+
+/// 좌·우에서 슬라이드인하는 큰 곡선 호. [isLeft] 면 9시→6시 방향, 우측은 거울상.
+class _IncomingArcPainter extends CustomPainter {
+  _IncomingArcPainter({required this.color, required this.isLeft});
+  final Color color;
+  final bool isLeft;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = size.shortestSide * 0.42;
+    final center = Offset(size.width * 0.5, size.height * 0.5);
+    final rect = Rect.fromCircle(center: center, radius: r);
+    final stroke = r * 0.22;
+
+    // 호 자체
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round
+      ..color = color.withValues(alpha: 0.92);
+    if (isLeft) {
+      // 좌측: 위 11시 ~ 아래 5시 약 180도
+      canvas.drawArc(rect, math.pi * 0.62, math.pi * 0.95, false, paint);
+    } else {
+      canvas.drawArc(rect, math.pi * 1.43, math.pi * 0.95, false, paint);
+    }
+
+    // 호 끝에서 살짝 빛나는 trail
+    final glowPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke + 8
+      ..strokeCap = StrokeCap.round
+      ..color = color.withValues(alpha: 0.20)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    if (isLeft) {
+      canvas.drawArc(rect, math.pi * 0.62, math.pi * 0.95, false, glowPaint);
+    } else {
+      canvas.drawArc(rect, math.pi * 1.43, math.pi * 0.95, false, glowPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _IncomingArcPainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.isLeft != isLeft;
   }
 }
 
