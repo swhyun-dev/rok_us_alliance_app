@@ -98,7 +98,7 @@ firebase deploy --only firestore:rules,firestore:indexes,storage:rules
 
 ## 🟢 3. Cloud Functions 빌드·배포
 
-**왜**: 13개 함수가 점수 적립·청원 서명·행사 체크인·일일 체크인·소셜 로그인 Custom Token·푸시 발송·계정 탈퇴 등 핵심 동작을 담당합니다.
+**왜**: 20개 함수가 점수 적립·행사 체크인·일일 체크인·소셜 로그인 Custom Token·푸시 발송·계정 탈퇴·신고 자동 비공개·관리자 작업·입법법안 자동 갱신 등 핵심 동작을 담당합니다.
 
 **방법**:
 
@@ -110,7 +110,7 @@ cd ..
 firebase deploy --only functions
 ```
 
-**배포되는 함수 13개**:
+**배포되는 함수 20개**:
 
 | 카테고리 | 함수 | 트리거 |
 |---|---|---|
@@ -121,13 +121,19 @@ firebase deploy --only functions
 | points | onCommentCreated | comments onCreate (+5P) |
 | points | onLikeReceived / onLikeRemoved | posts/{id}/likes onCreate/onDelete (+2P) |
 | points | recalculateLevel | users onUpdate (등급 자동 산출) |
-| points | signPetition | onCall (+50P) |
+| points | signPetition | onCall (외부 큐레이션 전환으로 미사용 — 추후 제거 예정) |
 | points | dailyCheckIn | onCall (+10P, 연속 보너스) |
 | points | eventCheckIn | onCall (+100P) |
 | points | generateEventCode | onCall (관리자 6자리 코드 발급) |
 | stats | updateAppStats | 5분 스케줄러 |
 | notifications | dispatchNotificationOnCreate | notifications onCreate → FCM |
+| moderation | onReportCreated | reports onCreate (5건 누적 시 자동 비공개) |
 | admin | deleteUserAccount | onCall (계정 탈퇴) |
+| admin | adjustPoints | onCall (점수 수동 조정) |
+| admin | banUser / unbanUser | onCall (사용자 차단) |
+| admin | deletePost | onCall (게시글 강제 삭제) |
+| petitions | fetchBillFromAssembly | onCall (의안번호 → pal.assembly.go.kr 정보 조회) |
+| petitions | refreshBillStatus | 매일 03:00 KST 스케줄러 (입법법안 진행현황 갱신) |
 
 ⚠️ **TS 빌드 오류가 발견되면 직접 수정**하지 마시고 Claude에게 메시지 그대로 전달해주세요. 첫 빌드라 여러 케이스가 한꺼번에 떨어질 수 있어 일괄 수정이 효율적입니다.
 

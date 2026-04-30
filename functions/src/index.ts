@@ -8,3 +8,4 @@ export * from "./stats";
 export * from "./admin";
 export * from "./moderation";
 export * from "./notifications";
+export * from "./petitions";
