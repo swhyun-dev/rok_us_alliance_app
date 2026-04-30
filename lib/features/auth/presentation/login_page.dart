@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/alliance_logo.dart';
 import '../../home/presentation/home_page.dart';
 import '../data/auth_store.dart';
 import 'terms_agreement_page.dart';
@@ -206,35 +207,7 @@ class _HeroSection extends StatelessWidget {
                   tag: LoginPage.heroLogoTag,
                   child: Material(
                     color: Colors.transparent,
-                    child: Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: AppColors.shieldGradient,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.32),
-                          width: 2.0,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.koreanRed.withValues(alpha: 0.38),
-                            blurRadius: 30,
-                            spreadRadius: 4,
-                          ),
-                          BoxShadow(
-                            color: AppColors.koreanBlue.withValues(alpha: 0.38),
-                            blurRadius: 30,
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.shield,
-                        size: 44,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: AllianceLogo(size: 92),
                   ),
                 ),
                 const SizedBox(width: 22),
