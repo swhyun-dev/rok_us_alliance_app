@@ -90,6 +90,10 @@ class AuthStore {
   static AppUser? get currentUser => notifier.value.user;
   static bool get isSignedIn => notifier.value.user != null;
 
+  /// Firestore에 저장된 사용자 uid. AppUser.providerUserId 는 소셜 sub claim
+  /// 이라 Firestore 와 다르다 — 쿼리·doc 경로에는 반드시 이 getter 사용.
+  static String? get firebaseUid => FirebaseAuth.instance.currentUser?.uid;
+
   static StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
       _userDocSub;
 
@@ -300,10 +304,10 @@ class AuthStore {
     await _persistUser(user);
 
     if (firebaseUid != null) {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(firebaseUid)
-          .set({
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+
+      batch.set(firestore.collection('users').doc(firebaseUid), {
         'uid': firebaseUid,
         'provider': draft.provider,
         'providerUserId': draft.providerUserId,
@@ -333,6 +337,15 @@ class AuthStore {
         'referralCode': referralCode,
         'referredBy': null,
       });
+
+      // nicknames/{nickname} 점유 — doc id 가 nickname 이라 unique 보장.
+      // 누군가 동시에 같은 닉네임으로 가입하려고 하면 batch 가 실패한다.
+      batch.set(firestore.collection('nicknames').doc(nickname), {
+        'uid': firebaseUid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      await batch.commit();
       _attachFirestoreSubscription(firebaseUid);
     }
 
@@ -343,15 +356,13 @@ class AuthStore {
     );
   }
 
-  /// users/{uid}.nickname 으로 중복 검사. 사용 가능하면 true.
-  /// (개발 단계 임시 방식 — 추후 nickname → uid 매핑 컬렉션으로 교체.)
+  /// nicknames/{nickname} 단일 doc 존재 여부로 가용성 판단.
   static Future<bool> isNicknameAvailable(String nickname) async {
-    final query = await FirebaseFirestore.instance
-        .collection('users')
-        .where('nickname', isEqualTo: nickname)
-        .limit(1)
+    final doc = await FirebaseFirestore.instance
+        .collection('nicknames')
+        .doc(nickname)
         .get();
-    return query.docs.isEmpty;
+    return !doc.exists;
   }
 
   static String _generateReferralCode() {
@@ -395,11 +406,33 @@ class AuthStore {
       clearError: true,
     );
 
+    final isNicknameChanging = trimmedNickname != null &&
+        trimmedNickname.isNotEmpty &&
+        trimmedNickname != user.nickname;
+
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(firebaseUid)
-          .update(patch);
+      final firestore = FirebaseFirestore.instance;
+
+      if (isNicknameChanging) {
+        // 닉네임 교체: users patch + 옛 nicknames doc 해제 + 새 nicknames doc 점유.
+        // 누군가 동시에 같은 닉네임을 점유하면 batch 가 실패해 롤백된다.
+        final batch = firestore.batch();
+        batch.update(
+          firestore.collection('users').doc(firebaseUid),
+          patch,
+        );
+        batch.delete(firestore.collection('nicknames').doc(user.nickname));
+        batch.set(firestore.collection('nicknames').doc(trimmedNickname), {
+          'uid': firebaseUid,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        await batch.commit();
+      } else {
+        await firestore
+            .collection('users')
+            .doc(firebaseUid)
+            .update(patch);
+      }
 
       final updatedUser = user.copyWith(
         name: trimmedName?.isNotEmpty == true ? trimmedName : null,

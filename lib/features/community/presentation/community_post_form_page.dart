@@ -101,7 +101,7 @@ class _CommunityPostFormPageState extends State<CommunityPostFormPage> {
       } else {
         final draft = CommunityPost(
           id: '',
-          authorId: user.providerUserId,
+          authorId: AuthStore.firebaseUid ?? user.providerUserId,
           authorNickname:
               user.nickname.isNotEmpty ? user.nickname : user.name,
           authorLevel: user.level,

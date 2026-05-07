@@ -89,7 +89,7 @@ class NotificationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final uid = AuthStore.currentUser?.providerUserId;
+    final uid = AuthStore.firebaseUid;
     return Scaffold(
       appBar: AppBar(
         title: const Text('알림',

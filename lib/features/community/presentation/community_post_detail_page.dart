@@ -52,7 +52,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
       if (!mounted) return;
       setState(() => _comments = list);
     });
-    final uid = AuthStore.currentUser?.providerUserId;
+    final uid = AuthStore.firebaseUid;
     if (uid != null) {
       _likedSub = CommunityPostStore.watchLikedByMe(
         postId: widget.postId,
@@ -210,7 +210,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
     final user = AuthStore.currentUser;
     await CommunityCommentStore.add(
       postId: post.id,
-      authorId: user?.providerUserId ?? 'anonymous',
+      authorId: AuthStore.firebaseUid ?? user?.providerUserId ?? 'anonymous',
       authorNickname: author,
       authorLevel: user?.level ?? 1,
       content: content,
@@ -243,7 +243,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
     final user = AuthStore.currentUser;
     await CommunityCommentStore.add(
       postId: post.id,
-      authorId: user?.providerUserId ?? 'anonymous',
+      authorId: AuthStore.firebaseUid ?? user?.providerUserId ?? 'anonymous',
       authorNickname: author,
       authorLevel: user?.level ?? 1,
       content: content,
@@ -549,8 +549,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                                         ? AppColors.red
                                         : AppColors.textPrimary,
                                     onTap: () {
-                                      final uid = AuthStore
-                                          .currentUser?.providerUserId;
+                                      final uid = AuthStore.firebaseUid;
                                       if (uid == null) return;
                                       // Optimistic UI: 즉시 토글, Firestore
                                       // 구독이 권위적 상태로 다시 덮어씀.

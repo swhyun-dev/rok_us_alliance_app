@@ -1,6 +1,7 @@
 // lib/features/profile/data/daily_check_in_store.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 
 class DailyCheckInResult {
   const DailyCheckInResult({
@@ -33,14 +34,24 @@ class DailyCheckInStore {
 
   static Future<DailyCheckInResult> run() async {
     final callable = FirebaseFunctions.instance.httpsCallable('dailyCheckIn');
-    final result = await callable.call<Map<String, dynamic>>();
-    final data = result.data;
-    return DailyCheckInResult(
-      status: (data['status'] ?? 'already_checked') as String,
-      pointsAwarded: (data['pointsAwarded'] ?? 0) as int,
-      bonusAwarded: (data['bonusAwarded'] ?? 0) as int,
-      consecutiveDays: (data['consecutiveDays'] ?? 0) as int,
-    );
+    try {
+      final result = await callable.call<Map<String, dynamic>>();
+      final data = result.data;
+      debugPrint('[dailyCheckIn] response: $data');
+      return DailyCheckInResult(
+        status: (data['status'] ?? 'already_checked') as String,
+        pointsAwarded: (data['pointsAwarded'] ?? 0) as int,
+        bonusAwarded: (data['bonusAwarded'] ?? 0) as int,
+        consecutiveDays: (data['consecutiveDays'] ?? 0) as int,
+      );
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint('[dailyCheckIn] FirebaseFunctionsException '
+          'code=${e.code} message=${e.message} details=${e.details}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('[dailyCheckIn] unknown error: $e\n$st');
+      rethrow;
+    }
   }
 
   static String _todayKst() {

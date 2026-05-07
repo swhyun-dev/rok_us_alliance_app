@@ -177,7 +177,7 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
                         );
                       },
                       onLike: () {
-                        final uid = AuthStore.currentUser?.providerUserId;
+                        final uid = AuthStore.firebaseUid;
                         if (uid == null) return;
                         CommunityPostStore.setLike(
                           postId: post.id,

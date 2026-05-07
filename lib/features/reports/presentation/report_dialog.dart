@@ -24,7 +24,7 @@ Future<bool> showReportDialog(
 
   // 중복 신고 사전 점검
   final already = await ReportStore.hasReported(
-    reporterId: user.providerUserId,
+    reporterId: AuthStore.firebaseUid ?? user.providerUserId,
     targetType: targetType,
     targetId: targetId,
   );
@@ -55,7 +55,7 @@ Future<bool> showReportDialog(
 
   try {
     await ReportStore.create(
-      reporterId: user.providerUserId,
+      reporterId: AuthStore.firebaseUid ?? user.providerUserId,
       reporterNickname: user.nickname,
       targetType: targetType,
       targetId: targetId,

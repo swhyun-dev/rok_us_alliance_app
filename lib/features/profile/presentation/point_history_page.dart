@@ -22,7 +22,7 @@ class _PointHistoryPageState extends State<PointHistoryPage> {
   bool _hasMore = true;
   Object? _error;
 
-  String? get _uid => AuthStore.currentUser?.providerUserId;
+  String? get _uid => AuthStore.firebaseUid;
 
   @override
   void initState() {

@@ -83,15 +83,14 @@ class _HomePageState extends State<HomePage> {
 
   void _attachUnreadStream() {
     _unreadSub?.cancel();
-    final user = AuthStore.currentUser;
-    if (user == null) {
+    final uid = AuthStore.firebaseUid;
+    if (uid == null) {
       if (_unreadCount != 0 && mounted) {
         setState(() => _unreadCount = 0);
       }
       return;
     }
-    _unreadSub =
-        NotificationStore.watchUnreadCount(user.providerUserId).listen((c) {
+    _unreadSub = NotificationStore.watchUnreadCount(uid).listen((c) {
       if (!mounted) return;
       setState(() => _unreadCount = c);
     });

@@ -64,6 +64,27 @@ service cloud.firestore {
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // nicknames — nickname → uid unique 매핑
+    // (users.nickname 직접 쿼리는 users read 룰에 막히므로 분리)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    match /nicknames/{nickname} {
+      // 인증 사용자가 가용성 체크할 수 있도록 read 허용
+      allow read: if isSignedIn();
+
+      // 본인 uid 로만 등록. doc id == nickname 이므로 unique 보장.
+      allow create: if isSignedIn()
+                       && request.resource.data.uid == request.auth.uid;
+
+      // 변경 금지 — 닉네임 교체는 delete + create 패턴으로
+      allow update: if false;
+
+      // 본인 점유 닉네임만 해제
+      allow delete: if isSignedIn()
+                       && resource.data.uid == request.auth.uid;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // admins
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -239,9 +260,11 @@ service cloud.firestore {
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     match /daily_check_ins/{docId} {
-      // 본인 체크인만 읽기 (UI에서 오늘 체크인 여부 확인용)
+      // 본인 체크인만 읽기. doc 부재 케이스 (resource == null) 도 허용해
+      // "오늘 미체크인" 상태가 NOT_FOUND 로 깔끔히 응답되도록 한다.
       allow read: if isSignedIn() &&
-                     resource.data.uid == request.auth.uid;
+                     (resource == null ||
+                      resource.data.uid == request.auth.uid);
       // 쓰기는 dailyCheckIn Cloud Function만
       allow write: if false;
     }

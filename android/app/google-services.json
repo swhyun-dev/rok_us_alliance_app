@@ -12,7 +12,20 @@
           "package_name": "com.example.rok_us_alliance_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "190755458781-1l81na039t4t1g87bmku79756s6el4mh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.rok_us_alliance_app",
+            "certificate_hash": "da7e701b16a4e1f53f9d9747f8c70d8702153e17"
+          }
+        },
+        {
+          "client_id": "190755458781-ram55h5dv3avrnln9tkgknj7kqj9ivgf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAGyxH_275rJJKIxSG_og1mmEy_aE9FGnE"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "190755458781-ram55h5dv3avrnln9tkgknj7kqj9ivgf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "190755458781-1nm7dt4eu266ju4bovo6ivnkcs57t5ns.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.rokUsAllianceApp"
+              }
+            }
+          ]
         }
       }
     }

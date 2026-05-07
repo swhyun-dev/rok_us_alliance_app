@@ -26,7 +26,7 @@ class _DailyCheckInButtonState extends State<DailyCheckInButton> {
   }
 
   Future<void> _refresh() async {
-    final uid = AuthStore.currentUser?.providerUserId;
+    final uid = AuthStore.firebaseUid;
     if (uid == null) return;
     setState(() => _checking = true);
     try {
@@ -52,12 +52,22 @@ class _DailyCheckInButtonState extends State<DailyCheckInButton> {
               ? '+${result.total}P 연속 ${result.consecutiveDays}일 보너스!'
               : '+${result.pointsAwarded}P 출석 적립')
           : '오늘 이미 체크인했습니다.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text(msg),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('체크인 실패: $e')),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text('체크인 실패: $e'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
