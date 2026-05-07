@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../features/auth/data/auth_store.dart';
 import '../../features/profile/data/daily_check_in_store.dart';
+import 'app_toast.dart';
 
 /// 홈에 노출되는 일일 체크인 카드 버튼.
 /// 오늘 체크인 여부를 1회 조회 후 상태에 따라 활성/비활성 표시.
@@ -52,22 +53,14 @@ class _DailyCheckInButtonState extends State<DailyCheckInButton> {
               ? '+${result.total}P 연속 ${result.consecutiveDays}일 보너스!'
               : '+${result.pointsAwarded}P 출석 적립')
           : '오늘 이미 체크인했습니다.';
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text(msg),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ));
+      AppToast.show(context, message: msg);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text('체크인 실패: $e'),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ));
+      AppToast.show(
+        context,
+        message: '체크인 실패: $e',
+        backgroundColor: AppColors.red,
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
