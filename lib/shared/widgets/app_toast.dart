@@ -1,6 +1,7 @@
 // lib/shared/widgets/app_toast.dart
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
@@ -21,7 +22,10 @@ class AppToast {
     Color? backgroundColor,
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
-    if (overlay == null) return;
+    if (overlay == null) {
+      debugPrint('[AppToast] overlay null — toast skipped');
+      return;
+    }
 
     _dismiss();
 
@@ -33,15 +37,27 @@ class AppToast {
     );
     overlay.insert(entry);
     _current = entry;
+    debugPrint('[AppToast] inserted, will dismiss in ${duration.inMilliseconds}ms');
 
-    _timer = Timer(duration, _dismiss);
+    _timer = Timer(duration, () {
+      debugPrint('[AppToast] timer fired → dismissing');
+      _dismiss();
+    });
   }
 
   static void _dismiss() {
     _timer?.cancel();
     _timer = null;
-    _current?.remove();
+    final entry = _current;
     _current = null;
+    if (entry != null) {
+      try {
+        entry.remove();
+        debugPrint('[AppToast] entry removed');
+      } catch (e) {
+        debugPrint('[AppToast] entry.remove() threw: $e');
+      }
+    }
   }
 }
 
