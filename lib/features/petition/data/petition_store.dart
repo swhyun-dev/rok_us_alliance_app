@@ -40,6 +40,27 @@ class PetitionStore {
         );
   }
 
+  /// 탭바 옆 카운트 표시용. type+status 일치하는 doc 갯수만 반환.
+  /// 첫 페이지 30 건만 화면에 그리지만 카운트는 전체를 보여주기 위해 별도 쿼리.
+  static Stream<int> watchCount({
+    required PetitionTab tab,
+    required PetitionStatusFilter status,
+  }) {
+    final typeName = tab == PetitionTab.legislativeBill
+        ? PetitionType.legislativeBill.name
+        : PetitionType.nationalPetition.name;
+
+    final statusValue = status == PetitionStatusFilter.active
+        ? 'active'
+        : 'completed';
+
+    return _col
+        .where('type', isEqualTo: typeName)
+        .where('status', isEqualTo: statusValue)
+        .snapshots()
+        .map((snap) => snap.size);
+  }
+
   /// 홈 HotPetitionSection — 진행중 전체에서 isFeatured 우선·신규순 limit.
   static Stream<List<Petition>> watchFeatured({int limit = 3}) {
     return _col

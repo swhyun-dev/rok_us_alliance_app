@@ -55,6 +55,7 @@ class _PetitionPageState extends State<PetitionPage> {
             onSelect: (t) => setState(() => _tab = t),
           ),
           _StatusSegmentBar(
+            tab: _tab,
             current: _status,
             onSelect: (s) => setState(() => _status = s),
           ),
@@ -182,7 +183,12 @@ class _TopTabBar extends StatelessWidget {
 }
 
 class _StatusSegmentBar extends StatelessWidget {
-  const _StatusSegmentBar({required this.current, required this.onSelect});
+  const _StatusSegmentBar({
+    required this.tab,
+    required this.current,
+    required this.onSelect,
+  });
+  final PetitionTab tab;
   final PetitionStatusFilter current;
   final ValueChanged<PetitionStatusFilter> onSelect;
 
@@ -216,13 +222,26 @@ class _StatusSegmentBar extends StatelessWidget {
                         selected ? AppColors.koreanBlue : AppColors.border,
                   ),
                 ),
-                child: Text(
-                  entry.$2,
-                  style: TextStyle(
-                    color: selected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
+                child: StreamBuilder<int>(
+                  stream: PetitionStore.watchCount(
+                    tab: tab,
+                    status: entry.$1,
                   ),
+                  builder: (context, snap) {
+                    final count = snap.data;
+                    final label = count == null
+                        ? entry.$2
+                        : '${entry.$2} $count';
+                    return Text(
+                      label,
+                      style: TextStyle(
+                        color:
+                            selected ? Colors.white : AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
