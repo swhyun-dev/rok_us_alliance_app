@@ -184,7 +184,7 @@ async function upsertWonItems(items: VforWonItem[]): Promise<number> {
       const startDate = parseKstDate(it.agreBeginDe);
       const deadline = parseKstDate(it.agreEndDe);
       const now = new Date();
-      const status = deadline.getTime() < now.getTime() ? "expired" : "active";
+      const status = deadline.getTime() < now.getTime() ? "completed" : "active";
 
       const externalUrl =
         `https://petitions.assembly.go.kr/proceed/onGoingDetail/${it.petitId}`;
@@ -242,7 +242,7 @@ async function upsertAssemblyItems(items: VforAssemItem[]): Promise<number> {
         ? parseKstDate(periodParts[1])
         : parseKstDate(it.end_date);
       const now = new Date();
-      const status = deadline.getTime() < now.getTime() ? "expired" : "active";
+      const status = deadline.getTime() < now.getTime() ? "completed" : "active";
 
       const externalUrl =
         `https://pal.assembly.go.kr/napal/lgsltpa/lgsltpaOngoing/view.do?lgsltPaId=${it.id}`;
@@ -302,8 +302,16 @@ async function runSync(): Promise<SyncReport> {
     errors: [],
   };
 
+  // 응답에서 다시 본 doc id 모음 — 이 외 active doc 은 사라진 것으로 간주
+  // (마감 후 vforkorea API 가 더 이상 노출 안 함) 후 completed 로 마킹.
+  const seenWonIds = new Set<string>();
+  const seenAssemIds = new Set<string>();
+
   try {
     const wonItems = await fetchWonList();
+    wonItems.forEach((it) => {
+      if (it.petitId) seenWonIds.add(`np_${it.petitId}`);
+    });
     report.nationalPetitionsUpserted = await upsertWonItems(wonItems);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -313,6 +321,9 @@ async function runSync(): Promise<SyncReport> {
 
   try {
     const assemItems = await fetchAssemblyList();
+    assemItems.forEach((it) => {
+      if (it.id) seenAssemIds.add(`lb_${it.id}`);
+    });
     report.legislativeBillsUpserted = await upsertAssemblyItems(assemItems);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -320,8 +331,58 @@ async function runSync(): Promise<SyncReport> {
     functions.logger.error("syncFromVforkorea assembly 실패:", e);
   }
 
+  // 응답에 없는 active doc → completed 마킹.
+  // 두 fetch 모두 실패한 경우 잘못된 cleanup 방지를 위해 skip.
+  const wonOk = seenWonIds.size > 0 || report.nationalPetitionsUpserted > 0;
+  const assemOk = seenAssemIds.size > 0 || report.legislativeBillsUpserted > 0;
+  if (wonOk) {
+    await markMissingAsCompleted("nationalPetition", seenWonIds);
+  }
+  if (assemOk) {
+    await markMissingAsCompleted("legislativeBill", seenAssemIds);
+  }
+
   functions.logger.info("syncFromVforkorea 완료:", report);
   return report;
+}
+
+/**
+ * 주어진 type 의 active 청원 중 [seenIds] 에 없는 doc 을 completed 로
+ * 마킹. vforkorea 응답에서 빠진 = 마감되어 더 이상 active 가 아니라는 뜻.
+ */
+async function markMissingAsCompleted(
+  type: "nationalPetition" | "legislativeBill",
+  seenIds: Set<string>
+): Promise<void> {
+  const db = admin.firestore();
+  const snap = await db
+    .collection("petitions")
+    .where("type", "==", type)
+    .where("status", "==", "active")
+    .get();
+
+  if (snap.empty) return;
+
+  let count = 0;
+  const chunks = chunk(snap.docs, 100);
+  for (const docs of chunks) {
+    const batch = db.batch();
+    for (const doc of docs) {
+      if (seenIds.has(doc.id)) continue;
+      batch.update(doc.ref, {
+        status: "completed",
+        completedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      count++;
+    }
+    if (count > 0) await batch.commit();
+  }
+  if (count > 0) {
+    functions.logger.info(
+      `[syncFromVforkorea] ${type} ${count} 건을 completed 로 마킹`
+    );
+  }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
