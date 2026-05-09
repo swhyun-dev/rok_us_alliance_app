@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>ROK_US Splash - RPG Summon</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0d12;
+    color: #F0F0F0;
+    font-family: -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+  }
+  .header { text-align: center; margin-bottom: 24px; }
+  .header h1 {
+    color: #E63946;
+    font-size: 14px;
+    letter-spacing: 6px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .header p { color: #6B7280; font-size: 11px; letter-spacing: 2px; }
+
+  .phone {
+    width: 360px;
+    height: 720px;
+    background: #000;
+    border-radius: 40px;
+    border: 8px solid #1a1f2a;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(230,57,70,0.4);
+  }
+
+  .splash {
+    width: 100%; height: 100%;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at center 38%, #1a0a12 0%, #0a0508 60%, #000 100%);
+  }
+
+  /* ═══════════════════════════════════════════
+     LAYER 0: BACKGROUND - Translucent flags
+     - Both flags overlap with low opacity, creating moody background
+     ═══════════════════════════════════════════ */
+  .bg-flag-us {
+    position: absolute;
+    inset: 0;
+    width: 50%;
+    opacity: 0;
+    animation:
+      bgFlagInL 1s ease-out 0s forwards,
+      bgFlagFade 1.5s ease-in 2.2s forwards;
+    filter: blur(2px);
+    mix-blend-mode: screen;
+  }
+  .bg-flag-kr {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 50%;
+    opacity: 0;
+    animation:
+      bgFlagInR 1s ease-out 0.2s forwards,
+      bgFlagFade 1.5s ease-in 2.2s forwards;
+    filter: blur(2px);
+    mix-blend-mode: screen;
+  }
+  @keyframes bgFlagInL {
+    from { opacity: 0; transform: translateX(-30%); }
+    to { opacity: 0.18; transform: translateX(0); }
+  }
+  @keyframes bgFlagInR {
+    from { opacity: 0; transform: translateX(30%); }
+    to { opacity: 0.18; transform: translateX(0); }
+  }
+  @keyframes bgFlagFade {
+    to { opacity: 0.05; filter: blur(8px); }
+  }
+
+  /* Vignette overlay */
+  .splash::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center 38%, transparent 30%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* ═══════════════════════════════════════════
+     LAYER 1: MAGIC CIRCLE (RPG summoning ring)
+     ═══════════════════════════════════════════ */
+
+  .magic-circle-container {
+    position: absolute;
+    top: 38%; left: 50%;
+    width: 320px; height: 320px;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+  }
+
+  .magic-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(230,57,70,0.6);
+    box-shadow:
+      inset 0 0 30px rgba(230,57,70,0.3),
+      0 0 30px rgba(230,57,70,0.4);
+    opacity: 0;
+    animation:
+      ringAppear 1s ease-out 0.5s forwards,
+      ringSpin 12s linear 1s infinite,
+      ringPulse 2s ease-in-out 1.5s infinite;
+  }
+
+  .magic-ring-2 {
+    position: absolute;
+    inset: 30px;
+    border-radius: 50%;
+    border: 0.5px dashed rgba(230,57,70,0.8);
+    opacity: 0;
+    animation:
+      ringAppear 1s ease-out 0.7s forwards,
+      ringSpinReverse 8s linear 1.2s infinite;
+  }
+
+  .magic-ring-3 {
+    position: absolute;
+    inset: 60px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,200,200,0.4);
+    opacity: 0;
+    animation:
+      ringAppear 1s ease-out 0.9s forwards,
+      ringSpin 6s linear 1.4s infinite;
+  }
+
+  /* Inner pentagram-style decoration (using rotated divs) */
+  .rune-marker {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 12px; height: 12px;
+    transform: translate(-50%, -50%);
+  }
+  .rune-marker::before,
+  .rune-marker::after {
+    content: '';
+    position: absolute;
+    background: #E63946;
+    box-shadow: 0 0 8px #E63946;
+  }
+  .rune-marker::before {
+    inset: 0;
+    width: 12px; height: 2px;
+    top: 5px;
+  }
+  .rune-marker::after {
+    inset: 0;
+    width: 2px; height: 12px;
+    left: 5px;
+  }
+
+  /* 8 rune markers around the circle */
+  .rune-marker {
+    opacity: 0;
+    animation: runeAppear 0.5s ease-out forwards;
+  }
+  .rune-1 { transform: translate(-50%, -50%) translateY(-150px); animation-delay: 1.0s; }
+  .rune-2 { transform: translate(-50%, -50%) translate(106px, -106px); animation-delay: 1.05s; }
+  .rune-3 { transform: translate(-50%, -50%) translateX(150px); animation-delay: 1.1s; }
+  .rune-4 { transform: translate(-50%, -50%) translate(106px, 106px); animation-delay: 1.15s; }
+  .rune-5 { transform: translate(-50%, -50%) translateY(150px); animation-delay: 1.2s; }
+  .rune-6 { transform: translate(-50%, -50%) translate(-106px, 106px); animation-delay: 1.25s; }
+  .rune-7 { transform: translate(-50%, -50%) translateX(-150px); animation-delay: 1.3s; }
+  .rune-8 { transform: translate(-50%, -50%) translate(-106px, -106px); animation-delay: 1.35s; }
+
+  @keyframes runeAppear {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+  }
+
+  @keyframes ringAppear {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes ringSpin {
+    from { rotate: 0deg; }
+    to { rotate: 360deg; }
+  }
+  @keyframes ringSpinReverse {
+    from { rotate: 360deg; }
+    to { rotate: 0deg; }
+  }
+  @keyframes ringPulse {
+    0%, 100% { box-shadow: inset 0 0 30px rgba(230,57,70,0.3), 0 0 30px rgba(230,57,70,0.4); }
+    50% { box-shadow: inset 0 0 50px rgba(230,57,70,0.6), 0 0 60px rgba(230,57,70,0.8); }
+  }
+
+  /* ═══════════════════════════════════════════
+     LAYER 2: ENERGY BEAMS - 4 directions
+     - Beams of light shoot toward center
+     ═══════════════════════════════════════════ */
+
+  .beam {
+    position: absolute;
+    top: 38%; left: 50%;
+    width: 4px;
+    height: 0;
+    background: linear-gradient(to bottom,
+      transparent 0%,
+      #E63946 50%,
+      #FFFFFF 100%);
+    box-shadow: 0 0 15px #E63946;
+    transform-origin: top center;
+    z-index: 4;
+    opacity: 0;
+  }
+  .beam-top {
+    transform: translate(-50%, -100%) rotate(180deg);
+    animation: beamShoot 0.6s ease-out 1.6s forwards;
+  }
+  .beam-right {
+    transform: translate(-50%, -50%) rotate(-90deg);
+    transform-origin: top left;
+    animation: beamShoot 0.6s ease-out 1.65s forwards;
+  }
+  .beam-bottom {
+    transform: translate(-50%, -50%) rotate(0deg);
+    animation: beamShoot 0.6s ease-out 1.7s forwards;
+  }
+  .beam-left {
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: top left;
+    animation: beamShoot 0.6s ease-out 1.75s forwards;
+  }
+
+  @keyframes beamShoot {
+    0% { opacity: 0; height: 0; }
+    50% { opacity: 1; height: 200px; }
+    100% { opacity: 0; height: 200px; }
+  }
+
+  /* ═══════════════════════════════════════════
+     LAYER 3: PARTICLE SYSTEM (rising sparks)
+     - Floating embers like in RPG portal scenes
+     ═══════════════════════════════════════════ */
+
+  .ember {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #E63946;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #E63946, 0 0 12px #FF6B7A;
+    opacity: 0;
+    z-index: 3;
+    animation: emberFloat 4s linear infinite;
+  }
+  .ember.gold {
+    background: #FFD700;
+    box-shadow: 0 0 6px #FFD700, 0 0 12px #FFA500;
+  }
+  .ember.white {
+    background: #FFFFFF;
+    box-shadow: 0 0 6px #FFFFFF, 0 0 12px #FFB0B0;
+  }
+
+  @keyframes emberFloat {
+    0% {
+      transform: translateY(120%) translateX(0) scale(1);
+      opacity: 0;
+    }
+    10% { opacity: 1; }
+    50% {
+      transform: translateY(0%) translateX(20px) scale(1.2);
+      opacity: 1;
+    }
+    90% { opacity: 0.7; }
+    100% {
+      transform: translateY(-30%) translateX(-10px) scale(0.5);
+      opacity: 0;
+    }
+  }
+
+  /* Position embers across screen */
+  .ember:nth-child(1) { left: 8%; animation-delay: 0s; }
+  .ember:nth-child(2) { left: 18%; animation-delay: 1.2s; }
+  .ember:nth-child(3) { left: 28%; animation-delay: 0.5s; }
+  .ember:nth-child(4) { left: 38%; animation-delay: 2s; }
+  .ember:nth-child(5) { left: 48%; animation-delay: 0.8s; }
+  .ember:nth-child(6) { left: 58%; animation-delay: 2.5s; }
+  .ember:nth-child(7) { left: 68%; animation-delay: 1.5s; }
+  .ember:nth-child(8) { left: 78%; animation-delay: 0.3s; }
+  .ember:nth-child(9) { left: 88%; animation-delay: 1.8s; }
+  .ember:nth-child(10) { left: 13%; animation-delay: 3s; }
+  .ember:nth-child(11) { left: 53%; animation-delay: 3.5s; }
+  .ember:nth-child(12) { left: 73%; animation-delay: 2.8s; }
+
+  /* ═══════════════════════════════════════════
+     LAYER 4: SHIELD SUMMONING
+     - Shield appears like a summoned hero
+     ═══════════════════════════════════════════ */
+
+  .shield-summoning {
+    position: absolute;
+    top: 38%; left: 50%;
+    width: 200px;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    z-index: 5;
+    animation:
+      shieldSummon 1.2s cubic-bezier(.34,1.56,.64,1) 1.8s forwards,
+      shieldGlow 3s ease-in-out 3s infinite;
+    filter: drop-shadow(0 0 20px #E63946) drop-shadow(0 0 40px rgba(230,57,70,0.5));
+  }
+
+  @keyframes shieldSummon {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0) rotateY(0deg);
+    }
+    30% {
+      opacity: 0.5;
+      transform: translate(-50%, -50%) scale(0.4) rotateY(180deg);
+    }
+    60% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.15) rotateY(360deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1) rotateY(360deg);
+    }
+  }
+
+  @keyframes shieldGlow {
+    0%, 100% {
+      filter: drop-shadow(0 0 20px #E63946) drop-shadow(0 0 40px rgba(230,57,70,0.5));
+    }
+    50% {
+      filter: drop-shadow(0 0 30px #E63946) drop-shadow(0 0 60px rgba(230,57,70,0.8));
+    }
+  }
+
+  /* Shield aura - glowing halo behind */
+  .shield-aura {
+    position: absolute;
+    top: 38%; left: 50%;
+    width: 280px; height: 280px;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230,57,70,0.4) 0%, transparent 60%);
+    z-index: 4;
+    opacity: 0;
+    animation:
+      auraExpand 1s ease-out 2s forwards,
+      auraPulse 3s ease-in-out 3s infinite;
+  }
+
+  @keyframes auraExpand {
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes auraPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+    50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  }
+
+  /* ═══════════════════════════════════════════
+     LAYER 5: BURST FLASH at summoning peak
+     ═══════════════════════════════════════════ */
+
+  .summon-flash {
+    position: absolute;
+    top: 38%; left: 50%;
+    width: 100px; height: 100px;
+    transform: translate(-50%, -50%) scale(0);
+    background: radial-gradient(circle, #FFFFFF 0%, #FFD700 30%, #E63946 60%, transparent 80%);
+    border-radius: 50%;
+    opacity: 0;
+    z-index: 6;
+    animation: summonFlash 0.7s ease-out 2.2s forwards;
+  }
+
+  @keyframes summonFlash {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    30% { opacity: 1; transform: translate(-50%, -50%) scale(4); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(8); }
+  }
+
+  /* ═══════════════════════════════════════════
+     LAYER 6: TEXT - RPG style with letter-by-letter glow
+     ═══════════════════════════════════════════ */
+
+  .text-block {
+    position: absolute;
+    bottom: 14%; left: 0; right: 0;
+    text-align: center;
+    z-index: 7;
+  }
+
+  /* "Class card" style frame */
+  .text-frame {
+    display: inline-block;
+    padding: 18px 30px 14px;
+    background: linear-gradient(180deg,
+      rgba(230,57,70,0.05) 0%,
+      rgba(0,0,0,0.4) 50%,
+      rgba(230,57,70,0.05) 100%);
+    border: 1px solid rgba(230,57,70,0.4);
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    position: relative;
+    opacity: 0;
+    animation: frameAppear 0.8s ease-out 3.0s forwards;
+  }
+
+  @keyframes frameAppear {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Decorative corners (RPG card style) */
+  .text-frame::before,
+  .text-frame::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: #E63946;
+    border-style: solid;
+  }
+  .text-frame::before {
+    top: -2px; left: -2px;
+    border-width: 2px 0 0 2px;
+  }
+  .text-frame::after {
+    bottom: -2px; right: -2px;
+    border-width: 0 2px 2px 0;
+  }
+
+  .corner-tr, .corner-bl {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: #E63946;
+    border-style: solid;
+  }
+  .corner-tr {
+    top: -2px; right: -2px;
+    border-width: 2px 2px 0 0;
+  }
+  .corner-bl {
+    bottom: -2px; left: -2px;
+    border-width: 0 0 2px 2px;
+  }
+
+  .brand-name {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 38px;
+    letter-spacing: 7px;
+    color: #FFFFFF;
+    line-height: 1;
+    margin-bottom: 6px;
+    text-shadow:
+      0 0 6px #E63946,
+      0 0 12px rgba(230,57,70,0.8),
+      0 0 20px rgba(230,57,70,0.4);
+    opacity: 0;
+    animation:
+      textGlow 0.8s ease-out 3.3s forwards,
+      textPulse 3s ease-in-out 4s infinite;
+  }
+
+  @keyframes textGlow {
+    from { opacity: 0; letter-spacing: 20px; filter: blur(8px); }
+    to { opacity: 1; letter-spacing: 7px; filter: blur(0); }
+  }
+
+  @keyframes textPulse {
+    0%, 100% {
+      text-shadow: 0 0 6px #E63946, 0 0 12px rgba(230,57,70,0.8), 0 0 20px rgba(230,57,70,0.4);
+    }
+    50% {
+      text-shadow: 0 0 8px #E63946, 0 0 18px rgba(230,57,70,1), 0 0 30px rgba(230,57,70,0.6);
+    }
+  }
+
+  .brand-sub {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 16px;
+    letter-spacing: 11px;
+    color: #E63946;
+    text-shadow: 0 0 8px rgba(230,57,70,0.8);
+    margin-bottom: 12px;
+    opacity: 0;
+    animation: textGlow 0.7s ease-out 3.5s forwards;
+  }
+
+  /* Decorative diamond between texts */
+  .deco-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    opacity: 0;
+    animation: textGlow 0.6s ease-out 3.7s forwards;
+  }
+  .deco-line {
+    width: 30px; height: 1px;
+    background: linear-gradient(to right, transparent, #E63946, transparent);
+  }
+  .deco-diamond {
+    width: 6px; height: 6px;
+    background: #E63946;
+    transform: rotate(45deg);
+    box-shadow: 0 0 8px #E63946;
+    animation: diamondSpin 3s linear infinite;
+  }
+  @keyframes diamondSpin {
+    from { transform: rotate(45deg); }
+    to { transform: rotate(405deg); }
+  }
+
+  .brand-kr {
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: #F0F0F0;
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    opacity: 0;
+    animation: textGlow 0.6s ease-out 3.85s forwards;
+  }
+
+  /* Status bar at bottom (game UI style) */
+  .status-bar {
+    position: absolute;
+    bottom: 5%; left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(230,57,70,0.4);
+    border-radius: 2px;
+    overflow: hidden;
+    opacity: 0;
+    z-index: 7;
+    animation: textGlow 0.5s ease-out 4.1s forwards;
+  }
+  .status-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #E63946 0%, #FF6B7A 50%, #E63946 100%);
+    transform: translateX(-100%);
+    animation: statusFill 1.5s ease-out 4.3s forwards;
+    box-shadow: 0 0 8px #E63946;
+  }
+  @keyframes statusFill {
+    to { transform: translateX(0); }
+  }
+
+  /* ═══════════════════════════════════════════
+     Replay & Timeline
+     ═══════════════════════════════════════════ */
+
+  .replay-btn {
+    margin-top: 20px;
+    padding: 12px 28px;
+    background: rgba(230,57,70,0.15);
+    color: #E63946;
+    border: 1px solid #E63946;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .replay-btn:hover { background: #E63946; color: white; }
+
+  .timeline {
+    margin-top: 20px;
+    max-width: 360px;
+    background: rgba(28,33,40,0.8);
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 3px solid #E63946;
+    font-size: 11px;
+    line-height: 1.8;
+  }
+  .timeline strong { color: #E63946; }
+  .timeline .step {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 8px;
+    color: #B0B5BD;
+    margin-bottom: 4px;
+  }
+  .timeline .step span:first-child { color: #E63946; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SPLASH · RPG SUMMON</h1>
+  <p>RPG 소환 의식 스타일 · 마법진과 빛의 입자</p>
+</div>
+
+<div class="phone">
+  <div class="splash" id="splash">
+
+    <!-- LAYER 0: Translucent flag backgrounds -->
+    <div class="bg-flag-us">
+      <svg viewBox="0 0 400 800" preserveAspectRatio="xMinYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+        <rect x="0" y="0" width="400" height="800" fill="#FFF"/>
+        <rect x="0" y="0" width="400" height="61.5" fill="#B22234"/>
+        <rect x="0" y="123" width="400" height="61.5" fill="#B22234"/>
+        <rect x="0" y="246" width="400" height="61.5" fill="#B22234"/>
+        <rect x="0" y="369" width="400" height="61.5" fill="#B22234"/>
+        <rect x="0" y="492" width="400" height="61.5" fill="#B22234"/>
+        <rect x="0" y="615" width="400" height="61.5" fill="#B22234"/>
+        <rect x="0" y="738" width="400" height="62" fill="#B22234"/>
+        <rect x="0" y="0" width="200" height="430" fill="#3C3B6E"/>
+      </svg>
+    </div>
+
+    <div class="bg-flag-kr">
+      <svg viewBox="0 0 400 800" preserveAspectRatio="xMaxYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+        <rect x="0" y="0" width="400" height="800" fill="#FFF"/>
+        <circle cx="300" cy="400" r="100" fill="#CD2E3A"/>
+        <path d="M 200,400 A 100,100 0 0,0 400,400 Z" fill="#003478"/>
+        <circle cx="250" cy="400" r="50" fill="#CD2E3A"/>
+        <circle cx="350" cy="400" r="50" fill="#003478"/>
+      </svg>
+    </div>
+
+    <!-- LAYER 3: Floating embers -->
+    <div class="ember" style="top: 100%;"></div>
+    <div class="ember gold" style="top: 100%;"></div>
+    <div class="ember" style="top: 100%;"></div>
+    <div class="ember white" style="top: 100%;"></div>
+    <div class="ember" style="top: 100%;"></div>
+    <div class="ember gold" style="top: 100%;"></div>
+    <div class="ember" style="top: 100%;"></div>
+    <div class="ember white" style="top: 100%;"></div>
+    <div class="ember" style="top: 100%;"></div>
+    <div class="ember gold" style="top: 100%;"></div>
+    <div class="ember white" style="top: 100%;"></div>
+    <div class="ember" style="top: 100%;"></div>
+
+    <!-- LAYER 1: Magic circle -->
+    <div class="magic-circle-container">
+      <div class="magic-ring"></div>
+      <div class="magic-ring-2"></div>
+      <div class="magic-ring-3"></div>
+    </div>
+
+    <!-- Rune markers (outside magic circle for fixed positioning) -->
+    <div style="position: absolute; top: 38%; left: 50%; z-index: 3;">
+      <div class="rune-marker rune-1"></div>
+      <div class="rune-marker rune-2"></div>
+      <div class="rune-marker rune-3"></div>
+      <div class="rune-marker rune-4"></div>
+      <div class="rune-marker rune-5"></div>
+      <div class="rune-marker rune-6"></div>
+      <div class="rune-marker rune-7"></div>
+      <div class="rune-marker rune-8"></div>
+    </div>
+
+    <!-- LAYER 2: Energy beams -->
+    <div class="beam beam-top"></div>
+    <div class="beam beam-bottom"></div>
+    <div class="beam beam-left"></div>
+    <div class="beam beam-right"></div>
+
+    <!-- LAYER 4: Aura -->
+    <div class="shield-aura"></div>
+
+    <!-- LAYER 5: Summon flash -->
+    <div class="summon-flash"></div>
+
+    <!-- LAYER 4: Shield -->
+    <div class="shield-summoning">
+      <svg viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+        <defs>
+          <symbol id="rpgStar" viewBox="-10 -10 20 20" overflow="visible">
+            <polygon points="0,-9 2.65,-2.78 9,-2.78 3.93,1.5 5.6,8.18 0,4.27 -5.6,8.18 -3.93,1.5 -9,-2.78 -2.65,-2.78" fill="#FFF"/>
+          </symbol>
+          <clipPath id="rpgShClip"><path d="M 10,10 L 210,10 L 210,140 Q 210,210 110,255 Q 10,210 10,140 Z"/></clipPath>
+          <clipPath id="rpgRhClip"><rect x="110" y="10" width="100" height="245"/></clipPath>
+        </defs>
+        <g clip-path="url(#rpgShClip)">
+          <rect x="10" y="10" width="100" height="245" fill="#FFF"/>
+          <rect x="10" y="10" width="100" height="18.85" fill="#B22234"/>
+          <rect x="10" y="47.7" width="100" height="18.85" fill="#B22234"/>
+          <rect x="10" y="85.4" width="100" height="18.85" fill="#B22234"/>
+          <rect x="10" y="123.1" width="100" height="18.85" fill="#B22234"/>
+          <rect x="10" y="160.8" width="100" height="18.85" fill="#B22234"/>
+          <rect x="10" y="198.5" width="100" height="18.85" fill="#B22234"/>
+          <rect x="10" y="236.2" width="100" height="18.85" fill="#B22234"/>
+          <rect x="10" y="10" width="100" height="131.95" fill="#3C3B6E"/>
+          <use href="#rpgStar" x="16" y="18" width="6" height="6"/><use href="#rpgStar" x="27" y="18" width="6" height="6"/>
+          <use href="#rpgStar" x="38" y="18" width="6" height="6"/><use href="#rpgStar" x="49" y="18" width="6" height="6"/>
+          <use href="#rpgStar" x="60" y="18" width="6" height="6"/><use href="#rpgStar" x="71" y="18" width="6" height="6"/>
+          <use href="#rpgStar" x="82" y="18" width="6" height="6"/><use href="#rpgStar" x="93" y="18" width="6" height="6"/>
+          <use href="#rpgStar" x="22" y="30" width="6" height="6"/><use href="#rpgStar" x="33" y="30" width="6" height="6"/>
+          <use href="#rpgStar" x="44" y="30" width="6" height="6"/><use href="#rpgStar" x="55" y="30" width="6" height="6"/>
+          <use href="#rpgStar" x="66" y="30" width="6" height="6"/><use href="#rpgStar" x="77" y="30" width="6" height="6"/>
+          <use href="#rpgStar" x="88" y="30" width="6" height="6"/>
+          <use href="#rpgStar" x="16" y="42" width="6" height="6"/><use href="#rpgStar" x="27" y="42" width="6" height="6"/>
+          <use href="#rpgStar" x="38" y="42" width="6" height="6"/><use href="#rpgStar" x="49" y="42" width="6" height="6"/>
+          <use href="#rpgStar" x="60" y="42" width="6" height="6"/><use href="#rpgStar" x="71" y="42" width="6" height="6"/>
+          <use href="#rpgStar" x="82" y="42" width="6" height="6"/><use href="#rpgStar" x="93" y="42" width="6" height="6"/>
+          <use href="#rpgStar" x="22" y="54" width="6" height="6"/><use href="#rpgStar" x="33" y="54" width="6" height="6"/>
+          <use href="#rpgStar" x="44" y="54" width="6" height="6"/><use href="#rpgStar" x="55" y="54" width="6" height="6"/>
+          <use href="#rpgStar" x="66" y="54" width="6" height="6"/><use href="#rpgStar" x="77" y="54" width="6" height="6"/>
+          <use href="#rpgStar" x="88" y="54" width="6" height="6"/>
+          <use href="#rpgStar" x="16" y="66" width="6" height="6"/><use href="#rpgStar" x="27" y="66" width="6" height="6"/>
+          <use href="#rpgStar" x="38" y="66" width="6" height="6"/><use href="#rpgStar" x="49" y="66" width="6" height="6"/>
+          <use href="#rpgStar" x="60" y="66" width="6" height="6"/><use href="#rpgStar" x="71" y="66" width="6" height="6"/>
+          <use href="#rpgStar" x="82" y="66" width="6" height="6"/><use href="#rpgStar" x="93" y="66" width="6" height="6"/>
+          <use href="#rpgStar" x="22" y="78" width="6" height="6"/><use href="#rpgStar" x="33" y="78" width="6" height="6"/>
+          <use href="#rpgStar" x="44" y="78" width="6" height="6"/><use href="#rpgStar" x="55" y="78" width="6" height="6"/>
+          <use href="#rpgStar" x="66" y="78" width="6" height="6"/><use href="#rpgStar" x="77" y="78" width="6" height="6"/>
+          <use href="#rpgStar" x="88" y="78" width="6" height="6"/>
+          <use href="#rpgStar" x="16" y="90" width="6" height="6"/><use href="#rpgStar" x="27" y="90" width="6" height="6"/>
+          <use href="#rpgStar" x="38" y="90" width="6" height="6"/><use href="#rpgStar" x="49" y="90" width="6" height="6"/>
+          <use href="#rpgStar" x="60" y="90" width="6" height="6"/><use href="#rpgStar" x="71" y="90" width="6" height="6"/>
+          <use href="#rpgStar" x="82" y="90" width="6" height="6"/>
+
+          <rect x="110" y="10" width="100" height="245" fill="#FFF"/>
+          <g clip-path="url(#rpgRhClip)">
+            <circle cx="110" cy="135" r="55" fill="#CD2E3A"/>
+            <path d="M 55,135 A 55,55 0 0,0 165,135 Z" fill="#003478"/>
+            <circle cx="82.5" cy="135" r="27.5" fill="#CD2E3A"/>
+            <circle cx="137.5" cy="135" r="27.5" fill="#003478"/>
+            <g fill="#000">
+              <g transform="translate(28, 68) rotate(-33.69)"><rect x="-27" y="-3.5" width="54" height="7"/><rect x="-27" y="7" width="54" height="7"/><rect x="-27" y="17.5" width="54" height="7"/></g>
+              <g transform="translate(192, 68) rotate(33.69)"><rect x="-27" y="-3.5" width="54" height="7"/><rect x="-27" y="7" width="22" height="7"/><rect x="5" y="7" width="22" height="7"/><rect x="-27" y="17.5" width="54" height="7"/></g>
+              <g transform="translate(28, 202) rotate(33.69)"><rect x="-27" y="-3.5" width="22" height="7"/><rect x="5" y="-3.5" width="22" height="7"/><rect x="-27" y="7" width="54" height="7"/><rect x="-27" y="17.5" width="22" height="7"/><rect x="5" y="17.5" width="22" height="7"/></g>
+              <g transform="translate(192, 202) rotate(-33.69)"><rect x="-27" y="-3.5" width="22" height="7"/><rect x="5" y="-3.5" width="22" height="7"/><rect x="-27" y="7" width="22" height="7"/><rect x="5" y="7" width="22" height="7"/><rect x="-27" y="17.5" width="22" height="7"/><rect x="5" y="17.5" width="22" height="7"/></g>
+            </g>
+          </g>
+        </g>
+        <path d="M 10,10 L 210,10 L 210,140 Q 210,210 110,255 Q 10,210 10,140 Z" fill="none" stroke="#E63946" stroke-width="4"/>
+        <line x1="110" y1="10" x2="110" y2="255" stroke="#E63946" stroke-width="2"/>
+      </svg>
+    </div>
+
+    <!-- LAYER 6: Text frame (RPG card style) -->
+    <div class="text-block">
+      <div class="text-frame">
+        <div class="corner-tr"></div>
+        <div class="corner-bl"></div>
+        <div class="brand-name">ROK · US</div>
+        <div class="brand-sub">ALLIANCE</div>
+        <div class="deco-row">
+          <div class="deco-line"></div>
+          <div class="deco-diamond"></div>
+          <div class="deco-line"></div>
+        </div>
+        <div class="brand-kr">한 미 동 맹 단</div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar"></div>
+  </div>
+</div>
+
+<button class="replay-btn" onclick="replay()">▶ REPLAY ANIMATION</button>
+
+<div class="timeline">
+  <strong>📽️ RPG 소환 시퀀스 (총 ~4.6초)</strong>
+  <div class="step"><span>0.0s</span><span>국기가 반투명 배경으로 양쪽 등장</span></div>
+  <div class="step"><span>0.5s</span><span>마법진 외곽 링 출현</span></div>
+  <div class="step"><span>0.7s</span><span>두 번째 점선 링 (반대 회전)</span></div>
+  <div class="step"><span>1.0s</span><span>8방향 룬 마커 순차 등장</span></div>
+  <div class="step"><span>1.6s</span><span>4방향 에너지 광선이 중앙 향해 발사</span></div>
+  <div class="step"><span>1.8s</span><span>방패 회전하며 소환 (Y축 360도 회전)</span></div>
+  <div class="step"><span>2.0s</span><span>방패 후광(aura) 등장</span></div>
+  <div class="step"><span>2.2s</span><span>소환 완료 플래시 폭발</span></div>
+  <div class="step"><span>2.2s+</span><span>국기 배경 더 흐려짐</span></div>
+  <div class="step"><span>3.0s</span><span>RPG 카드 프레임 + 텍스트 등장</span></div>
+  <div class="step"><span>3.3s</span><span>"ROK · US" 빛나며 letter-spacing 좁혀짐</span></div>
+  <div class="step"><span>4.3s</span><span>하단 게임 UI 진행바 채워짐</span></div>
+</div>
+
+<script>
+function replay() {
+  const splash = document.getElementById('splash');
+  const parent = splash.parentElement;
+  const clone = splash.cloneNode(true);
+  splash.remove();
+  parent.appendChild(clone);
+  clone.id = 'splash';
+}
+</script>
+
+</body>
+</html>

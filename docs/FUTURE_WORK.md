@@ -62,14 +62,11 @@ CLAUDE.md Section 5-1 (1차 출시 단순 ID 인코딩) → 2차 정교화 (JWT 
 
 본 세션에서 QR 시스템은 회원증 카드와 연동된 부분만 보존, 나머지는 그대로.
 
-## 7. assets/temp/files/ 정리
+## 7. assets/temp/files/ 정리 ✅ 완료
 
-본 세션 종료 후 남은 파일들:
-- `CLAUDE_CODE_FINAL.md` — 본 배치 작업 지시서 (작업 완료, 보존 불필요)
-- `splash_rpg.html` — 스플래시 디자인 reference (HTML 미리보기)
-- `shield_final_render.png` — 방패 로고 렌더 미리보기
-
-다음 세션 시작 전 `assets/temp/files/` 폴더 자체를 삭제해도 무관. 보관하고 싶으면 `docs/design-references/` 로 이동.
+splash_rpg.html, shield_final_render.png 는 `docs/design-references/` 로 이동.
+CLAUDE_CODE_FINAL.md (작업 지시서) 는 commit history 에 결과물이 반영됐으므로 삭제.
+`assets/temp/` 폴더 제거 완료.
 
 ## 8. 죽은 코드 정리 (Week 5 예정)
 
