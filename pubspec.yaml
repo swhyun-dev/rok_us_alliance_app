@@ -27,6 +27,7 @@ dependencies:
   sign_in_with_apple: ^6.1.4
   google_sign_in: ^6.2.2
   qr_flutter: ^4.1.0
+  flutter_svg: ^2.0.10+1
   mobile_scanner: ^5.2.3
   crypto: ^3.0.3
   flutter_markdown: ^0.7.4
@@ -47,3 +48,4 @@ flutter:
     - assets/images/korea_flag.png
     - assets/images/usa_flag.png
     - assets/legal/
+    - assets/svg/

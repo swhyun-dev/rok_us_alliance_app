@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 260" width="320" height="260">
+  <title>US Flag Waving - For Splash Screen</title>
+
+  <defs>
+    <symbol id="star5us" viewBox="-10 -10 20 20" overflow="visible">
+      <polygon points="0,-9 2.65,-2.78 9,-2.78 3.93,1.5 5.6,8.18 0,4.27 -5.6,8.18 -3.93,1.5 -9,-2.78 -2.65,-2.78"
+               fill="#FFFFFF"/>
+    </symbol>
+    <linearGradient id="usShadeWv" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.5"/>
+    </linearGradient>
+    <clipPath id="usWaveClipFlag">
+      <path d="M 0,0 Q 80,-12 160,4 Q 240,18 320,2 L 322,260 Q 240,278 160,262 Q 80,246 0,260 Z"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#usWaveClipFlag)">
+    <rect x="0" y="0" width="320" height="260" fill="#FFFFFF"/>
+
+    <!-- 7 red stripes (alternating with 6 white) -->
+    <rect x="0" y="0" width="320" height="20" fill="#B22234"/>
+    <rect x="0" y="40" width="320" height="20" fill="#B22234"/>
+    <rect x="0" y="80" width="320" height="20" fill="#B22234"/>
+    <rect x="0" y="120" width="320" height="20" fill="#B22234"/>
+    <rect x="0" y="160" width="320" height="20" fill="#B22234"/>
+    <rect x="0" y="200" width="320" height="20" fill="#B22234"/>
+    <rect x="0" y="240" width="320" height="20" fill="#B22234"/>
+
+    <!-- Blue canton -->
+    <rect x="0" y="0" width="128" height="140" fill="#3C3B6E"/>
+
+    <!-- 50 stars in 9-row pattern (6,5,6,5,6,5,6,5,6) -->
+    <use href="#star5us" x="8" y="8" width="11" height="11"/>
+    <use href="#star5us" x="22" y="8" width="11" height="11"/>
+    <use href="#star5us" x="36" y="8" width="11" height="11"/>
+    <use href="#star5us" x="50" y="8" width="11" height="11"/>
+    <use href="#star5us" x="64" y="8" width="11" height="11"/>
+    <use href="#star5us" x="78" y="8" width="11" height="11"/>
+    <use href="#star5us" x="92" y="8" width="11" height="11"/>
+    <use href="#star5us" x="106" y="8" width="11" height="11"/>
+    <use href="#star5us" x="14" y="22" width="11" height="11"/>
+    <use href="#star5us" x="28" y="22" width="11" height="11"/>
+    <use href="#star5us" x="42" y="22" width="11" height="11"/>
+    <use href="#star5us" x="56" y="22" width="11" height="11"/>
+    <use href="#star5us" x="70" y="22" width="11" height="11"/>
+    <use href="#star5us" x="84" y="22" width="11" height="11"/>
+    <use href="#star5us" x="98" y="22" width="11" height="11"/>
+    <use href="#star5us" x="8" y="36" width="11" height="11"/>
+    <use href="#star5us" x="22" y="36" width="11" height="11"/>
+    <use href="#star5us" x="36" y="36" width="11" height="11"/>
+    <use href="#star5us" x="50" y="36" width="11" height="11"/>
+    <use href="#star5us" x="64" y="36" width="11" height="11"/>
+    <use href="#star5us" x="78" y="36" width="11" height="11"/>
+    <use href="#star5us" x="92" y="36" width="11" height="11"/>
+    <use href="#star5us" x="106" y="36" width="11" height="11"/>
+    <use href="#star5us" x="14" y="50" width="11" height="11"/>
+    <use href="#star5us" x="28" y="50" width="11" height="11"/>
+    <use href="#star5us" x="42" y="50" width="11" height="11"/>
+    <use href="#star5us" x="56" y="50" width="11" height="11"/>
+    <use href="#star5us" x="70" y="50" width="11" height="11"/>
+    <use href="#star5us" x="84" y="50" width="11" height="11"/>
+    <use href="#star5us" x="98" y="50" width="11" height="11"/>
+    <use href="#star5us" x="8" y="64" width="11" height="11"/>
+    <use href="#star5us" x="22" y="64" width="11" height="11"/>
+    <use href="#star5us" x="36" y="64" width="11" height="11"/>
+    <use href="#star5us" x="50" y="64" width="11" height="11"/>
+    <use href="#star5us" x="64" y="64" width="11" height="11"/>
+    <use href="#star5us" x="78" y="64" width="11" height="11"/>
+    <use href="#star5us" x="92" y="64" width="11" height="11"/>
+    <use href="#star5us" x="106" y="64" width="11" height="11"/>
+    <use href="#star5us" x="14" y="78" width="11" height="11"/>
+    <use href="#star5us" x="28" y="78" width="11" height="11"/>
+    <use href="#star5us" x="42" y="78" width="11" height="11"/>
+    <use href="#star5us" x="56" y="78" width="11" height="11"/>
+    <use href="#star5us" x="70" y="78" width="11" height="11"/>
+    <use href="#star5us" x="84" y="78" width="11" height="11"/>
+    <use href="#star5us" x="98" y="78" width="11" height="11"/>
+    <use href="#star5us" x="8" y="92" width="11" height="11"/>
+    <use href="#star5us" x="22" y="92" width="11" height="11"/>
+    <use href="#star5us" x="36" y="92" width="11" height="11"/>
+    <use href="#star5us" x="50" y="92" width="11" height="11"/>
+    <use href="#star5us" x="64" y="92" width="11" height="11"/>
+    <use href="#star5us" x="78" y="92" width="11" height="11"/>
+    <use href="#star5us" x="92" y="92" width="11" height="11"/>
+    <use href="#star5us" x="106" y="92" width="11" height="11"/>
+
+    <!-- Cloth shading -->
+    <rect x="0" y="0" width="320" height="260" fill="url(#usShadeWv)"/>
+
+    <!-- Wave fold shadows -->
+    <g fill="#000000" opacity="0.18">
+      <path d="M 0,60 Q 80,55 160,68 Q 240,80 320,65 L 320,72 Q 240,87 160,75 Q 80,62 0,67 Z"/>
+      <path d="M 0,140 Q 80,135 160,148 Q 240,160 320,145 L 320,152 Q 240,167 160,155 Q 80,142 0,147 Z"/>
+      <path d="M 0,210 Q 80,205 160,218 Q 240,230 320,215 L 320,222 Q 240,237 160,225 Q 80,212 0,217 Z"/>
+    </g>
+  </g>
+</svg>
