@@ -149,7 +149,7 @@ class _SummaryCard extends StatelessWidget {
           Text(
             'Lv ${user.level}',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: AppColors.white.withValues(alpha: 0.7),
               fontSize: 12,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.5,
@@ -159,7 +159,7 @@ class _SummaryCard extends StatelessWidget {
           Text(
             '${user.points} P',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 30,
               fontWeight: FontWeight.w900,
             ),
@@ -168,7 +168,7 @@ class _SummaryCard extends StatelessWidget {
           Text(
             '${user.nickname}님의 누적 활동 점수',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.65),
+              color: AppColors.white.withValues(alpha: 0.65),
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),

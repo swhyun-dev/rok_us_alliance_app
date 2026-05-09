@@ -25,35 +25,35 @@ const _tiers = <_LevelTier>[
     level: 1,
     name: '새내기',
     minPoints: 0,
-    color: Color(0xFF8C93A8),
+    color: AppColors.gradeLv1,
     benefits: ['커뮤니티 둘러보기', '청원·행사 일정 열람'],
   ),
   _LevelTier(
     level: 2,
     name: '시민',
     minPoints: 100,
-    color: Color(0xFF378ADD),
+    color: AppColors.gradeLv2,
     benefits: ['청원 서명 +50P 적립', '커뮤니티 게시글 작성'],
   ),
   _LevelTier(
     level: 3,
     name: '활동가',
     minPoints: 500,
-    color: Color(0xFF639922),
+    color: AppColors.gradeLv3,
     benefits: ['행사 체크인 +100P', '한미동맹단증 발급'],
   ),
   _LevelTier(
     level: 4,
     name: '핵심',
     minPoints: 2000,
-    color: Color(0xFFC9A84C),
+    color: AppColors.gradeLv4,
     benefits: ['카드 골드 등급', '관리자 추천인 우선 검토'],
   ),
   _LevelTier(
     level: 5,
     name: '동지',
     minPoints: 5000,
-    color: Color(0xFF7F77DD),
+    color: AppColors.gradeLv5,
     benefits: ['VIP 등급 표시', '특별 행사 우선 초대'],
   ),
 ];
@@ -129,7 +129,7 @@ class _ProgressCard extends StatelessWidget {
           Text(
             currentLevel >= 5 ? '최고 등급 달성' : '다음 등급까지 ${remaining}P',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.75),
+              color: AppColors.white.withValues(alpha: 0.75),
               fontSize: 12,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.5,
@@ -139,7 +139,7 @@ class _ProgressCard extends StatelessWidget {
           Text(
             '${points}P · Lv $currentLevel',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 26,
               fontWeight: FontWeight.w900,
             ),
@@ -150,8 +150,8 @@ class _ProgressCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 10,
-              backgroundColor: Colors.white.withValues(alpha: 0.18),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              backgroundColor: AppColors.white.withValues(alpha: 0.18),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.white),
             ),
           ),
         ],
@@ -170,7 +170,7 @@ class _TierCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isCurrent ? tier.color : AppColors.border,
@@ -225,7 +225,7 @@ class _TierCard extends StatelessWidget {
                         child: const Text(
                           '현재',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
                           ),

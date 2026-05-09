@@ -328,7 +328,7 @@ class _GuestView extends StatelessWidget {
               const Text(
                 '로그인이 필요합니다',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                 ),
@@ -337,7 +337,7 @@ class _GuestView extends StatelessWidget {
               Text(
                 '네이버 로그인 후 행사 일정·청원·커뮤니티에\n참여하고 활동 점수와 등급을 쌓을 수 있습니다.',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.70),
+                  color: AppColors.white.withValues(alpha: 0.70),
                   fontSize: 14,
                   height: 1.6,
                 ),
@@ -472,7 +472,7 @@ class _ProfileHeroCardState extends State<_ProfileHeroCard> {
                             ? AppColors.shieldGradient
                             : null,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.25),
+                          color: AppColors.white.withValues(alpha: 0.25),
                           width: 2,
                         ),
                       ),
@@ -483,13 +483,13 @@ class _ProfileHeroCardState extends State<_ProfileHeroCard> {
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => const Icon(
                                 Icons.person,
-                                color: Colors.white,
+                                color: AppColors.white,
                                 size: 36,
                               ),
                             )
                           : const Icon(
                               Icons.person,
-                              color: Colors.white,
+                              color: AppColors.white,
                               size: 36,
                             ),
                     ),
@@ -506,7 +506,7 @@ class _ProfileHeroCardState extends State<_ProfileHeroCard> {
                             height: 22,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.4,
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                         ),
@@ -521,11 +521,11 @@ class _ProfileHeroCardState extends State<_ProfileHeroCard> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.koreanRed,
-                            border: Border.all(color: Colors.white, width: 2),
+                            border: Border.all(color: AppColors.white, width: 2),
                           ),
                           child: const Icon(
                             Icons.camera_alt,
-                            color: Colors.white,
+                            color: AppColors.white,
                             size: 14,
                           ),
                         ),
@@ -541,7 +541,7 @@ class _ProfileHeroCardState extends State<_ProfileHeroCard> {
                     Text(
                       user.name.isNotEmpty ? user.name : '이름 미입력',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                       ),
@@ -552,7 +552,7 @@ class _ProfileHeroCardState extends State<_ProfileHeroCard> {
                           ? '@${user.nickname}'
                           : '네이버 닉네임 없음',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.60),
+                        color: AppColors.white.withValues(alpha: 0.60),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -577,7 +577,7 @@ class _ProfileHeroCardState extends State<_ProfileHeroCard> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(999),
               gradient: AppColors.flagAccentGradient,
-              color: Colors.white.withValues(alpha: 0.15),
+              color: AppColors.white.withValues(alpha: 0.15),
             ),
           ),
         ],
@@ -593,7 +593,7 @@ class _GradeBadge extends StatelessWidget {
 
   Color get _color {
     if (grade == _MemberGrade.regular) return AppColors.gold;
-    return Colors.white;
+    return AppColors.white;
   }
 
   @override
@@ -601,7 +601,7 @@ class _GradeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
+        color: AppColors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: _color.withValues(alpha: 0.35)),
       ),
@@ -628,7 +628,7 @@ class _ActivityScoreCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
@@ -716,7 +716,7 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
@@ -794,7 +794,7 @@ class _InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
@@ -888,7 +888,7 @@ class _MenuCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
@@ -968,11 +968,7 @@ class _MembershipCardBanner extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.darkNavy, Color(0xFF0D1E50)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppColors.cardHeroGradient,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -991,10 +987,10 @@ class _MembershipCardBanner extends StatelessWidget {
                     gradient: AppColors.shieldGradient,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.25), width: 1),
+                        color: AppColors.white.withValues(alpha: 0.25), width: 1),
                   ),
                   child: const Icon(Icons.badge_outlined,
-                      color: Colors.white, size: 24),
+                      color: AppColors.white, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -1004,7 +1000,7 @@ class _MembershipCardBanner extends StatelessWidget {
                       const Text(
                         '한미동맹단증',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                         ),
@@ -1017,7 +1013,7 @@ class _MembershipCardBanner extends StatelessWidget {
                                 ? '운영자 승인 후 발급됩니다'
                                 : '회원 정보를 불러오는 중…',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.65),
+                          color: AppColors.white.withValues(alpha: 0.65),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),

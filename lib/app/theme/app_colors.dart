@@ -60,6 +60,20 @@ class AppColors {
   /// 성공·확인 인디케이터 (체크마크 등) 다크 그린
   static const Color success = Color(0xFF2E7D32);
 
+  // ─── 등급 색상 (CLAUDE.md Section 3-1) ──────────────────
+  static const Color gradeLv1 = Color(0xFF8C93A8); // 새내기 — 회색
+  static const Color gradeLv2 = Color(0xFF378ADD); // 시민   — 파랑
+  static const Color gradeLv3 = Color(0xFF639922); // 활동가 — 녹색
+  static const Color gradeLv4 = Color(0xFFC9A84C); // 핵심   — 골드 (legacy gold #C8A84B 와 imperceptible 차이)
+  static const Color gradeLv5 = Color(0xFF7F77DD); // 동지   — 퍼플
+
+  // ─── 카드 히어로 영역 그라디언트 (멤버십 카드 헤더, 프로필 영웅 카드 등) ─
+  static const LinearGradient cardHeroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [darkNavy, Color(0xFF0D1E50)],
+  );
+
   // Gradients
   static const LinearGradient heroGradient = LinearGradient(
     colors: [darkNavy, Color(0xFF0A1830)],
