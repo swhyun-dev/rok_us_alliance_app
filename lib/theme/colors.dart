@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../features/membership/domain/member.dart';
+
 /// ROK_US Alliance 디자인 시스템 - 컬러 토큰
 ///
 /// 모든 색상은 이 파일에서만 가져와야 합니다. 하드코딩된 색상 절대 금지.
@@ -44,4 +46,41 @@ class AppColors {
   static const Color flagUsRed = Color(0xFFB22234);
   static const Color flagKrRed = Color(0xFFCD2E3A);
   static const Color flagKrBlue = Color(0xFF003478);
+
+  // ─── Membership card 보조 토큰 ───────────────────────────
+
+  /// 한미동맹단증 카드 하단의 플래그 스트라이프 그라디언트.
+  /// 좌측: 태극(red·blue) → 흰 → 우측: 성조기(red·blue)
+  static const LinearGradient flagStripeGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      flagKrRed,
+      flagKrBlue,
+      Color(0xFFFFFFFF),
+      flagUsRed,
+      flagUsBlue,
+    ],
+    stops: [0.0, 0.30, 0.50, 0.70, 1.0],
+  );
+
+  /// QR 카운트다운 pill 기본 배경 (다크).
+  static const Color qrCountdownBg = Color(0xCC0D1117);
+
+  /// QR 만료 임박 (5초 미만) 시 카운트다운 pill 강조 배경.
+  static const Color qrCountdownUrgent = accentRed;
+}
+
+/// 회원 등급 → 카드·배지 강조 색상.
+///
+/// 도메인 enum은 색상 의존을 갖지 않도록 순수하게 유지하고,
+/// 매핑은 이 헬퍼로 분리한다.
+Color gradeColorOf(MemberGrade grade) {
+  return switch (grade) {
+    MemberGrade.general => AppColors.textMuted,
+    MemberGrade.regular => AppColors.accentRed,
+    MemberGrade.gold => AppColors.gradeGold,
+    MemberGrade.vip => AppColors.gradeVip,
+    MemberGrade.honorary => AppColors.accentRed,
+  };
 }

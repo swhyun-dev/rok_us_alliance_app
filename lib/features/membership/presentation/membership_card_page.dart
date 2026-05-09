@@ -4,16 +4,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/alliance_loading_indicator.dart';
+import '../../../widgets/membership_card.dart';
 import '../data/member_store.dart';
 import '../data/qr_service.dart';
 import '../domain/member.dart';
 import 'qr_fullscreen_page.dart';
+import 'widgets/qr_countdown_pill.dart';
 
 class MembershipCardPage extends StatefulWidget {
   const MembershipCardPage({super.key});
@@ -125,10 +126,20 @@ class _MembershipCardPageState extends State<MembershipCardPage> {
               children: [
                 Screenshot(
                   controller: _screenshotController,
-                  child: _MembershipCard(
-                    member: member,
+                  child: MembershipCard(
+                    memberName: member.name,
+                    memberNumber: member.memberNumber,
+                    branch: member.branch,
+                    joinDate: member.joinedAt,
+                    grade: member.grade,
+                    points: member.points,
+                    canIssueCard: member.grade.canIssueCard,
                     qrToken: _qrToken,
-                    onQrTap: _qrToken != null
+                    qrOverlay: (member.grade.canIssueCard && _qrToken != null)
+                        ? QrCountdownPill(qrToken: _qrToken!)
+                        : null,
+                    aspectFixed: true,
+                    onTapQr: _qrToken != null
                         ? () => _openQrFullscreen(member, _qrToken!)
                         : null,
                   ),
@@ -171,251 +182,6 @@ class _MembershipCardPageState extends State<MembershipCardPage> {
           },
         ),
       ],
-    );
-  }
-}
-
-// ─── 멤버십 카드 ───────────────────────────────────────────────────────────────
-
-class _MembershipCard extends StatelessWidget {
-  const _MembershipCard({
-    required this.member,
-    required this.qrToken,
-    this.onQrTap,
-  });
-
-  final Member member;
-  final String? qrToken;
-  final VoidCallback? onQrTap;
-
-  Color get _gradeColor {
-    switch (member.grade) {
-      case MemberGrade.gold:
-        return AppColors.gold;
-      case MemberGrade.vip:
-        return const Color(0xFF7F77DD);
-      case MemberGrade.honorary:
-        return AppColors.gold;
-      default:
-        return AppColors.koreanBlue;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: const LinearGradient(
-          colors: [AppColors.darkNavy, Color(0xFF0D1E50)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.darkNavy.withValues(alpha: 0.40),
-            blurRadius: 28,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 카드 헤더
-          Row(
-            children: [
-              const Text(
-                '🇰🇷',
-                style: TextStyle(fontSize: 22),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  gradient: AppColors.shieldGradient,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.shield,
-                    color: Colors.white, size: 16),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                '🇺🇸',
-                style: TextStyle(fontSize: 22),
-              ),
-              const Spacer(),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: _gradeColor.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                      color: _gradeColor.withValues(alpha: 0.50)),
-                ),
-                child: Text(
-                  member.grade.label.toUpperCase(),
-                  style: TextStyle(
-                    color: _gradeColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // 이름 + QR
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      member.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      member.branch,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.60),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '가입일 ${member.joinedDateLabel}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.45),
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // QR 코드 박스
-              GestureDetector(
-                onTap: onQrTap,
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: member.grade.canIssueCard && qrToken != null
-                      ? Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: QrImageView(
-                                data: qrToken!,
-                                version: QrVersions.auto,
-                                size: 88,
-                                padding: const EdgeInsets.all(6),
-                                eyeStyle: const QrEyeStyle(
-                                  eyeShape: QrEyeShape.square,
-                                  color: AppColors.darkNavy,
-                                ),
-                                dataModuleStyle: const QrDataModuleStyle(
-                                  dataModuleShape: QrDataModuleShape.square,
-                                  color: AppColors.darkNavy,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                height: 18,
-                                decoration: BoxDecoration(
-                                  color: AppColors.koreanBlue
-                                      .withValues(alpha: 0.85),
-                                  borderRadius: const BorderRadius.vertical(
-                                      bottom: Radius.circular(14)),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    '크게 보기',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : const Center(
-                          child: Icon(Icons.lock_outline,
-                              color: AppColors.textSecondary, size: 28),
-                        ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // 플래그 스트라이프
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
-              gradient: AppColors.flagAccentGradient,
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // 회원번호 + 점수
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                member.memberNumber,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.stars_rounded,
-                      color: AppColors.gold, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${member.points}P',
-                    style: const TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
