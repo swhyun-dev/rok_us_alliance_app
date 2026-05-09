@@ -91,7 +91,7 @@ class _CommunityHero extends StatelessWidget {
           Text(
             '커뮤니티',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 25,
               fontWeight: FontWeight.w900,
             ),

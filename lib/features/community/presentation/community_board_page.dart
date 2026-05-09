@@ -92,7 +92,7 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
           return Column(
             children: [
               Container(
-                color: Colors.white,
+                color: AppColors.white,
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                 child: Column(
                   children: [
@@ -161,7 +161,7 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
                     : ListView.separated(
                   itemCount: posts.length,
                   separatorBuilder: (_, __) =>
-                  const Divider(height: 1, color: Color(0xFFEDEDED)),
+                  const Divider(height: 1, color: AppColors.divider),
                   itemBuilder: (context, index) {
                     final post = posts[index];
                     return _BoardListItem(
@@ -195,7 +195,7 @@ class _CommunityBoardPageState extends State<CommunityBoardPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: _accent,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
         onPressed: () {
           Navigator.push(
             context,
@@ -230,13 +230,13 @@ class _RegionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.red : const Color(0xFFF4F4F4),
+          color: selected ? AppColors.red : AppColors.chipBgNeutral,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : AppColors.textPrimary,
+            color: selected ? AppColors.white : AppColors.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -457,7 +457,7 @@ class _BoardListItem extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.55),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.play_arrow, color: Colors.white),
+            child: const Icon(Icons.play_arrow, color: AppColors.white),
           ),
       ],
     );
@@ -468,7 +468,7 @@ class _BoardListItem extends StatelessWidget {
       width: 88,
       height: 88,
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2),
+        color: AppColors.chipBgNeutral,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(

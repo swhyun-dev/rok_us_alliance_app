@@ -135,7 +135,7 @@ class _CommunityPostFormPageState extends State<CommunityPostFormPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
@@ -163,7 +163,7 @@ class _CommunityPostFormPageState extends State<CommunityPostFormPage> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.2,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     )
                   : Text(_isEdit ? '저장' : '게시',
@@ -224,7 +224,7 @@ class _CategoryChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.white,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -241,7 +241,7 @@ class _CategoryChips extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: selected ? c.color : Colors.white,
+                    color: selected ? c.color : AppColors.white,
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
                       color: selected ? c.color : AppColors.border,
@@ -250,7 +250,7 @@ class _CategoryChips extends StatelessWidget {
                   child: Text(
                     c.label,
                     style: TextStyle(
-                      color: selected ? Colors.white : AppColors.textPrimary,
+                      color: selected ? AppColors.white : AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: 13,
                     ),
@@ -278,7 +278,7 @@ class _Footer extends StatelessWidget {
         ? AppColors.koreanRed
         : (warn ? AppColors.gold : AppColors.textSecondary);
     return Container(
-      color: Colors.white,
+      color: AppColors.white,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,

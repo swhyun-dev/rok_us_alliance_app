@@ -58,7 +58,11 @@
 
 - ✅ 기존 라이트 팔레트(`lib/app/theme/app_colors.dart`) 기준으로 통일
 - ✅ 토큰명은 의미론적 (역할 기반)
-- ✅ `Colors.transparent` 는 그대로 둠 (수용 가능 패턴)
+- ✅ Material primitives 는 그대로 둠 (수용 가능 패턴):
+  - `Colors.transparent`
+  - `Colors.white` ↔ `AppColors.white` 는 가급적 후자 (consistency)
+  - `Colors.whiteN` / `Colors.blackN` (alpha shortcut, 예: `white70`, `black54`) 는 const 문맥과 호환되며 Flutter 표준 idiom 이므로 유지
+  - `Colors.black.withValues(alpha:..)` 는 그림자·overlay 의 primitive 로 보존
 - ✅ 그룹별 커밋으로 롤백 포인트 확보
 - ❌ 시각적 변화 발생할 수 있는 근사 매핑 금지 — 정확 매핑 안 되면 토큰 추가 후 진행
 - ❌ 브랜드 키트(`lib/theme/colors.dart`, `lib/screens/splash_screen.dart`, `lib/widgets/{membership_card,alliance_emblem}.dart`) 건드리지 말 것
