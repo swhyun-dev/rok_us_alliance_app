@@ -34,8 +34,8 @@ class ShieldSummonWidget extends StatelessWidget {
   final double loopValue;
 
   static const double _shieldWidth = 200;
-  // shield_final.svg viewBox 220×280 비율 유지
-  static const double _shieldHeight = _shieldWidth * 280 / 220;
+  // shield_final.svg viewBox 240×255 비율 유지 (배경·텍스트 제거 후 타이트 viewBox)
+  static const double _shieldHeight = _shieldWidth * 255 / 240;
 
   @override
   Widget build(BuildContext context) {
