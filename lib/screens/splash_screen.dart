@@ -1,29 +1,34 @@
-import 'dart:math' as math;
+// lib/screens/splash_screen.dart
+import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../theme/colors.dart';
+import 'splash/ember_particles.dart';
+import 'splash/energy_beams.dart';
+import 'splash/magic_circle_painter.dart';
+import 'splash/rpg_text_frame.dart';
+import 'splash/rune_markers.dart';
+import 'splash/shield_summon_widget.dart';
+import 'splash/summon_flash.dart';
 
-/// ROK_US Alliance 스플래시 화면
+/// ROK_US Alliance 스플래시 — RPG 소환 의식 컨셉.
 ///
-/// 애니메이션 시퀀스 (총 2.5초):
-/// - 0.3~1.0s : 좌측에서 성조기 펄럭이며 진입
-/// - 0.5~1.2s : 우측에서 태극기 펄럭이며 진입
-/// - 1.0~1.8s : 중앙 엠블럼 회전 + 탄성 스케일 등장
-/// - 1.3~2.1s : 텍스트 시퀀스 페이드인
-/// - 1.7s~    : 깃발 부드럽게 펄럭임 (반복)
-/// - 2.4s+    : 하단 로딩 인디케이터 표시
-///
-/// 사용:
-/// ```dart
-/// SplashScreen(
-///   onComplete: () => Navigator.pushReplacement(
-///     context,
-///     MaterialPageRoute(builder: (_) => const HomeScreen()),
-///   ),
-/// )
-/// ```
+/// 시퀀스 (총 4.6s, onComplete 5.0s):
+///   0.0 ~ 1.0  반투명 국기 좌·우 슬라이드 인 (opacity 0 → 0.18, blur 2)
+///   0.5 ~ 1.5  마법진 외곽·중간(점선)·내부 링 등장
+///   1.0 ~ 1.85 8방향 룬 마커 0.05s 시차 등장
+///   1.6 ~ 2.35 4방향 에너지 광선 발사
+///   1.8 ~ 3.0  방패 Y축 360° 회전하며 소환
+///   2.0 ~ 3.0  방패 후광 펼쳐짐
+///   2.2 ~ 2.9  소환 완료 폭발 플래시
+///   2.2 ~ 3.7  배경 국기 더 흐려짐 (opacity 0.18 → 0.05, blur 2 → 8)
+///   3.0 ~ 3.8  RPG 카드 프레임 등장
+///   3.3 ~ 4.45 텍스트 시퀀스 (ROK·US → ALLIANCE → 데코 → 한미동맹단)
+///   4.1 ~       하단 진행바 등장·채워짐
+///   5.0       onComplete 콜백 → 다음 화면 진입
 class SplashScreen extends StatefulWidget {
   final VoidCallback? onComplete;
 
@@ -35,313 +40,200 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late final AnimationController _entryController;
-  late final AnimationController _waveController;
+  static const double _masterDurationSec = 4.6;
 
-  late final Animation<double> _usFlagSlide;
-  late final Animation<double> _usFlagOpacity;
-  late final Animation<double> _krFlagSlide;
-  late final Animation<double> _krFlagOpacity;
-  late final Animation<double> _emblemScale;
-  late final Animation<double> _emblemOpacity;
-  late final Animation<double> _emblemRotation;
-  late final Animation<double> _brandTextSlide;
-  late final Animation<double> _brandTextOpacity;
-  late final Animation<double> _krTextOpacity;
-  late final Animation<double> _taglineOpacity;
-  late final Animation<double> _loadingOpacity;
+  late final AnimationController _master;
+  // 마법진 3 링 회전용 — 24s = LCM(12,8,6) 이라 매 cycle 끝에서 모든 링이
+  // 정수배 회전을 마치고 0으로 돌아가므로 boundary 점프가 시각적으로 보이지 않는다.
+  late final AnimationController _spin;
+  // 펄스·다이아 회전·호버 모션용 (3s)
+  late final AnimationController _loop;
+
+  Timer? _completeTimer;
 
   @override
   void initState() {
     super.initState();
-
-    _entryController = AnimationController(
-      duration: const Duration(milliseconds: 2500),
+    _master = AnimationController(
+      duration: const Duration(milliseconds: 4600),
       vsync: this,
     );
-
-    _waveController = AnimationController(
-      duration: const Duration(milliseconds: 3500),
+    _spin = AnimationController(
+      duration: const Duration(seconds: 24),
       vsync: this,
-    )..repeat(reverse: true);
+    )..repeat();
+    _loop = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
 
-    // 0.12~0.40 : US flag enters (300ms-1000ms)
-    _usFlagSlide = Tween<double>(begin: -1.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _entryController,
-        curve: const Interval(0.12, 0.40, curve: Curves.easeOutCubic),
-      ),
-    );
-    _usFlagOpacity = CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.12, 0.40, curve: Curves.easeOut),
-    );
+    _master.forward();
 
-    // 0.20~0.48 : KR flag enters
-    _krFlagSlide = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _entryController,
-        curve: const Interval(0.20, 0.48, curve: Curves.easeOutCubic),
-      ),
-    );
-    _krFlagOpacity = CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.20, 0.48, curve: Curves.easeOut),
-    );
-
-    // 0.40~0.72 : Emblem
-    _emblemOpacity = CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.40, 0.56, curve: Curves.easeOut),
-    );
-    _emblemScale = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _entryController,
-        curve: const Interval(0.40, 0.72, curve: Curves.elasticOut),
-      ),
-    );
-    _emblemRotation = Tween<double>(begin: -math.pi, end: 0).animate(
-      CurvedAnimation(
-        parent: _entryController,
-        curve: const Interval(0.40, 0.72, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    // 0.52~0.72 : Brand text
-    _brandTextOpacity = CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.52, 0.72, curve: Curves.easeOut),
-    );
-    _brandTextSlide = Tween<double>(begin: 20.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _entryController,
-        curve: const Interval(0.52, 0.72, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    // 0.76~0.92 : Korean text
-    _krTextOpacity = CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.76, 0.92, curve: Curves.easeOut),
-    );
-
-    // 0.84~1.0 : Tagline
-    _taglineOpacity = CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.84, 1.0, curve: Curves.easeOut),
-    );
-
-    // 0.96~1.0 : Loading dots
-    _loadingOpacity = CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.96, 1.0, curve: Curves.easeOut),
-    );
-
-    _entryController.forward();
-
-    Future.delayed(const Duration(milliseconds: 3000), () {
+    _completeTimer = Timer(const Duration(milliseconds: 5000), () {
       if (mounted) widget.onComplete?.call();
     });
   }
 
   @override
   void dispose() {
-    _entryController.dispose();
-    _waveController.dispose();
+    _completeTimer?.cancel();
+    _master.dispose();
+    _spin.dispose();
+    _loop.dispose();
     super.dispose();
   }
 
+  /// _master.value 기반으로 [start, start+duration] 윈도우의 0~1 진행도 반환.
+  double _windowProgress(double startSec, double durationSec) {
+    final t = _master.value * _masterDurationSec;
+    return ((t - startSec) / durationSec).clamp(0.0, 1.0);
+  }
+
+  /// 절대 master 시간 (초)
+  double get _masterTime => _master.value * _masterDurationSec;
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Colors.black,
       body: AnimatedBuilder(
-        animation: Listenable.merge([_entryController, _waveController]),
+        animation: Listenable.merge([_master, _spin, _loop]),
         builder: (context, _) {
+          final bgFlagInL = _windowProgress(0.0, 1.0);
+          final bgFlagInR = _windowProgress(0.2, 1.0);
+          final bgFlagFade = _windowProgress(2.2, 1.5);
+          final magicAppear = _windowProgress(0.5, 1.0);
+          final masterTime = _masterTime;
+          final shieldSummon = _windowProgress(1.8, 1.2);
+          final auraExpand = _windowProgress(2.0, 1.0);
+          final summonFlash = _windowProgress(2.2, 0.7);
+          final frameAppear = _windowProgress(3.0, 0.8);
+          final rokUsProgress = _windowProgress(3.3, 0.8);
+          final allianceProgress = _windowProgress(3.5, 0.7);
+          final decoProgress = _windowProgress(3.7, 0.6);
+          final krProgress = _windowProgress(3.85, 0.6);
+          final statusBarAppear = _windowProgress(4.1, 0.4);
+          final statusBarFill = _windowProgress(4.3, 1.5);
+
           return Stack(
             fit: StackFit.expand,
             children: [
-              // 배경 글로우
+              // ─── L0: 배경 그라디언트 (어두운 자홍 → 검정)
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
-                    center: Alignment(0, -0.4),
+                    center: Alignment(0, -0.24), // 화면 38% 지점
                     radius: 1.0,
-                    colors: [Color(0x40E63946), Color(0x00E63946)],
-                  ),
-                ),
-              ),
-
-              // US Flag
-              Positioned(
-                left: screenWidth * _usFlagSlide.value - 10,
-                top: screenHeight * 0.18,
-                child: Opacity(
-                  opacity: _usFlagOpacity.value,
-                  child: Transform.rotate(
-                    angle: math.sin(_waveController.value * math.pi) * 0.04 - 0.05,
-                    child: SizedBox(
-                      width: 180,
-                      height: 130,
-                      child: SvgPicture.asset(
-                        'assets/svg/us_flag_waving.svg',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // KR Flag
-              Positioned(
-                right: screenWidth * _krFlagSlide.value - 10,
-                top: screenHeight * 0.22,
-                child: Opacity(
-                  opacity: _krFlagOpacity.value,
-                  child: Transform.rotate(
-                    angle: -math.sin(_waveController.value * math.pi) * 0.04 + 0.05,
-                    child: SizedBox(
-                      width: 180,
-                      height: 130,
-                      child: SvgPicture.asset(
-                        'assets/svg/kr_flag_waving.svg',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 중앙 컨텐츠
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 엠블럼
-                      Opacity(
-                        opacity: _emblemOpacity.value,
-                        child: Transform.rotate(
-                          angle: _emblemRotation.value,
-                          child: Transform.scale(
-                            scale: _emblemScale.value,
-                            child: const _CenterEmblem(size: 110),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // 데코 라인
-                      Opacity(
-                        opacity: _brandTextOpacity.value,
-                        child: const _DecorativeLine(),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // ROK · US
-                      Opacity(
-                        opacity: _brandTextOpacity.value,
-                        child: Transform.translate(
-                          offset: Offset(0, _brandTextSlide.value),
-                          child: const Text(
-                            'ROK · US',
-                            style: TextStyle(
-                              fontFamily: 'BebasNeue',
-                              fontSize: 56,
-                              fontWeight: FontWeight.w400,
-                              letterSpacing: 6,
-                              color: Color(0xFFFFFFFF),
-                              height: 1,
-                              shadows: [
-                                Shadow(
-                                  color: Color(0x66E63946),
-                                  blurRadius: 12,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // ALLIANCE
-                      Opacity(
-                        opacity: _brandTextOpacity.value,
-                        child: const Text(
-                          'ALLIANCE',
-                          style: TextStyle(
-                            fontFamily: 'BebasNeue',
-                            fontSize: 24,
-                            letterSpacing: 12,
-                            color: AppColors.accentRed,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // 디바이더
-                      Opacity(
-                        opacity: _krTextOpacity.value,
-                        child: Container(
-                          width: 100,
-                          height: 0.5,
-                          color: AppColors.textMuted.withValues(alpha: 0.5),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // 한미동맹단
-                      Opacity(
-                        opacity: _krTextOpacity.value,
-                        child: const Text(
-                          '한 미 동 맹 단',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 8,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // 태그라인
-                      Opacity(
-                        opacity: _taglineOpacity.value,
-                        child: const Text(
-                          'CIVIC · NETWORK · ALLIANCE',
-                          style: TextStyle(
-                            fontSize: 9,
-                            letterSpacing: 5,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ),
+                    colors: [
+                      AppColors.bgUrgent,
+                      AppColors.bgIconDark,
+                      Colors.black,
                     ],
+                    stops: [0.0, 0.6, 1.0],
                   ),
                 ),
               ),
 
-              // 하단 로딩 인디케이터
-              Positioned(
-                bottom: 60,
-                left: 0,
-                right: 0,
-                child: Opacity(
-                  opacity: _loadingOpacity.value,
-                  child: _LoadingDots(controller: _waveController),
+              // ─── L0: 반투명 국기 (좌:US, 우:KR)
+              _BackgroundFlag(
+                asset: 'assets/svg/us_flag_waving.svg',
+                isLeft: true,
+                inProgress: bgFlagInL,
+                fadeProgress: bgFlagFade,
+              ),
+              _BackgroundFlag(
+                asset: 'assets/svg/kr_flag_waving.svg',
+                isLeft: false,
+                inProgress: bgFlagInR,
+                fadeProgress: bgFlagFade,
+              ),
+
+              // ─── L1: 비네트
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: Alignment(0, -0.24),
+                        radius: 1.0,
+                        colors: [Colors.transparent, Color(0xB3000000)],
+                        stops: [0.3, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // ─── L3: 입자
+              const Positioned.fill(child: EmberParticles()),
+
+              // ─── L3: 마법진 + 룬 마커
+              Align(
+                alignment: const Alignment(0, -0.24),
+                child: SizedBox(
+                  width: 320,
+                  height: 320,
+                  child: RepaintBoundary(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      clipBehavior: Clip.none,
+                      children: [
+                        CustomPaint(
+                          size: const Size(320, 320),
+                          painter: MagicCirclePainter(
+                            appearProgress: magicAppear,
+                            spinValue: _spin.value,
+                            pulseValue: _loop.value,
+                          ),
+                        ),
+                        RuneMarkers(masterTime: masterTime),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ─── L4: 에너지 광선
+              Align(
+                alignment: const Alignment(0, -0.24),
+                child: EnergyBeams(masterTime: masterTime),
+              ),
+
+              // ─── L4-5: 방패 + 후광
+              Align(
+                alignment: const Alignment(0, -0.24),
+                child: ShieldSummonWidget(
+                  summonProgress: shieldSummon,
+                  auraProgress: auraExpand,
+                  loopValue: _loop.value,
+                ),
+              ),
+
+              // ─── L6: 소환 플래시
+              Align(
+                alignment: const Alignment(0, -0.24),
+                child: SummonFlash(progress: summonFlash),
+              ),
+
+              // ─── L7: RPG 텍스트 프레임
+              Align(
+                alignment: const Alignment(0, 0.65),
+                child: RpgTextFrame(
+                  frameProgress: frameAppear,
+                  rokUsProgress: rokUsProgress,
+                  allianceProgress: allianceProgress,
+                  decoProgress: decoProgress,
+                  krProgress: krProgress,
+                  loopValue: _loop.value,
+                ),
+              ),
+
+              // ─── L7: 진행바
+              Align(
+                alignment: const Alignment(0, 0.92),
+                child: _StatusBar(
+                  appearProgress: statusBarAppear,
+                  fillProgress: statusBarFill,
                 ),
               ),
             ],
@@ -352,156 +244,126 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ─── 분리된 위젯들 ──────────────────────────────────────────
+// ─── 배경 국기 (반투명·블러·페이드) ─────────────────────────────
 
-class _CenterEmblem extends StatelessWidget {
-  final double size;
-  const _CenterEmblem({required this.size});
+class _BackgroundFlag extends StatelessWidget {
+  const _BackgroundFlag({
+    required this.asset,
+    required this.isLeft,
+    required this.inProgress,
+    required this.fadeProgress,
+  });
+
+  final String asset;
+  final bool isLeft;
+
+  /// 0~1 — 좌·우에서 슬라이드 인
+  final double inProgress;
+
+  /// 0~1 — 더 흐려지는 페이드
+  final double fadeProgress;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: AppColors.bgPrimary,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.accentRed, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accentRed.withValues(alpha: 0.3),
-            blurRadius: 20,
-            spreadRadius: 2,
+    if (inProgress <= 0) return const SizedBox.shrink();
+
+    final slideFraction = (1 - inProgress) * 0.30;
+    final dx = isLeft ? -slideFraction : slideFraction;
+
+    const maxOpacity = 0.18;
+    const minOpacity = 0.05;
+    final opacity = inProgress *
+        (maxOpacity - (maxOpacity - minOpacity) * fadeProgress);
+
+    final blurSigma = 2.0 + 6.0 * fadeProgress;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final halfWidth = constraints.maxWidth / 2;
+        return Positioned(
+          left: isLeft ? dx * halfWidth : null,
+          right: isLeft ? null : dx * halfWidth,
+          top: 0,
+          bottom: 0,
+          width: halfWidth,
+          child: ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(
+              sigmaX: blurSigma,
+              sigmaY: blurSigma,
+            ),
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: SvgPicture.asset(
+                asset,
+                fit: BoxFit.cover,
+                alignment:
+                    isLeft ? Alignment.centerLeft : Alignment.centerRight,
+              ),
+            ),
           ),
-        ],
-      ),
-      child: CustomPaint(painter: _MonogramPainter()),
+        );
+      },
     );
   }
 }
 
-class _MonogramPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final scale = size.width / 100;
+// ─── 진행바 ────────────────────────────────────────────────
 
-    final redPaint = Paint()..color = AppColors.accentRed;
-    final whitePaint = Paint()..color = Colors.white;
+class _StatusBar extends StatelessWidget {
+  const _StatusBar({
+    required this.appearProgress,
+    required this.fillProgress,
+  });
 
-    // 내부 링
-    canvas.drawCircle(
-      center,
-      40 * scale,
-      Paint()
-        ..color = AppColors.accentRed.withValues(alpha: 0.4)
-        ..strokeWidth = 0.5
-        ..style = PaintingStyle.stroke,
-    );
-
-    // 좌측 막대
-    canvas.drawRect(
-      Rect.fromLTWH(center.dx - 22 * scale, center.dy - 22 * scale,
-          6 * scale, 44 * scale),
-      redPaint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(center.dx - 22 * scale, center.dy - 22 * scale,
-          6 * scale, 6 * scale),
-      whitePaint,
-    );
-
-    // 우측 막대
-    canvas.drawRect(
-      Rect.fromLTWH(center.dx + 16 * scale, center.dy - 22 * scale,
-          6 * scale, 44 * scale),
-      redPaint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(center.dx + 16 * scale, center.dy - 22 * scale,
-          6 * scale, 6 * scale),
-      whitePaint,
-    );
-
-    // 가로 연결선
-    canvas.drawRect(
-      Rect.fromLTWH(center.dx - 22 * scale, center.dy - 3 * scale,
-          44 * scale, 6 * scale),
-      redPaint,
-    );
-
-    // 중앙 다이아몬드
-    final diamond = Path()
-      ..moveTo(center.dx, center.dy - 3 * scale)
-      ..lineTo(center.dx + 4 * scale, center.dy)
-      ..lineTo(center.dx, center.dy + 3 * scale)
-      ..lineTo(center.dx - 4 * scale, center.dy)
-      ..close();
-    canvas.drawPath(diamond, whitePaint);
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-class _DecorativeLine extends StatelessWidget {
-  const _DecorativeLine();
+  final double appearProgress;
+  final double fillProgress;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(width: 60, height: 1, color: AppColors.accentRed),
-        const SizedBox(width: 8),
-        Container(
-          width: 6,
-          height: 6,
-          decoration: const BoxDecoration(
-            color: AppColors.accentRed,
-            shape: BoxShape.circle,
+    if (appearProgress <= 0) return const SizedBox.shrink();
+    return Opacity(
+      opacity: appearProgress,
+      child: Container(
+        width: 200,
+        height: 6,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          border: Border.all(
+            color: AppColors.accentRed.withValues(alpha: 0.4),
           ),
+          borderRadius: BorderRadius.circular(3),
         ),
-        const SizedBox(width: 8),
-        Container(width: 60, height: 1, color: AppColors.accentRed),
-      ],
-    );
-  }
-}
-
-class _LoadingDots extends StatelessWidget {
-  final AnimationController controller;
-  const _LoadingDots({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (i) {
-        return AnimatedBuilder(
-          animation: controller,
-          builder: (context, _) {
-            final phase = (controller.value * 2 + i * 0.25) % 1.0;
-            final opacity = (1.0 - (phase - 0.5).abs() * 2).clamp(0.3, 1.0);
-            final scale = 0.8 +
-                (1.0 - (phase - 0.5).abs() * 2).clamp(0.0, 1.0) * 0.3;
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              child: Transform.scale(
-                scale: scale,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: Stack(
+            children: [
+              Positioned(
+                left: -200 * (1 - fillProgress),
+                top: 0,
+                bottom: 0,
+                width: 200,
                 child: Container(
-                  width: 8,
-                  height: 8,
                   decoration: BoxDecoration(
-                    color: AppColors.accentRed.withValues(alpha: opacity),
-                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.accentRed,
+                        AppColors.accentRed.withValues(alpha: 0.6),
+                        AppColors.accentRed,
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accentRed.withValues(alpha: 0.7),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                 ),
               ),
-            );
-          },
-        );
-      }),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
