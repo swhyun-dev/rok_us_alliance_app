@@ -302,7 +302,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                       expandedHeight: post.hasThumbnail ? 280 : 110,
                       leading: IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: const Icon(Icons.arrow_back, color: AppColors.white),
                       ),
                       backgroundColor: AppColors.navy,
                       actions: [
@@ -316,15 +316,15 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                           },
                           icon: Icon(
                             _isSavedLocal ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                         ),
                         IconButton(
                           onPressed: () => _sharePost(post),
-                          icon: const Icon(Icons.share_outlined, color: Colors.white),
+                          icon: const Icon(Icons.share_outlined, color: AppColors.white),
                         ),
                         PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert, color: Colors.white),
+                          icon: const Icon(Icons.more_vert, color: AppColors.white),
                           onSelected: (value) async {
                             if (value == 'edit') {
                               await Navigator.push(
@@ -355,7 +355,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                               post.coverImageUrl,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
-                                color: const Color(0xFFE9EEF8),
+                                color: AppColors.placeholderImg,
                               ),
                             ),
                             DecoratedBox(
@@ -377,7 +377,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                     ),
                     SliverToBoxAdapter(
                       child: Container(
-                        color: Colors.white,
+                        color: AppColors.white,
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +394,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                                 if (post.isPopular)
                                   const _MetaChip(
                                     text: '인기글',
-                                    background: Color(0xFFFDE9EA),
+                                    background: AppColors.chipHotBg,
                                     textColor: AppColors.red,
                                   ),
                                 if (post.region.isNotEmpty)
@@ -421,8 +421,8 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                               children: [
                                 const CircleAvatar(
                                   radius: 24,
-                                  backgroundColor: Color(0xFFE1E3E8),
-                                  child: Icon(Icons.person, color: Colors.white),
+                                  backgroundColor: AppColors.placeholderAvatar,
+                                  child: Icon(Icons.person, color: AppColors.white),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -449,7 +449,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                                                 vertical: 4,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFFFEAD7),
+                                                color: AppColors.chipWarningBg,
                                                 borderRadius: BorderRadius.circular(999),
                                               ),
                                               child: Text(
@@ -457,7 +457,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFFD57A1F),
+                                                  color: AppColors.chipWarningText,
                                                 ),
                                               ),
                                             ),
@@ -487,7 +487,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                               ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
-                                color: const Color(0xFFF7F8FA),
+                                color: AppColors.surfaceMuted,
                               ),
                               child: Row(
                                 children: [
@@ -614,7 +614,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => Container(
                                       height: 180,
-                                      color: const Color(0xFFF2F2F2),
+                                      color: AppColors.chipBgNeutral,
                                       alignment: Alignment.center,
                                       child: const Text('이미지를 불러오지 못했습니다.'),
                                     ),
@@ -673,11 +673,11 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                       ),
                     ),
                     const SliverToBoxAdapter(
-                      child: Divider(height: 1, thickness: 8, color: Color(0xFFF5F6F8)),
+                      child: Divider(height: 1, thickness: 8, color: AppColors.dividerThick),
                     ),
                     SliverToBoxAdapter(
                       child: Container(
-                        color: Colors.white,
+                        color: AppColors.white,
                         padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
                         child: Row(
                           children: [
@@ -764,9 +764,9 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.white,
                     border: Border(
-                      top: BorderSide(color: Color(0xFFEAECEF)),
+                      top: BorderSide(color: AppColors.divider),
                     ),
                   ),
                   child: Row(
@@ -780,7 +780,7 @@ class _CommunityPostDetailPageState extends State<CommunityPostDetailPage> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF4F5F7),
+                            color: AppColors.chipBg,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: TextField(
@@ -928,7 +928,7 @@ class _DetailCommentBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.white,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
         children: [
@@ -946,7 +946,7 @@ class _DetailCommentBlock extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF4F5F7),
+                        color: AppColors.chipBg,
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: TextField(
@@ -1008,8 +1008,8 @@ class _DetailCommentCard extends StatelessWidget {
       children: [
         const CircleAvatar(
           radius: 20,
-          backgroundColor: Color(0xFFE1E3E8),
-          child: Icon(Icons.person, color: Colors.white, size: 22),
+          backgroundColor: AppColors.placeholderAvatar,
+          child: Icon(Icons.person, color: AppColors.white, size: 22),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -1033,7 +1033,7 @@ class _DetailCommentCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF2F3F5),
+                        color: AppColors.chipBg,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -1049,7 +1049,7 @@ class _DetailCommentCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFEAD7),
+                        color: AppColors.chipWarningBg,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -1057,7 +1057,7 @@ class _DetailCommentCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFFD57A1F),
+                          color: AppColors.chipWarningText,
                         ),
                       ),
                     ),
@@ -1139,7 +1139,7 @@ class _ReplyCommentCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FB),
+        color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
