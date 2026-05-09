@@ -102,7 +102,7 @@ class _AdminScannerPageState extends State<AdminScannerPage> {
                 child: const Text(
                   '회원증 QR 코드를 프레임 안에 맞춰주세요',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -123,7 +123,7 @@ class _AdminScannerPageState extends State<AdminScannerPage> {
                   return IconButton(
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.black.withValues(alpha: 0.50),
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.white,
                       padding: const EdgeInsets.all(14),
                     ),
                     icon: Icon(
@@ -214,7 +214,7 @@ class _ScanOverlay extends StatelessWidget {
             height: frameSize,
             child: CustomPaint(
               painter: _FramePainter(
-                color: isProcessing ? AppColors.koreanBlue : Colors.white,
+                color: isProcessing ? AppColors.koreanBlue : AppColors.white,
               ),
             ),
           ),
@@ -277,7 +277,7 @@ class _ResultPanel extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 32),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -352,7 +352,7 @@ class _ValidResult extends StatelessWidget {
           child: const Text(
             '참여 확인',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 12,
               fontWeight: FontWeight.w800,
             ),

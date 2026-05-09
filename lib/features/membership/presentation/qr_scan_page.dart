@@ -107,7 +107,7 @@ class _QrScanPageState extends State<QrScanPage> {
                   child: const Text(
                     '행사장 QR 코드를 프레임 안에 맞춰주세요',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -138,7 +138,7 @@ class _QrScanPageState extends State<QrScanPage> {
                     return IconButton(
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.black.withValues(alpha: 0.50),
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppColors.white,
                         padding: const EdgeInsets.all(14),
                       ),
                       icon: Icon(
@@ -181,7 +181,7 @@ class _ScanOverlay extends StatelessWidget {
       case _ScanState.noMember:
         frameColor = AppColors.koreanRed;
       case _ScanState.scanning:
-        frameColor = Colors.white;
+        frameColor = AppColors.white;
     }
 
     return Stack(
@@ -255,7 +255,7 @@ class _ResultPanel extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 32),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -325,7 +325,7 @@ class _SuccessContent extends StatelessWidget {
               Text(
                 '+150P',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),

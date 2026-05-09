@@ -55,7 +55,7 @@ class _QrFullscreenPageState extends State<QrFullscreenPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -83,7 +83,7 @@ class _QrFullscreenPageState extends State<QrFullscreenPage> {
                     child: const Text(
                       'QR 스캔용',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                       ),
@@ -119,7 +119,7 @@ class _QrFullscreenPageState extends State<QrFullscreenPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: AppColors.border, width: 1.5),
                 boxShadow: [

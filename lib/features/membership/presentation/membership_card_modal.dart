@@ -229,19 +229,19 @@ class _BottomActions extends StatelessWidget {
                 gradient: light.AppColors.shieldGradient,
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.25),
+                  color: light.AppColors.white.withValues(alpha: 0.25),
                   width: 1.5,
                 ),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.qr_code_scanner, color: Colors.white, size: 18),
+                  Icon(Icons.qr_code_scanner, color: light.AppColors.white, size: 18),
                   SizedBox(width: 8),
                   Text(
                     'QR 참여 인증',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: light.AppColors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
                     ),
@@ -258,15 +258,15 @@ class _BottomActions extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: light.AppColors.white.withValues(alpha: 0.15),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.30),
+                color: light.AppColors.white.withValues(alpha: 0.30),
                 width: 1.5,
               ),
             ),
             child: const Icon(Icons.close_rounded,
-                color: Colors.white, size: 22),
+                color: light.AppColors.white, size: 22),
           ),
         ),
       ],
