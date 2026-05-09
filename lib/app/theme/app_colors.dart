@@ -26,6 +26,37 @@ class AppColors {
   static const Color softRed = Color(0xFFFFEEEE);
   static const Color softSky = Color(0xFFF0F7FF);
 
+  // ─── 회색 표면·칩·divider 보조 토큰 ─────────────────────
+  /// 일반 태그·칩의 회색 배경 (#F4F5F7, #F2F3F5 도 여기로 통합)
+  static const Color chipBg = Color(0xFFF4F5F7);
+
+  /// 약간 어두운 순수 회색 칩·placeholder
+  static const Color chipBgNeutral = Color(0xFFF2F2F2);
+
+  /// 본문 박스 회색 표면 (#F7F8FA, #F8F9FB 통합)
+  static const Color surfaceMuted = Color(0xFFF7F8FA);
+
+  /// 이미지 errorBuilder 자리 — 약한 푸른 회색
+  static const Color placeholderImg = Color(0xFFE9EEF8);
+
+  /// 아바타 fallback 배경 — 중간 회색
+  static const Color placeholderAvatar = Color(0xFFE1E3E8);
+
+  /// "인기글" 등 hot 태그 배경 (분홍 계열)
+  static const Color chipHotBg = Color(0xFFFDE9EA);
+
+  /// "BEST" 등 warning/highlight 칩 배경 (크림)
+  static const Color chipWarningBg = Color(0xFFFFEAD7);
+
+  /// chipWarningBg 짝 텍스트 (오렌지)
+  static const Color chipWarningText = Color(0xFFD57A1F);
+
+  /// 미세 divider/border 라인 색
+  static const Color divider = Color(0xFFEAECEF);
+
+  /// 섹션 구분용 두꺼운 divider (8px 세로 회색 띠)
+  static const Color dividerThick = Color(0xFFF5F6F8);
+
   // Gradients
   static const LinearGradient heroGradient = LinearGradient(
     colors: [darkNavy, Color(0xFF0A1830)],
