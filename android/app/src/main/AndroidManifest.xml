@@ -16,7 +16,7 @@
     <application
         android:name="${applicationName}"
         android:label="rok_us_alliance_app"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
 
         <!-- ━━━ Naver SDK ━━━ -->
         <meta-data
