@@ -35,59 +35,31 @@
     <!-- Blue canton (full width of left half, 7 stripes tall) -->
     <rect x="90" y="130" width="110" height="129.22" fill="#3C3B6E"/>
 
-    <!-- 50 stars distributed in canton -->
-    <use href="#star5tr" x="97" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="109" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="121" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="133" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="145" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="157" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="169" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="181" y="138" width="2" height="2"/>
-    <use href="#star5tr" x="103" y="151" width="2" height="2"/>
-    <use href="#star5tr" x="115" y="151" width="2" height="2"/>
-    <use href="#star5tr" x="127" y="151" width="2" height="2"/>
-    <use href="#star5tr" x="139" y="151" width="2" height="2"/>
-    <use href="#star5tr" x="151" y="151" width="2" height="2"/>
-    <use href="#star5tr" x="163" y="151" width="2" height="2"/>
-    <use href="#star5tr" x="175" y="151" width="2" height="2"/>
-    <use href="#star5tr" x="97" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="109" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="121" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="133" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="145" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="157" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="169" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="181" y="164" width="2" height="2"/>
-    <use href="#star5tr" x="103" y="177" width="2" height="2"/>
-    <use href="#star5tr" x="115" y="177" width="2" height="2"/>
-    <use href="#star5tr" x="127" y="177" width="2" height="2"/>
-    <use href="#star5tr" x="139" y="177" width="2" height="2"/>
-    <use href="#star5tr" x="151" y="177" width="2" height="2"/>
-    <use href="#star5tr" x="163" y="177" width="2" height="2"/>
-    <use href="#star5tr" x="175" y="177" width="2" height="2"/>
-    <use href="#star5tr" x="97" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="109" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="121" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="133" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="145" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="157" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="169" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="181" y="190" width="2" height="2"/>
-    <use href="#star5tr" x="103" y="203" width="2" height="2"/>
-    <use href="#star5tr" x="115" y="203" width="2" height="2"/>
-    <use href="#star5tr" x="127" y="203" width="2" height="2"/>
-    <use href="#star5tr" x="139" y="203" width="2" height="2"/>
-    <use href="#star5tr" x="151" y="203" width="2" height="2"/>
-    <use href="#star5tr" x="163" y="203" width="2" height="2"/>
-    <use href="#star5tr" x="175" y="203" width="2" height="2"/>
-    <use href="#star5tr" x="97" y="216" width="2" height="2"/>
-    <use href="#star5tr" x="109" y="216" width="2" height="2"/>
-    <use href="#star5tr" x="121" y="216" width="2" height="2"/>
-    <use href="#star5tr" x="133" y="216" width="2" height="2"/>
-    <use href="#star5tr" x="145" y="216" width="2" height="2"/>
-    <use href="#star5tr" x="157" y="216" width="2" height="2"/>
-    <use href="#star5tr" x="169" y="216" width="2" height="2"/>
+    <!-- 23 stars: 좌측 절반 캔턴 — 정통 50별 패턴(6,5,6,5,...) 의 left half = 3,2,3,2,3,2,3,2,3 -->
+    <!-- 9행 × 12열 그리드, 6-별 행: 1,3,5 열 / 5-별 행: 2,4 열 (좌측 절반만) -->
+    <use href="#star5tr" x="107" y="142" width="2" height="2"/>
+    <use href="#star5tr" x="144" y="142" width="2" height="2"/>
+    <use href="#star5tr" x="181" y="142" width="2" height="2"/>
+    <use href="#star5tr" x="126" y="155" width="2" height="2"/>
+    <use href="#star5tr" x="162" y="155" width="2" height="2"/>
+    <use href="#star5tr" x="107" y="168" width="2" height="2"/>
+    <use href="#star5tr" x="144" y="168" width="2" height="2"/>
+    <use href="#star5tr" x="181" y="168" width="2" height="2"/>
+    <use href="#star5tr" x="126" y="181" width="2" height="2"/>
+    <use href="#star5tr" x="162" y="181" width="2" height="2"/>
+    <use href="#star5tr" x="107" y="194" width="2" height="2"/>
+    <use href="#star5tr" x="144" y="194" width="2" height="2"/>
+    <use href="#star5tr" x="181" y="194" width="2" height="2"/>
+    <use href="#star5tr" x="126" y="207" width="2" height="2"/>
+    <use href="#star5tr" x="162" y="207" width="2" height="2"/>
+    <use href="#star5tr" x="107" y="220" width="2" height="2"/>
+    <use href="#star5tr" x="144" y="220" width="2" height="2"/>
+    <use href="#star5tr" x="181" y="220" width="2" height="2"/>
+    <use href="#star5tr" x="126" y="233" width="2" height="2"/>
+    <use href="#star5tr" x="162" y="233" width="2" height="2"/>
+    <use href="#star5tr" x="107" y="246" width="2" height="2"/>
+    <use href="#star5tr" x="144" y="246" width="2" height="2"/>
+    <use href="#star5tr" x="181" y="246" width="2" height="2"/>
 
     <!-- ═══ RIGHT HALF: KR FLAG RIGHT HALF ═══ -->
     <!-- 
