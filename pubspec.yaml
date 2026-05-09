@@ -49,3 +49,10 @@ flutter:
     - assets/images/usa_flag.png
     - assets/legal/
     - assets/svg/
+
+  fonts:
+    - family: BebasNeue
+      fonts:
+        - asset: assets/fonts/BebasNeue-Regular.ttf
+    # Pretendard / JetBrainsMono 는 향후 코드 사용 시 추가 등록.
+    # 라이선스: assets/fonts/README.md 참조 (SIL OFL 1.1)

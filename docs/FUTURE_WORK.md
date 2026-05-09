@@ -15,14 +15,15 @@
 
 ## 2. 폰트 자산 배치
 
-현재 `assets/fonts/` 는 README 만 있고 실제 폰트 파일 없음. 다음을 배치 후 `pubspec.yaml` 에 등록 필요.
+### BebasNeue ✅ 완료
+- `assets/fonts/BebasNeue-Regular.ttf` 배치 + pubspec 등록 완료
+- 스플래시·로그인·회원증의 "ROK · US ALLIANCE" 영문 타이포가 정상 발현
 
-- **Pretendard** (한글 본문) — `Pretendard-{Regular,Medium,Bold}.otf`
-- **BebasNeue** (영문 헤드라인) — `BebasNeue-Regular.ttf`
-  - 미배치 상태에서 스플래시·로그인·회원증의 "ROK · US ALLIANCE" 영문 타이포가 시스템 sans-serif 로 fallback 중
-- (선택) **JetBrainsMono** — 회원번호 monospace
+### 남은 항목
+- **Pretendard** (한글 본문) — 코드에서 아직 사용 안 함. 한글 typography 통일감 도입할 때 배치
+- (선택) **JetBrainsMono** — 회원번호 monospace 통일. 현재 시스템 fallback 사용 중
 
-배치 후 라이선스 고지 (SIL OFL) 도 필요 — `assets/fonts/README.md` 의 가이드 참조.
+배치 시 `assets/fonts/README.md` 의 라이선스 고지(SIL OFL 1.1) 참조.
 
 ## 3. 스플래시 재진입 시 짧은 버전
 
