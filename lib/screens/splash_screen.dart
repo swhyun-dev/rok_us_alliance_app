@@ -14,9 +14,15 @@ import 'splash/rune_markers.dart';
 import 'splash/shield_summon_widget.dart';
 import 'splash/summon_flash.dart';
 
-/// ROK_US Alliance 스플래시 — RPG 소환 의식 컨셉.
+/// 스플래시 시퀀스 모드.
 ///
-/// 시퀀스 (총 4.6s, onComplete 5.0s):
+/// - [full]  : 첫 진입에서 보여주는 4.6s RPG 소환 시퀀스
+/// - [short] : 재진입에서 보여주는 1.2s 미니멀 fade-in (방패 + 브랜드 텍스트만)
+enum SplashMode { full, short }
+
+/// ROK_US Alliance 스플래시.
+///
+/// **Full 모드** (총 4.6s, onComplete 5.0s) — RPG 소환 의식 컨셉:
 ///   0.0 ~ 1.0  반투명 국기 좌·우 슬라이드 인 (opacity 0 → 0.18, blur 2)
 ///   0.5 ~ 1.5  마법진 외곽·중간(점선)·내부 링 등장
 ///   1.0 ~ 1.85 8방향 룬 마커 0.05s 시차 등장
@@ -24,15 +30,26 @@ import 'splash/summon_flash.dart';
 ///   1.8 ~ 3.0  방패 Y축 360° 회전하며 소환
 ///   2.0 ~ 3.0  방패 후광 펼쳐짐
 ///   2.2 ~ 2.9  소환 완료 폭발 플래시
-///   2.2 ~ 3.7  배경 국기 더 흐려짐 (opacity 0.18 → 0.05, blur 2 → 8)
+///   2.2 ~ 3.7  배경 국기 더 흐려짐
 ///   3.0 ~ 3.8  RPG 카드 프레임 등장
 ///   3.3 ~ 4.45 텍스트 시퀀스 (ROK·US → ALLIANCE → 데코 → 한미동맹단)
 ///   4.1 ~       하단 진행바 등장·채워짐
-///   5.0       onComplete 콜백 → 다음 화면 진입
+///   5.0       onComplete
+///
+/// **Short 모드** (총 1.2s, onComplete 1.5s) — 재진입용 미니멀:
+///   0.0 ~ 0.5  방패 fade-in + scale 0.9 → 1.0
+///   0.3 ~ 0.8  "ROK · US" + "ALLIANCE" fade-in
+///   0.5 ~ 1.0  "한 미 동 맹 단" fade-in
+///   1.5       onComplete
 class SplashScreen extends StatefulWidget {
   final VoidCallback? onComplete;
+  final SplashMode mode;
 
-  const SplashScreen({super.key, this.onComplete});
+  const SplashScreen({
+    super.key,
+    this.onComplete,
+    this.mode = SplashMode.full,
+  });
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -40,36 +57,50 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  static const double _masterDurationSec = 4.6;
+  static const double _fullDurationSec = 4.6;
+  static const double _shortDurationSec = 1.2;
 
   late final AnimationController _master;
   // 마법진 3 링 회전용 — 24s = LCM(12,8,6) 이라 매 cycle 끝에서 모든 링이
   // 정수배 회전을 마치고 0으로 돌아가므로 boundary 점프가 시각적으로 보이지 않는다.
-  late final AnimationController _spin;
-  // 펄스·다이아 회전·호버 모션용 (3s)
-  late final AnimationController _loop;
+  // Short 모드에선 미사용.
+  AnimationController? _spin;
+  // 펄스·다이아 회전·호버 모션용 (3s) — Short 모드에선 미사용.
+  AnimationController? _loop;
 
   Timer? _completeTimer;
+
+  bool get _isFull => widget.mode == SplashMode.full;
+
+  double get _masterDurationSec =>
+      _isFull ? _fullDurationSec : _shortDurationSec;
 
   @override
   void initState() {
     super.initState();
-    _master = AnimationController(
-      duration: const Duration(milliseconds: 4600),
-      vsync: this,
+
+    final masterDuration = Duration(
+      milliseconds: (_masterDurationSec * 1000).round(),
     );
-    _spin = AnimationController(
-      duration: const Duration(seconds: 24),
-      vsync: this,
-    )..repeat();
-    _loop = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat();
+    _master = AnimationController(duration: masterDuration, vsync: this);
+
+    if (_isFull) {
+      _spin = AnimationController(
+        duration: const Duration(seconds: 24),
+        vsync: this,
+      )..repeat();
+      _loop = AnimationController(
+        duration: const Duration(seconds: 3),
+        vsync: this,
+      )..repeat();
+    }
 
     _master.forward();
 
-    _completeTimer = Timer(const Duration(milliseconds: 5000), () {
+    final completeDelay = _isFull
+        ? const Duration(milliseconds: 5000)
+        : const Duration(milliseconds: 1500);
+    _completeTimer = Timer(completeDelay, () {
       if (mounted) widget.onComplete?.call();
     });
   }
@@ -78,8 +109,8 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     _completeTimer?.cancel();
     _master.dispose();
-    _spin.dispose();
-    _loop.dispose();
+    _spin?.dispose();
+    _loop?.dispose();
     super.dispose();
   }
 
@@ -94,10 +125,17 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!_isFull) return _buildShort();
+    return _buildFull();
+  }
+
+  Widget _buildFull() {
+    final spin = _spin!;
+    final loop = _loop!;
     return Scaffold(
       backgroundColor: Colors.black,
       body: AnimatedBuilder(
-        animation: Listenable.merge([_master, _spin, _loop]),
+        animation: Listenable.merge([_master, spin, loop]),
         builder: (context, _) {
           final bgFlagInL = _windowProgress(0.0, 1.0);
           final bgFlagInR = _windowProgress(0.2, 1.0);
@@ -182,8 +220,8 @@ class _SplashScreenState extends State<SplashScreen>
                           size: const Size(320, 320),
                           painter: MagicCirclePainter(
                             appearProgress: magicAppear,
-                            spinValue: _spin.value,
-                            pulseValue: _loop.value,
+                            spinValue: spin.value,
+                            pulseValue: loop.value,
                           ),
                         ),
                         RuneMarkers(masterTime: masterTime),
@@ -205,7 +243,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: ShieldSummonWidget(
                   summonProgress: shieldSummon,
                   auraProgress: auraExpand,
-                  loopValue: _loop.value,
+                  loopValue: loop.value,
                 ),
               ),
 
@@ -224,7 +262,7 @@ class _SplashScreenState extends State<SplashScreen>
                   allianceProgress: allianceProgress,
                   decoProgress: decoProgress,
                   krProgress: krProgress,
-                  loopValue: _loop.value,
+                  loopValue: loop.value,
                 ),
               ),
 
@@ -234,6 +272,126 @@ class _SplashScreenState extends State<SplashScreen>
                 child: _StatusBar(
                   appearProgress: statusBarAppear,
                   fillProgress: statusBarFill,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ─── Short 모드 ─────────────────────────────────────────────
+  // 재진입 시 1.2s 미니멀 fade-in. RPG 시퀀스의 회전·입자·마법진 모두 생략.
+  Widget _buildShort() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: AnimatedBuilder(
+        animation: _master,
+        builder: (context, _) {
+          final shieldProgress = _windowProgress(0.0, 0.5);
+          final brandProgress = _windowProgress(0.3, 0.5);
+          final krProgress = _windowProgress(0.5, 0.5);
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // 배경 그라디언트 (full 과 동일)
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment(0, -0.24),
+                    radius: 1.0,
+                    colors: [
+                      AppColors.bgUrgent,
+                      AppColors.bgIconDark,
+                      Colors.black,
+                    ],
+                    stops: [0.0, 0.6, 1.0],
+                  ),
+                ),
+              ),
+
+              // 부드러운 빨간 글로우 (방패 등장과 함께 페이드인)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: const Alignment(0, -0.24),
+                      radius: 0.7,
+                      colors: [
+                        AppColors.accentRed
+                            .withValues(alpha: 0.15 * shieldProgress),
+                        const Color(0x00000000),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 방패
+              Align(
+                alignment: const Alignment(0, -0.18),
+                child: Opacity(
+                  opacity: shieldProgress,
+                  child: Transform.scale(
+                    scale: 0.9 + 0.1 * shieldProgress,
+                    child: SvgPicture.asset(
+                      'assets/svg/shield_final.svg',
+                      width: 160,
+                      height: 160 * 255 / 240,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 브랜드 텍스트
+              Align(
+                alignment: const Alignment(0, 0.22),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Opacity(
+                      opacity: brandProgress,
+                      child: const Text(
+                        'ROK · US',
+                        style: TextStyle(
+                          fontFamily: 'BebasNeue',
+                          fontSize: 44,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 6,
+                          color: Color(0xFFFFFFFF),
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Opacity(
+                      opacity: brandProgress,
+                      child: const Text(
+                        'ALLIANCE',
+                        style: TextStyle(
+                          fontFamily: 'BebasNeue',
+                          fontSize: 18,
+                          letterSpacing: 10,
+                          color: AppColors.accentRed,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Opacity(
+                      opacity: krProgress,
+                      child: const Text(
+                        '한 미 동 맹 단',
+                        style: TextStyle(
+                          fontSize: 13,
+                          letterSpacing: 6,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

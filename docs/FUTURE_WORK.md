@@ -25,15 +25,15 @@
 
 배치 시 `assets/fonts/README.md` 의 라이선스 고지(SIL OFL 1.1) 참조.
 
-## 3. 스플래시 재진입 시 짧은 버전
+## 3. 스플래시 재진입 시 짧은 버전 ✅ 완료
 
-현재는 첫 진입이든 재진입이든 동일하게 4.6s 풀 시퀀스 + 5.0s onComplete.
+`SplashScreen` 에 `SplashMode { full, short }` prop 추가:
+- **full** : 첫 진입 — 4.6s RPG 시퀀스 + 5.0s onComplete (기존)
+- **short** : 재진입 — 1.2s 미니멀 fade-in (방패 + 브랜드 텍스트만) + 1.5s onComplete
 
-개선:
-- `SharedPreferences` 등으로 첫 진입 여부 판단
-- 첫 진입: 풀 4.6s 시퀀스
-- 재진입: 1~2s fade-in 정도의 짧은 인트로
-- 코드 위치: `lib/app/app.dart` 의 `_SplashGate` 또는 `lib/screens/splash_screen.dart` 에 `mode` prop 추가
+`_SplashGate` 가 `SharedPreferences` 의 `splash_full_seen` 키로 분기. Full 시퀀스가 **완료된 경우에만** flag 를 저장하므로 도중 앱 종료 시 다음 진입에서도 full 을 다시 보여준다.
+
+Full 다시 보고 싶으면 앱 데이터 초기화. (디버그 토글은 미도입)
 
 ## 4. 스플래시 사운드 효과
 
