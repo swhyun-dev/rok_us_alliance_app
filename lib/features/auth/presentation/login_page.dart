@@ -2,8 +2,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../shared/widgets/alliance_logo.dart';
+import '../../../theme/colors.dart';
+import '../../../widgets/alliance_emblem.dart';
 import '../../home/presentation/home_page.dart';
 import '../data/auth_store.dart';
 import 'terms_agreement_page.dart';
@@ -112,70 +112,79 @@ class _LoginPageState extends State<LoginPage>
       valueListenable: AuthStore.notifier,
       builder: (context, state, _) {
         return Scaffold(
-          body: Container(
-            decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-            child: Stack(
-              children: [
-                // Star field
-                const Positioned.fill(child: _StarFieldBackground()),
-                // Top flag stripe bar
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 4,
-                    decoration: const BoxDecoration(
-                      gradient: AppColors.flagAccentGradient,
+          backgroundColor: AppColors.bgPrimary,
+          body: Stack(
+            children: [
+              // 스플래시 종료 시점과 동일한 라디얼 글로우 (자연스러운 fade 연결)
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment(0, -0.4),
+                      radius: 1.0,
+                      colors: [Color(0x40E63946), Color(0x00E63946)],
                     ),
                   ),
                 ),
-                SafeArea(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Hero section
-                      Expanded(
-                        flex: 52,
-                        child: AnimatedBuilder(
-                          animation: _fadeAnim,
-                          builder: (context, child) => Opacity(
-                            opacity: _fadeAnim.value,
-                            child: child,
-                          ),
-                          child: _HeroSection(),
-                        ),
-                      ),
-                      // Login card
-                      AnimatedBuilder(
-                        animation: _contentController,
-                        builder: (context, child) => Opacity(
-                          opacity: _fadeAnim.value,
-                          child: Transform.translate(
-                            offset: Offset(0, _cardSlideAnim.value),
-                            child: child,
-                          ),
-                        ),
-                        child: _LoginCard(
-                          state: state,
-                          showAppleButton: _showAppleButton,
-                          showDebugButton: _showDebugPreviewButton,
-                          onAppleLogin: () =>
-                              _handleSocialLogin(AuthStore.signInWithApple),
-                          onKakaoLogin: () =>
-                              _handleSocialLogin(AuthStore.signInWithKakao),
-                          onNaverLogin: () =>
-                              _handleSocialLogin(AuthStore.signInWithNaver),
-                          onGoogleLogin: () =>
-                              _handleSocialLogin(AuthStore.signInWithGoogle),
-                          onDebugLogin: _handleDebugPreviewLogin,
-                        ),
-                      ),
-                    ],
+              ),
+              // Star field
+              const Positioned.fill(child: _StarFieldBackground()),
+              // Top flag stripe
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SizedBox(
+                  height: 4,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.flagStripeGradient,
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: AnimatedBuilder(
+                        animation: _fadeAnim,
+                        builder: (context, child) => Opacity(
+                          opacity: _fadeAnim.value,
+                          child: child,
+                        ),
+                        child: const _HeroSection(),
+                      ),
+                    ),
+                    AnimatedBuilder(
+                      animation: _contentController,
+                      builder: (context, child) => Opacity(
+                        opacity: _fadeAnim.value,
+                        child: Transform.translate(
+                          offset: Offset(0, _cardSlideAnim.value),
+                          child: child,
+                        ),
+                      ),
+                      child: _LoginCard(
+                        state: state,
+                        showAppleButton: _showAppleButton,
+                        showDebugButton: _showDebugPreviewButton,
+                        onAppleLogin: () =>
+                            _handleSocialLogin(AuthStore.signInWithApple),
+                        onKakaoLogin: () =>
+                            _handleSocialLogin(AuthStore.signInWithKakao),
+                        onNaverLogin: () =>
+                            _handleSocialLogin(AuthStore.signInWithNaver),
+                        onGoogleLogin: () =>
+                            _handleSocialLogin(AuthStore.signInWithGoogle),
+                        onDebugLogin: _handleDebugPreviewLogin,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -195,75 +204,79 @@ class _HeroSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Logo flanked by flag thumbnails
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _FlagBadge(assetPath: 'assets/images/korea_flag.png'),
-                const SizedBox(width: 22),
-                Hero(
-                  tag: LoginPage.heroLogoTag,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: AllianceLogo(size: 92),
-                  ),
-                ),
-                const SizedBox(width: 22),
-                _FlagBadge(assetPath: 'assets/images/usa_flag.png'),
-              ],
-            ),
-            const SizedBox(height: 28),
-            // English small caps
-            Text(
-              'ROK-US ALLIANCE',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.50),
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 4.5,
+            // 통합 SVG 로고 (양쪽 깃발 + 중앙 모노그램)
+            Hero(
+              tag: LoginPage.heroLogoTag,
+              child: Material(
+                color: Colors.transparent,
+                child: AllianceEmblem(size: 200),
               ),
             ),
-            const SizedBox(height: 10),
-            // Korean title
-            const Text(
-              '한미동맹단',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 38,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.8,
-                height: 1.0,
-              ),
-            ),
+            const SizedBox(height: 24),
+            // 데코 라인 (스플래시와 동일)
+            const _DecorativeLine(),
             const SizedBox(height: 16),
-            // Flag stripe accent
-            Container(
-              width: 160,
-              height: 3,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(999),
-                gradient: AppColors.flagAccentGradient,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    blurRadius: 10,
+            // ROK · US
+            const Text(
+              'ROK · US',
+              style: TextStyle(
+                fontFamily: 'BebasNeue',
+                fontSize: 56,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 6,
+                color: Color(0xFFFFFFFF),
+                height: 1,
+                shadows: [
+                  Shadow(
+                    color: Color(0x66E63946),
+                    blurRadius: 12,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 8),
+            // ALLIANCE
+            const Text(
+              'ALLIANCE',
+              style: TextStyle(
+                fontFamily: 'BebasNeue',
+                fontSize: 24,
+                letterSpacing: 12,
+                color: AppColors.accentRed,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Divider
+            Container(
+              width: 100,
+              height: 0.5,
+              color: AppColors.textMuted.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
+            // 한 미 동 맹 단
+            const Text(
+              '한 미 동 맹 단',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 8,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 14),
             // Tagline
-            Text(
+            const Text(
               '자유를 지키는 연결 · 행동하는 플랫폼',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.62),
-                fontSize: 14,
+                fontSize: 12,
+                letterSpacing: 0.5,
+                color: AppColors.textMuted,
                 fontWeight: FontWeight.w500,
-                height: 1.5,
               ),
             ),
           ],
@@ -273,32 +286,28 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
-class _FlagBadge extends StatelessWidget {
-  const _FlagBadge({required this.assetPath});
-
-  final String assetPath;
+// 스플래시의 _DecorativeLine 과 동일한 시각 요소 — 스플래시와 톤 일치를 위해 재현
+class _DecorativeLine extends StatelessWidget {
+  const _DecorativeLine();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 54,
-      height: 38,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.22),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.32),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(width: 60, height: 1, color: AppColors.accentRed),
+        const SizedBox(width: 8),
+        Container(
+          width: 6,
+          height: 6,
+          decoration: const BoxDecoration(
+            color: AppColors.accentRed,
+            shape: BoxShape.circle,
           ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.asset(assetPath, fit: BoxFit.cover),
+        ),
+        const SizedBox(width: 8),
+        Container(width: 60, height: 1, color: AppColors.accentRed),
+      ],
     );
   }
 }
@@ -334,11 +343,12 @@ class _LoginCard extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.bgCard,
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.borderStrong, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.22),
+            color: Colors.black.withValues(alpha: 0.40),
             blurRadius: 36,
             offset: const Offset(0, -4),
           ),
@@ -357,7 +367,7 @@ class _LoginCard extends StatelessWidget {
                   height: 18,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
-                    gradient: AppColors.shieldGradient,
+                    color: AppColors.accentRed,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -405,20 +415,19 @@ class _LoginCard extends StatelessWidget {
               label: 'Google로 시작하기',
               icon: Icons.g_mobiledata,
               backgroundColor: Colors.white,
-              foregroundColor: AppColors.textPrimary,
-              borderColor: AppColors.border,
+              foregroundColor: Colors.black87,
               onPressed: disabled ? null : onGoogleLogin,
               isLoading: disabled,
             ),
             const SizedBox(height: 14),
             // 약관 안내
-            Text(
+            const Text(
               '시작하면 이용약관 및 개인정보처리방침에 동의하게 됩니다.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
                 height: 1.5,
-                color: AppColors.textSecondary.withValues(alpha: 0.85),
+                color: AppColors.textMuted,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -429,7 +438,7 @@ class _LoginCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
-                      color: AppColors.navy.withValues(alpha: 0.30),
+                      color: AppColors.borderStrong,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -438,13 +447,13 @@ class _LoginCard extends StatelessWidget {
                   onPressed: disabled ? null : onDebugLogin,
                   icon: const Icon(
                     Icons.visibility_outlined,
-                    color: AppColors.navy,
+                    color: AppColors.textMuted,
                     size: 16,
                   ),
                   label: const Text(
                     '디자인 확인용 임시 로그인',
                     style: TextStyle(
-                      color: AppColors.navy,
+                      color: AppColors.textMuted,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -458,7 +467,7 @@ class _LoginCard extends StatelessWidget {
                 state.errorMessage!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: AppColors.koreanRed,
+                  color: AppColors.accentRed,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
@@ -480,14 +489,12 @@ class _SocialButton extends StatelessWidget {
     required this.foregroundColor,
     required this.onPressed,
     required this.isLoading,
-    this.borderColor,
   });
 
   final String label;
   final IconData icon;
   final Color backgroundColor;
   final Color foregroundColor;
-  final Color? borderColor;
   final VoidCallback? onPressed;
   final bool isLoading;
 
@@ -502,9 +509,6 @@ class _SocialButton extends StatelessWidget {
           disabledBackgroundColor: backgroundColor.withValues(alpha: 0.55),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: borderColor != null
-                ? BorderSide(color: borderColor!, width: 1)
-                : BorderSide.none,
           ),
           elevation: 1,
         ),
@@ -538,7 +542,7 @@ class _SocialButton extends StatelessWidget {
   }
 }
 
-// ─── Background star field ────────────────────────────────────────────────────
+// ─── Background star field (브랜드 다크 톤) ──────────────────────────────────
 
 class _StarFieldBackground extends StatelessWidget {
   const _StarFieldBackground();
@@ -571,9 +575,9 @@ class _StarPainter extends CustomPainter {
 
     for (int i = 0; i < _positions.length; i++) {
       paint.color = (i % 7 == 0
-              ? AppColors.koreanRed
+              ? AppColors.accentRed
               : i % 5 == 0
-                  ? AppColors.koreanBlue
+                  ? AppColors.infoBlue
                   : Colors.white)
           .withValues(alpha: _alphas[i]);
 
@@ -583,7 +587,6 @@ class _StarPainter extends CustomPainter {
         paint,
       );
 
-      // Larger star cross sparkle for some
       if (i % 9 == 0) {
         paint.strokeWidth = 0.8;
         paint.style = PaintingStyle.stroke;
@@ -596,7 +599,7 @@ class _StarPainter extends CustomPainter {
       }
     }
 
-    // Subtle diagonal stripe lines (Stars & Stripes feel)
+    // 미세한 대각선 stripe (Stars & Stripes 분위기)
     final stripePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.022)
       ..strokeWidth = size.width * 0.40;
