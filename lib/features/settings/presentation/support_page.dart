@@ -81,7 +81,7 @@ class SupportPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         title: const Text(
           '고객센터 · FAQ',
           style: TextStyle(fontWeight: FontWeight.w800),
@@ -112,7 +112,7 @@ class SupportPage extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.border),
             ),
@@ -205,7 +205,7 @@ class _ContactCard extends StatelessWidget {
           const Text(
             '직접 문의하기',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 16,
               fontWeight: FontWeight.w900,
             ),
@@ -214,7 +214,7 @@ class _ContactCard extends StatelessWidget {
           Text(
             '이용 중 문제가 있거나 개선 의견이 있으시면 아래 이메일로 보내주세요.\n영업일 기준 1~3일 내에 답변드립니다.',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.78),
+              color: AppColors.white.withValues(alpha: 0.78),
               fontSize: 12.5,
               height: 1.55,
             ),
@@ -224,19 +224,19 @@ class _ContactCard extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: AppColors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
                 const Icon(Icons.mail_outline,
-                    color: Colors.white, size: 18),
+                    color: AppColors.white, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     email,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'monospace',
@@ -246,7 +246,7 @@ class _ContactCard extends StatelessWidget {
                 IconButton(
                   tooltip: '이메일 복사',
                   icon: const Icon(Icons.copy,
-                      color: Colors.white, size: 18),
+                      color: AppColors.white, size: 18),
                   onPressed: onCopy,
                 ),
               ],
@@ -260,7 +260,7 @@ class _ContactCard extends StatelessWidget {
               icon: const Icon(Icons.send_rounded, size: 18),
               label: const Text('메일 보내기'),
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.white,
                 foregroundColor: AppColors.koreanBlue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),

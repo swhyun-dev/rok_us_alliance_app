@@ -130,7 +130,7 @@ class _ToastViewState extends State<_ToastView>
                   widget.message,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),

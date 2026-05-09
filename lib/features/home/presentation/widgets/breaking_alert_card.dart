@@ -58,7 +58,7 @@ class BreakingAlertCard extends StatelessWidget {
                       child: const Text(
                         '긴급',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 1,

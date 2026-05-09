@@ -66,7 +66,7 @@ class AllianceLoadingOverlay extends StatelessWidget {
             Text(
               message,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: AppColors.white.withValues(alpha: 0.7),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -99,7 +99,7 @@ class _AlliancePainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeW
-        ..color = const Color(0xFFEAEFF7),
+        ..color = AppColors.softBlue,
     );
 
     // Rotating flag-gradient arc
@@ -154,7 +154,7 @@ class _AlliancePainter extends CustomPainter {
         ..shader = SweepGradient(
           colors: const [
             AppColors.koreanRed,
-            Colors.white,
+            AppColors.white,
             AppColors.koreanBlue,
             AppColors.koreanRed,
           ],
@@ -217,7 +217,7 @@ class _AlliancePainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = Colors.white.withValues(alpha: alpha * 0.55)
+        ..color = AppColors.white.withValues(alpha: alpha * 0.55)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2,
     );

@@ -122,7 +122,7 @@ class _FeedPageState extends State<FeedPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.koreanBlue,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -141,7 +141,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.white,
       padding: const EdgeInsets.fromLTRB(16, 8, 4, 4),
       child: Row(
         children: [
@@ -179,7 +179,7 @@ class _SegmentBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.white,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -196,7 +196,7 @@ class _SegmentBar extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
-                    color: selected ? AppColors.koreanBlue : Colors.white,
+                    color: selected ? AppColors.koreanBlue : AppColors.white,
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
                       color: selected
@@ -207,7 +207,7 @@ class _SegmentBar extends StatelessWidget {
                   child: Text(
                     f.label,
                     style: TextStyle(
-                      color: selected ? Colors.white : AppColors.textPrimary,
+                      color: selected ? AppColors.white : AppColors.textPrimary,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),
@@ -263,7 +263,7 @@ class _FeedItemState extends State<_FeedItem> {
       onTap: widget.onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),

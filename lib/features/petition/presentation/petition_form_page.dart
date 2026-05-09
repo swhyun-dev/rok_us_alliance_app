@@ -379,7 +379,7 @@ class _PetitionFormPageState extends State<PetitionFormPage> {
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.4,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       )
                     : Text(
@@ -457,7 +457,7 @@ class _ToggleItem extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.transparent,
+          color: selected ? AppColors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           boxShadow: selected
               ? [
@@ -558,7 +558,7 @@ class _StanceChip extends StatelessWidget {
           duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
           decoration: BoxDecoration(
-            color: selected ? color.withValues(alpha: 0.12) : Colors.white,
+            color: selected ? color.withValues(alpha: 0.12) : AppColors.white,
             border: Border.all(
               color: selected ? color : AppColors.border,
               width: selected ? 1.4 : 1,

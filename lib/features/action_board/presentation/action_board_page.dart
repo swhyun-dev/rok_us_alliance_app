@@ -80,7 +80,7 @@ class _ActionBoardPageState extends State<ActionBoardPage> {
           if (authState.user == null) {
             return FloatingActionButton.extended(
               backgroundColor: AppColors.koreanRed,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.white,
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AdminLoginPage()),
@@ -92,7 +92,7 @@ class _ActionBoardPageState extends State<ActionBoardPage> {
           }
           if (authState.isChecking) {
             return FloatingActionButton.extended(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.white,
               foregroundColor: AppColors.koreanBlue,
               onPressed: null,
               icon: const SizedBox(
@@ -105,7 +105,7 @@ class _ActionBoardPageState extends State<ActionBoardPage> {
           }
           if (!authState.isAdmin) {
             return FloatingActionButton.extended(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.white,
               foregroundColor: AppColors.koreanRed,
               onPressed: () async {
                 await AdminAuthStore.signOut();
@@ -123,7 +123,7 @@ class _ActionBoardPageState extends State<ActionBoardPage> {
             children: [
               FloatingActionButton.extended(
                 heroTag: 'logout-fab',
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.white,
                 foregroundColor: AppColors.koreanBlue,
                 onPressed: () async {
                   await AdminAuthStore.signOut();
@@ -139,7 +139,7 @@ class _ActionBoardPageState extends State<ActionBoardPage> {
               FloatingActionButton.extended(
                 heroTag: 'scan-fab',
                 backgroundColor: AppColors.koreanRed,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.white,
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const AdminScannerPage()),
@@ -152,7 +152,7 @@ class _ActionBoardPageState extends State<ActionBoardPage> {
               FloatingActionButton.extended(
                 heroTag: 'add-fab',
                 backgroundColor: AppColors.koreanBlue,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.white,
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -181,11 +181,7 @@ class _BoardHeroCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
-        gradient: const LinearGradient(
-          colors: [AppColors.koreanRed, Color(0xFF7A1320)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.actionHeroGradient,
         boxShadow: [
           BoxShadow(
             color: AppColors.koreanRed.withValues(alpha: 0.28),
@@ -203,7 +199,7 @@ class _BoardHeroCard extends StatelessWidget {
               width: 90,
               height: 90,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.07),
+                color: AppColors.white.withValues(alpha: 0.07),
                 shape: BoxShape.circle,
               ),
             ),
@@ -217,13 +213,13 @@ class _BoardHeroCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.18),
+                      color: AppColors.white.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: const Text(
                       'ACTION BOARD',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 2.0,
@@ -236,7 +232,7 @@ class _BoardHeroCard extends StatelessWidget {
               const Text(
                 '행동 공지 게시판',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                 ),
@@ -245,7 +241,7 @@ class _BoardHeroCard extends StatelessWidget {
               Text(
                 '집회 · 오프라인 모임 · 중요 행동 일정을\n이 게시판에서 관리합니다.',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.72),
+                  color: AppColors.white.withValues(alpha: 0.72),
                   fontSize: 13,
                   height: 1.6,
                 ),
@@ -289,7 +285,7 @@ class _FilterBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 9),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.koreanBlue : Colors.white,
+                  color: isSelected ? AppColors.koreanBlue : AppColors.white,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: isSelected
@@ -345,7 +341,7 @@ class _ActionNoticeCard extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.border),
         ),

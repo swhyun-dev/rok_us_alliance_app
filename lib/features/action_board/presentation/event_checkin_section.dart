@@ -126,7 +126,7 @@ class _AdminBlock extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
@@ -171,7 +171,7 @@ class _AdminBlock extends StatelessWidget {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     )
                   : const Icon(Icons.qr_code_2),
@@ -208,7 +208,7 @@ class _UserBlock extends StatelessWidget {
               color: AppColors.koreanBlue,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.location_on, color: Colors.white),
+            child: const Icon(Icons.location_on, color: AppColors.white),
           ),
           const SizedBox(width: 14),
           const Expanded(
@@ -248,7 +248,7 @@ class _UserBlock extends StatelessWidget {
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: AppColors.white,
                     ),
                   )
                 : const Text('입력'),
@@ -287,7 +287,7 @@ class _CodeChip extends StatelessWidget {
             child: SelectableText(
               code,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 6,
@@ -297,7 +297,7 @@ class _CodeChip extends StatelessWidget {
           Text(
             _ttlLabel(),
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.85),
+              color: AppColors.white.withValues(alpha: 0.85),
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),

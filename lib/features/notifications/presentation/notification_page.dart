@@ -183,7 +183,7 @@ class NotificationPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(Icons.delete_outline,
-                            color: Colors.white),
+                            color: AppColors.white),
                       ),
                       onDismissed: (_) async {
                         final messenger = ScaffoldMessenger.of(context);
@@ -281,7 +281,7 @@ class _NotificationTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: unread ? AppColors.softBlue : Colors.white,
+          color: unread ? AppColors.softBlue : AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),

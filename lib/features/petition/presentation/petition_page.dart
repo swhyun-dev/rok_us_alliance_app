@@ -130,7 +130,7 @@ class _TopTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.white,
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
       child: Row(
         children: _items.map((entry) {
@@ -200,7 +200,7 @@ class _StatusSegmentBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.white,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(
         children: _items.map((entry) {
@@ -215,7 +215,7 @@ class _StatusSegmentBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 14, vertical: 7),
                 decoration: BoxDecoration(
-                  color: selected ? AppColors.koreanBlue : Colors.white,
+                  color: selected ? AppColors.koreanBlue : AppColors.white,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color:

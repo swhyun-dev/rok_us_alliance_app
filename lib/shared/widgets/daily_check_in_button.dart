@@ -70,7 +70,7 @@ class _DailyCheckInButtonState extends State<DailyCheckInButton> {
   Widget build(BuildContext context) {
     final disabled = _busy || _alreadyChecked || _checking;
     final color = _alreadyChecked ? AppColors.softBlue : AppColors.koreanBlue;
-    final fg = _alreadyChecked ? AppColors.koreanBlue : Colors.white;
+    final fg = _alreadyChecked ? AppColors.koreanBlue : AppColors.white;
 
     return Container(
       decoration: BoxDecoration(

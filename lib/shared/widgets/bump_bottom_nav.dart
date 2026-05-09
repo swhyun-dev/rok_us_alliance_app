@@ -57,7 +57,7 @@ class BumpBottomNav extends StatelessWidget {
             child: CustomPaint(
               painter: BumpBottomNavPainter(
                 cutoutRadius: _cutoutRadius,
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.white,
                 shadowColor: Colors.black.withValues(alpha: 0.10),
               ),
             ),
@@ -145,7 +145,7 @@ class _SideTab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.koreanRed,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
+                  border: Border.all(color: AppColors.white, width: 1.5),
                 ),
               ),
             ),
@@ -174,7 +174,7 @@ class _CenterButton extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.koreanRed,
-            border: Border.all(color: Colors.white, width: 3),
+            border: Border.all(color: AppColors.white, width: 3),
             boxShadow: [
               BoxShadow(
                 color: AppColors.koreanRed.withValues(alpha: 0.32),
@@ -183,7 +183,7 @@ class _CenterButton extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(Icons.home_filled, size: 26, color: Colors.white),
+          child: const Icon(Icons.home_filled, size: 26, color: AppColors.white),
         ),
       ),
     );

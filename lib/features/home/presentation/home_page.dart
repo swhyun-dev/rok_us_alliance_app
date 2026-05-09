@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.white,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: ClipRRect(
@@ -273,7 +273,7 @@ class _HomePageState extends State<HomePage> {
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(Icons.close,
-                                color: Colors.white, size: 20),
+                                color: AppColors.white, size: 20),
                           ),
                         ),
                       ),
@@ -429,7 +429,7 @@ class _SettingsSheet extends StatelessWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(

@@ -49,7 +49,7 @@ class UpcomingEventCard extends StatelessWidget {
                   width: 70,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.14),
+                    color: AppColors.white.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Column(
@@ -57,7 +57,7 @@ class UpcomingEventCard extends StatelessWidget {
                       Text(
                         dday,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
@@ -66,7 +66,7 @@ class UpcomingEventCard extends StatelessWidget {
                       Text(
                         '${event.startAt.month}/${event.startAt.day}',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: AppColors.white.withValues(alpha: 0.7),
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -82,7 +82,7 @@ class UpcomingEventCard extends StatelessWidget {
                       Text(
                         '다음 행사',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: AppColors.white.withValues(alpha: 0.7),
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
@@ -94,7 +94,7 @@ class UpcomingEventCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                           height: 1.35,
@@ -106,7 +106,7 @@ class UpcomingEventCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.75),
+                          color: AppColors.white.withValues(alpha: 0.75),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),

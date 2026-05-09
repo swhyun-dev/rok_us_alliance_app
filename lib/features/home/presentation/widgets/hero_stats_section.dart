@@ -19,7 +19,7 @@ class HeroStatsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border),
       ),

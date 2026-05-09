@@ -74,6 +74,13 @@ class AppColors {
     colors: [darkNavy, Color(0xFF0D1E50)],
   );
 
+  /// Action board 히어로 영역 — 빨강 → 어두운 크림슨
+  static const LinearGradient actionHeroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [koreanRed, Color(0xFF7A1320)],
+  );
+
   // Gradients
   static const LinearGradient heroGradient = LinearGradient(
     colors: [darkNavy, Color(0xFF0A1830)],

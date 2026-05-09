@@ -10,11 +10,7 @@ import '../theme/app_colors.dart';
 abstract class AllianceAppBar {
   AllianceAppBar._();
 
-  static const _bgGradient = LinearGradient(
-    colors: [AppColors.darkNavy, Color(0xFF0D1E50)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static const _bgGradient = AppColors.cardHeroGradient;
 
   // ── Main (tab root) ────────────────────────────────────────────────────────
   static AppBar main({
@@ -46,11 +42,11 @@ abstract class AllianceAppBar {
                 gradient: AppColors.shieldGradient,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.25),
+                  color: AppColors.white.withValues(alpha: 0.25),
                   width: 1.2,
                 ),
               ),
-              child: const Icon(Icons.shield, color: Colors.white, size: 17),
+              child: const Icon(Icons.shield, color: AppColors.white, size: 17),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -61,7 +57,7 @@ abstract class AllianceAppBar {
                   Text(
                     title,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       height: 1.1,
@@ -72,7 +68,7 @@ abstract class AllianceAppBar {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.52),
+                        color: AppColors.white.withValues(alpha: 0.52),
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
@@ -100,19 +96,19 @@ abstract class AllianceAppBar {
                     gradient: AppColors.shieldGradient,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.25),
+                      color: AppColors.white.withValues(alpha: 0.25),
                       width: 1,
                     ),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.badge_outlined, color: Colors.white, size: 16),
+                      Icon(Icons.badge_outlined, color: AppColors.white, size: 16),
                       SizedBox(width: 5),
                       Text(
                         '단증',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                         ),
@@ -130,7 +126,7 @@ abstract class AllianceAppBar {
             IconButton(
               icon: const Icon(
                 Icons.notifications_outlined,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 22,
               ),
               tooltip: '알림',
@@ -157,7 +153,7 @@ abstract class AllianceAppBar {
           child: IconButton(
             icon: const Icon(
               Icons.settings_outlined,
-              color: Colors.white,
+              color: AppColors.white,
               size: 22,
             ),
             tooltip: '설정',
@@ -182,7 +178,7 @@ abstract class AllianceAppBar {
       backgroundColor: Colors.transparent,
       elevation: 0,
       systemOverlayStyle: SystemUiOverlayStyle.light,
-      foregroundColor: Colors.white,
+      foregroundColor: AppColors.white,
       titleSpacing: 4,
       flexibleSpace: Container(
         decoration: const BoxDecoration(gradient: _bgGradient),
@@ -194,7 +190,7 @@ abstract class AllianceAppBar {
           Text(
             title,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 18,
               fontWeight: FontWeight.w800,
               height: 1.1,
@@ -205,7 +201,7 @@ abstract class AllianceAppBar {
             Text(
               subtitle,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.52),
+                color: AppColors.white.withValues(alpha: 0.52),
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),

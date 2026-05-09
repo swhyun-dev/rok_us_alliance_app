@@ -270,7 +270,7 @@ class _ActionNoticeDetailPageState extends State<ActionNoticeDetailPage> {
                         vertical: 7,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
+                        color: AppColors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
@@ -278,7 +278,7 @@ class _ActionNoticeDetailPageState extends State<ActionNoticeDetailPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       ),
                     ),
@@ -286,7 +286,7 @@ class _ActionNoticeDetailPageState extends State<ActionNoticeDetailPage> {
                     Text(
                       event.title,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 24,
                         height: 1.3,
                         fontWeight: FontWeight.w900,

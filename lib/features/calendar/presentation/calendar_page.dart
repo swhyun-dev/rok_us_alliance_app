@@ -125,7 +125,7 @@ class _CalendarHeroCard extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.06),
+                color: AppColors.white.withValues(alpha: 0.06),
                 shape: BoxShape.circle,
               ),
             ),
@@ -137,13 +137,13 @@ class _CalendarHeroCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
+                  color: AppColors.white.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const Text(
                   'CALENDAR',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2.0,
@@ -154,7 +154,7 @@ class _CalendarHeroCard extends StatelessWidget {
               const Text(
                 '한눈에 보는 일정',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                 ),
@@ -163,7 +163,7 @@ class _CalendarHeroCard extends StatelessWidget {
               Text(
                 '집회 · 모임 · 중요 행동 일정들을\n달력과 리스트로 함께 확인합니다.',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.70),
+                  color: AppColors.white.withValues(alpha: 0.70),
                   fontSize: 13,
                   height: 1.6,
                 ),
@@ -291,7 +291,7 @@ class _CalendarGrid extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
@@ -349,7 +349,7 @@ class _CalendarGrid extends StatelessWidget {
 
               Color textColor = AppColors.textPrimary;
               if (isSelected) {
-                textColor = Colors.white;
+                textColor = AppColors.white;
               } else if (isSunday) {
                 textColor = AppColors.koreanRed;
               } else if (isSaturday) {
@@ -402,7 +402,7 @@ class _CalendarGrid extends StatelessWidget {
                               color: AppColors.koreanRed,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.white, width: 1),
+                                  color: AppColors.white, width: 1),
                             ),
                             child: eventCount > 1
                                 ? null
@@ -464,7 +464,7 @@ class _SelectedDateHeader extends StatelessWidget {
             child: Text(
               '$count',
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
               ),
@@ -486,7 +486,7 @@ class _EmptyDateCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
@@ -538,7 +538,7 @@ class _CalendarEventCard extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.border),
         ),
