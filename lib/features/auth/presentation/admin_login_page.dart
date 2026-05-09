@@ -88,7 +88,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                 Text(
                   '관리자 전용',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
                   ),

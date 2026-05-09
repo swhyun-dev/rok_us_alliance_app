@@ -171,7 +171,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         title: const Text(
           '회원정보 수정',
           style: TextStyle(fontWeight: FontWeight.w800),
@@ -214,7 +214,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       )
                     : (_hasNickChange && _nickConfirmed)
                         ? const Icon(Icons.check_circle,
-                            color: Color(0xFF2E7D32), size: 20)
+                            color: AppColors.success, size: 20)
                         : null,
               ),
             ),
@@ -245,7 +245,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.4,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       )
                     : const Text(
@@ -273,7 +273,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       errorText: error,
       counterText: '',
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.white,
       suffixIcon: suffix == null
           ? null
           : Padding(

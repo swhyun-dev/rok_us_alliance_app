@@ -170,7 +170,7 @@ class _NicknameSetupPageState extends State<NicknameSetupPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
         title: const Text(
           '닉네임 설정',
@@ -214,7 +214,7 @@ class _NicknameSetupPageState extends State<NicknameSetupPage> {
                   hintText: '닉네임 입력',
                   counterText: counterText,
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: AppColors.white,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -271,7 +271,7 @@ class _NicknameSetupPageState extends State<NicknameSetupPage> {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.4,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                         )
                       : const Text(

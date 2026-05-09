@@ -57,6 +57,9 @@ class AppColors {
   /// 섹션 구분용 두꺼운 divider (8px 세로 회색 띠)
   static const Color dividerThick = Color(0xFFF5F6F8);
 
+  /// 성공·확인 인디케이터 (체크마크 등) 다크 그린
+  static const Color success = Color(0xFF2E7D32);
+
   // Gradients
   static const LinearGradient heroGradient = LinearGradient(
     colors: [darkNavy, Color(0xFF0A1830)],

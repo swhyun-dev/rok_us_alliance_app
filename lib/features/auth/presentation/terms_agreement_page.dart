@@ -38,7 +38,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -74,7 +74,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
         title: const Text(
           '약관 동의',
@@ -293,14 +293,14 @@ class _CheckBox extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: value ? AppColors.koreanBlue : Colors.white,
+        color: value ? AppColors.koreanBlue : AppColors.white,
         border: Border.all(
           color: value ? AppColors.koreanBlue : AppColors.border,
           width: 1.5,
         ),
       ),
       child: value
-          ? const Icon(Icons.check, color: Colors.white, size: 16)
+          ? const Icon(Icons.check, color: AppColors.white, size: 16)
           : null,
     );
   }
