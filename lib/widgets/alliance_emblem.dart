@@ -24,7 +24,7 @@ class AllianceEmblem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final svg = SvgPicture.asset(
-      'assets/svg/logo_dual_flag.svg',
+      'assets/svg/shield_final.svg',
       width: size,
       height: size,
       fit: BoxFit.contain,

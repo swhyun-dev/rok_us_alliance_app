@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+  <defs>
+    <symbol id="star5tr" viewBox="-10 -10 20 20" overflow="visible">
+      <polygon points="0,-9 2.65,-2.78 9,-2.78 3.93,1.5 5.6,8.18 0,4.27 -5.6,8.18 -3.93,1.5 -9,-2.78 -2.65,-2.78"
+               fill="#FFFFFF"/>
+    </symbol>
+    <radialGradient id="shieldGlowTr" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#E63946" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#E63946" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="shieldClipTr">
+      <path d="M 90,130 L 310,130 L 310,260 Q 310,330 200,365 Q 90,330 90,260 Z"/>
+    </clipPath>
+    <!-- Right half clip -->
+    <clipPath id="rightHalfClipTr">
+      <rect x="200" y="130" width="110" height="240"/>
+    </clipPath>
+  </defs>
+
+  <rect width="400" height="500" fill="#0a0d12"/>
+
+  <text x="200" y="40" text-anchor="middle" fill="#E63946"
+        font-family="sans-serif" font-size="11" font-weight="600" letter-spacing="6">SHIELD · TRUE SPLIT</text>
+  <text x="200" y="60" text-anchor="middle" fill="#6B7280"
+        font-family="sans-serif" font-size="9" letter-spacing="2">표준 태극기 우측 절반 그대로</text>
+
+  <ellipse cx="200" cy="240" rx="170" ry="170" fill="url(#shieldGlowTr)"/>
+
+  <path d="M 84,124 L 316,124 L 316,260 Q 316,335 200,371 Q 84,335 84,260 Z"
+        fill="none" stroke="#E63946" stroke-width="1.5" opacity="0.4"/>
+
+  <g clip-path="url(#shieldClipTr)">
+
+    <!-- ═══ LEFT HALF: US FLAG LEFT HALF ═══ -->
+    <rect x="90" y="130" width="110" height="240" fill="#FFFFFF"/>
+    
+    <!-- 13 stripes (left half only) -->
+    <rect x="90" y="130" width="110" height="18.46" fill="#B22234"/>
+    <rect x="90" y="166.92" width="110" height="18.46" fill="#B22234"/>
+    <rect x="90" y="203.84" width="110" height="18.46" fill="#B22234"/>
+    <rect x="90" y="240.76" width="110" height="18.46" fill="#B22234"/>
+    <rect x="90" y="277.68" width="110" height="18.46" fill="#B22234"/>
+    <rect x="90" y="314.6" width="110" height="18.46" fill="#B22234"/>
+    <rect x="90" y="351.52" width="110" height="18.46" fill="#B22234"/>
+
+    <!-- Blue canton (full width of left half, 7 stripes tall) -->
+    <rect x="90" y="130" width="110" height="129.22" fill="#3C3B6E"/>
+
+    <!-- 50 stars distributed in canton -->
+    <use href="#star5tr" x="97" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="109" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="121" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="133" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="145" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="157" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="169" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="181" y="138" width="7" height="7"/>
+    <use href="#star5tr" x="103" y="151" width="7" height="7"/>
+    <use href="#star5tr" x="115" y="151" width="7" height="7"/>
+    <use href="#star5tr" x="127" y="151" width="7" height="7"/>
+    <use href="#star5tr" x="139" y="151" width="7" height="7"/>
+    <use href="#star5tr" x="151" y="151" width="7" height="7"/>
+    <use href="#star5tr" x="163" y="151" width="7" height="7"/>
+    <use href="#star5tr" x="175" y="151" width="7" height="7"/>
+    <use href="#star5tr" x="97" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="109" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="121" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="133" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="145" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="157" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="169" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="181" y="164" width="7" height="7"/>
+    <use href="#star5tr" x="103" y="177" width="7" height="7"/>
+    <use href="#star5tr" x="115" y="177" width="7" height="7"/>
+    <use href="#star5tr" x="127" y="177" width="7" height="7"/>
+    <use href="#star5tr" x="139" y="177" width="7" height="7"/>
+    <use href="#star5tr" x="151" y="177" width="7" height="7"/>
+    <use href="#star5tr" x="163" y="177" width="7" height="7"/>
+    <use href="#star5tr" x="175" y="177" width="7" height="7"/>
+    <use href="#star5tr" x="97" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="109" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="121" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="133" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="145" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="157" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="169" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="181" y="190" width="7" height="7"/>
+    <use href="#star5tr" x="103" y="203" width="7" height="7"/>
+    <use href="#star5tr" x="115" y="203" width="7" height="7"/>
+    <use href="#star5tr" x="127" y="203" width="7" height="7"/>
+    <use href="#star5tr" x="139" y="203" width="7" height="7"/>
+    <use href="#star5tr" x="151" y="203" width="7" height="7"/>
+    <use href="#star5tr" x="163" y="203" width="7" height="7"/>
+    <use href="#star5tr" x="175" y="203" width="7" height="7"/>
+    <use href="#star5tr" x="97" y="216" width="7" height="7"/>
+    <use href="#star5tr" x="109" y="216" width="7" height="7"/>
+    <use href="#star5tr" x="121" y="216" width="7" height="7"/>
+    <use href="#star5tr" x="133" y="216" width="7" height="7"/>
+    <use href="#star5tr" x="145" y="216" width="7" height="7"/>
+    <use href="#star5tr" x="157" y="216" width="7" height="7"/>
+    <use href="#star5tr" x="169" y="216" width="7" height="7"/>
+
+    <!-- ═══ RIGHT HALF: KR FLAG RIGHT HALF ═══ -->
+    <!-- 
+      Standard taegukgi positioned with center at x=200, y=235.
+      Full virtual flag spans x=90 to x=310 (220 wide), y=130 to y=370 (240 tall).
+      Standard ratio 3:2, so flag aspect 220:240 ≈ 0.92:1 (a bit taller than standard but ok for shield).
+      Trigrams placed at standard positions on the diagonals.
+    -->
+    <rect x="200" y="130" width="110" height="240" fill="#FFFFFF"/>
+
+    <g clip-path="url(#rightHalfClipTr)">
+      <!-- Standard taegukgi layout, center at (200, 235) -->
+      <!-- Taeguk -->
+      <circle cx="200" cy="235" r="55" fill="#CD2E3A"/>
+      <path d="M 145,235 A 55,55 0 0,0 255,235 Z" fill="#003478"/>
+      <circle cx="172.5" cy="235" r="27.5" fill="#CD2E3A"/>
+      <circle cx="227.5" cy="235" r="27.5" fill="#003478"/>
+
+      <!-- 4 Trigrams at standard positions (diagonals from center) -->
+      <!-- 
+        Standard taegukgi trigrams:
+        - 건 (heaven, 3 solid bars): top-left of taeguk
+        - 리 (fire, solid-broken-solid): top-right
+        - 감 (water, broken-solid-broken): bottom-left
+        - 곤 (earth, 3 broken bars): bottom-right
+        
+        Bars are perpendicular to the diagonal axis from corner to taeguk center.
+        Standard rotation: ±33.69° (atan(1/2)) from horizontal/vertical.
+      -->
+      <g fill="#000000">
+        <!-- 표준 태극기 비율: 4괘 길이 = 태극 지름의 약 50%, 4괘 두께 = 태극 지름의 약 8% -->
+        <!-- 태극 R=55, 지름=110이므로: 4괘 길이≈55, 두께≈7, 줄간격≈3.5 -->
+        
+        <!-- ☰ 건 (heaven) - Top-left -->
+        <g transform="translate(118, 168) rotate(-33.69)">
+          <rect x="-27" y="-3.5" width="54" height="7"/>
+          <rect x="-27" y="7" width="54" height="7"/>
+          <rect x="-27" y="17.5" width="54" height="7"/>
+        </g>
+        <!-- ☲ 리 (fire) - Top-right -->
+        <g transform="translate(282, 168) rotate(33.69)">
+          <rect x="-27" y="-3.5" width="54" height="7"/>
+          <rect x="-27" y="7" width="22" height="7"/>
+          <rect x="5" y="7" width="22" height="7"/>
+          <rect x="-27" y="17.5" width="54" height="7"/>
+        </g>
+        <!-- ☵ 감 (water) - Bottom-left -->
+        <g transform="translate(118, 302) rotate(33.69)">
+          <rect x="-27" y="-3.5" width="22" height="7"/>
+          <rect x="5" y="-3.5" width="22" height="7"/>
+          <rect x="-27" y="7" width="54" height="7"/>
+          <rect x="-27" y="17.5" width="22" height="7"/>
+          <rect x="5" y="17.5" width="22" height="7"/>
+        </g>
+        <!-- ☷ 곤 (earth) - Bottom-right -->
+        <g transform="translate(282, 302) rotate(-33.69)">
+          <rect x="-27" y="-3.5" width="22" height="7"/>
+          <rect x="5" y="-3.5" width="22" height="7"/>
+          <rect x="-27" y="7" width="22" height="7"/>
+          <rect x="5" y="7" width="22" height="7"/>
+          <rect x="-27" y="17.5" width="22" height="7"/>
+          <rect x="5" y="17.5" width="22" height="7"/>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- Shield outline -->
+  <path d="M 90,130 L 310,130 L 310,260 Q 310,330 200,365 Q 90,330 90,260 Z"
+        fill="none" stroke="#E63946" stroke-width="4"/>
+
+  <!-- Center divider -->
+  <line x1="200" y1="130" x2="200" y2="365" stroke="#E63946" stroke-width="2"/>
+
+  <!-- Brand text -->
+  <g transform="translate(200, 405)">
+    <text text-anchor="middle" fill="#FFFFFF"
+          font-family="'Bebas Neue', Impact, sans-serif"
+          font-size="32" font-weight="400" letter-spacing="6">ROK · US</text>
+    <text y="22" text-anchor="middle" fill="#E63946"
+          font-family="'Bebas Neue', Impact, sans-serif"
+          font-size="14" font-weight="600" letter-spacing="10">ALLIANCE</text>
+    <line x1="-50" y1="40" x2="50" y2="40" stroke="#6B7280" stroke-width="0.5" opacity="0.5"/>
+    <text y="56" text-anchor="middle" fill="#6B7280"
+          font-family="sans-serif" font-size="9" letter-spacing="6">한 미 동 맹 단</text>
+  </g>
+</svg>
