@@ -6,28 +6,28 @@ class AppTheme {
   static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFFF2F5FB),
+      scaffoldBackgroundColor: AppColors.background,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.koreanBlue,
         brightness: Brightness.light,
         primary: AppColors.koreanBlue,
         secondary: AppColors.koreanRed,
-        surface: Colors.white,
+        surface: AppColors.white,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkNavy,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
         elevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: AppColors.white),
         titleTextStyle: TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontSize: 18,
           fontWeight: FontWeight.w800,
         ),
       ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: AppColors.white,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
@@ -36,7 +36,7 @@ class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         indicatorColor: AppColors.koreanBlue.withValues(alpha: 0.10),
         elevation: 10,
         shadowColor: Colors.black.withValues(alpha: 0.08),
@@ -60,7 +60,7 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.koreanBlue,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -86,7 +86,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFF8FAFF),
+        fillColor: AppColors.softSky,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.border),
