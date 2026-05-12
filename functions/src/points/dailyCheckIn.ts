@@ -10,6 +10,16 @@ interface DailyCheckInResult {
   pointsAwarded: number;
   bonusAwarded: number;
   consecutiveDays: number;
+  // [DEBUG] 점수 적립 미스터리 추적용. 안정화되면 제거.
+  debug?: {
+    uid: string;
+    dateStr: string;
+    todayPath: string;
+    todayExisted: boolean;
+    userExisted: boolean;
+    txCompletedBranch: "early_return" | "new_write" | "none";
+    projectId: string;
+  };
 }
 
 /// 사용자가 오늘 체크인했는지 검사하고 신규면 +10P (연속 3/7일 보너스 별도).
@@ -43,6 +53,15 @@ export const dailyCheckIn = functions.https.onCall(
       pointsAwarded: 0,
       bonusAwarded: 0,
       consecutiveDays: 0,
+      debug: {
+        uid,
+        dateStr,
+        todayPath: docRef.path,
+        todayExisted: false,
+        userExisted: false,
+        txCompletedBranch: "none",
+        projectId: process.env.GCLOUD_PROJECT || "unknown",
+      },
     };
 
     await db.runTransaction(async (tx) => {
@@ -51,10 +70,12 @@ export const dailyCheckIn = functions.https.onCall(
         `[dailyCheckIn] tx.today.exists=${today.exists} ` +
           `path=${docRef.path}`
       );
+      if (result.debug) result.debug.todayExisted = today.exists;
       if (today.exists) {
         const data = today.data() ?? {};
         result.consecutiveDays =
           (data.consecutiveDays as number | undefined) ?? 0;
+        if (result.debug) result.debug.txCompletedBranch = "early_return";
         return;
       }
 
@@ -63,6 +84,7 @@ export const dailyCheckIn = functions.https.onCall(
         `[dailyCheckIn] tx.user.exists=${userSnap.exists} ` +
           `path=${userRef.path}`
       );
+      if (result.debug) result.debug.userExisted = userSnap.exists;
       if (!userSnap.exists) {
         throw new functions.https.HttpsError(
           "failed-precondition",
@@ -119,6 +141,7 @@ export const dailyCheckIn = functions.https.onCall(
       result.pointsAwarded = BASE_REWARD;
       result.bonusAwarded = bonus;
       result.consecutiveDays = consecutive;
+      if (result.debug) result.debug.txCompletedBranch = "new_write";
 
       functions.logger.info(
         `[dailyCheckIn] tx.writes prepared total=${total} ` +

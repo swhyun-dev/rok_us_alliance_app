@@ -38,6 +38,9 @@ class DailyCheckInStore {
       final result = await callable.call<Map<String, dynamic>>();
       final data = result.data;
       debugPrint('[dailyCheckIn] response: $data');
+      if (data['debug'] != null) {
+        debugPrint('[dailyCheckIn] DEBUG: ${data['debug']}');
+      }
       return DailyCheckInResult(
         status: (data['status'] ?? 'already_checked') as String,
         pointsAwarded: (data['pointsAwarded'] ?? 0) as int,
