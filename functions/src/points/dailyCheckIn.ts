@@ -27,6 +27,10 @@ export const dailyCheckIn = functions.https.onCall(
     const dateStr = todayKstString();
     const yesterdayStr = yesterdayKstString();
 
+    functions.logger.info(
+      `[dailyCheckIn] called uid=${uid} dateStr=${dateStr}`
+    );
+
     const db = admin.firestore();
     const docRef = db.collection("daily_check_ins").doc(`${uid}_${dateStr}`);
     const yesterdayRef = db
@@ -43,6 +47,10 @@ export const dailyCheckIn = functions.https.onCall(
 
     await db.runTransaction(async (tx) => {
       const today = await tx.get(docRef);
+      functions.logger.info(
+        `[dailyCheckIn] tx.today.exists=${today.exists} ` +
+          `path=${docRef.path}`
+      );
       if (today.exists) {
         const data = today.data() ?? {};
         result.consecutiveDays =
@@ -51,6 +59,10 @@ export const dailyCheckIn = functions.https.onCall(
       }
 
       const userSnap = await tx.get(userRef);
+      functions.logger.info(
+        `[dailyCheckIn] tx.user.exists=${userSnap.exists} ` +
+          `path=${userRef.path}`
+      );
       if (!userSnap.exists) {
         throw new functions.https.HttpsError(
           "failed-precondition",
@@ -107,7 +119,17 @@ export const dailyCheckIn = functions.https.onCall(
       result.pointsAwarded = BASE_REWARD;
       result.bonusAwarded = bonus;
       result.consecutiveDays = consecutive;
+
+      functions.logger.info(
+        `[dailyCheckIn] tx.writes prepared total=${total} ` +
+          `consecutive=${consecutive} bonus=${bonus}`
+      );
     });
+
+    functions.logger.info(
+      `[dailyCheckIn] tx.commit OK status=${result.status} ` +
+        `points=${result.pointsAwarded} days=${result.consecutiveDays}`
+    );
 
     return result;
   }
