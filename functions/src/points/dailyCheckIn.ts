@@ -154,6 +154,20 @@ export const dailyCheckIn = functions.https.onCall(
         `points=${result.pointsAwarded} days=${result.consecutiveDays}`
     );
 
+    // [DEBUG] flutter console attach 가 끊기는 환경 대비 — Firestore 에
+    // 별도 진단 doc 을 남겨 mcp 로 직접 조회 가능하게 한다. 안정화 후 제거.
+    try {
+      await db.collection("_debug").doc(`dailyCheckIn_${uid}`).set({
+        ...result.debug,
+        status: result.status,
+        pointsAwarded: result.pointsAwarded,
+        consecutiveDays: result.consecutiveDays,
+        writtenAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      functions.logger.error("[dailyCheckIn] _debug write failed:", e);
+    }
+
     return result;
   }
 );
